@@ -21,10 +21,10 @@ public class SyntheticDataService {
     private final UserRepository userRepository;
     private final AuditLogRepository auditLogRepository;
 
-    private static final String[] FIRST_NAMES = {"Marcus", "Elena", "Dante", "Aria", "Julian", "Sophia", "Gabriel", "Chloe", "Xavier", "Nora"};
-    private static final String[] LAST_NAMES = {"Vance", "Chen", "Sterling", "Kovacs", "Moreau", "O'Connor", "Patel", "Thorne", "Rios", "Washington"};
-    private static final String[] CITIES = {"Boston", "Seattle", "Chicago", "Austin", "Denver", "Atlanta", "San Francisco", "New York"};
-    private static final String[] INSURERS = {"BlueCross BlueShield", "Aetna Health", "UnitedHealthcare", "Kaiser Permanente", "Humana Medical"};
+    private static final String[] FIRST_NAMES = {"Kamran", "Aarav", "Rohan", "Ananya", "Priya", "Rahul", "Vikram", "Neha", "Aditya", "Meera"};
+    private static final String[] LAST_NAMES = {"Khan", "Patel", "Sharma", "Verma", "Gupta", "Menon", "Singh", "Reddy", "Joshi", "Deshmukh"};
+    private static final String[] CITIES = {"Mumbai", "Delhi", "Bengaluru", "Ahmedabad", "Kolkata", "Hyderabad", "Chennai", "Pune"};
+    private static final String[] INSURERS = {"Star Health Insurance", "HDFC ERGO Health", "ICICI Lombard", "Care Health Insurance", "Bajaj Allianz"};
 
     public SyntheticDataService(PatientRepository patientRepository,
                                 EncounterRepository encounterRepository,

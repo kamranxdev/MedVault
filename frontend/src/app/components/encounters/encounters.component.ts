@@ -81,7 +81,7 @@ import { Encounter, Patient } from '../../core/models/models';
           </div>
 
           <div class="flex items-center justify-between text-xs text-slate-400 pt-2 border-t border-slate-800">
-            <span>Attending Provider: <strong class="text-white">{{ enc.attendingProvider?.fullName || 'Dr. Sarah Jenkins' }}</strong></span>
+            <span>Attending Provider: <strong class="text-white">{{ enc.attendingProvider?.fullName || 'Dr. Mahtab Khan' }}</strong></span>
             <span>Status: <strong class="text-emerald-400">{{ enc.status }}</strong></span>
           </div>
         </div>

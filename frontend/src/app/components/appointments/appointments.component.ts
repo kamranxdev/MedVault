@@ -71,7 +71,7 @@ import { Appointment, Patient, User } from '../../core/models/models';
 
               <div>
                 <span class="text-3xs font-bold text-slate-400 uppercase tracking-wider block">Physician</span>
-                <p class="font-bold text-indigo-400 mt-0.5">{{ apt.doctor.fullName || 'Dr. Sarah Jenkins' }}</p>
+                <p class="font-bold text-indigo-400 mt-0.5">{{ apt.doctor.fullName || 'Dr. Mahtab Khan' }}</p>
               </div>
             </div>
 

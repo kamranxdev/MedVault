@@ -64,7 +64,7 @@ import { MedicalRecord, Patient } from '../../core/models/models';
                   ICD-10: {{ rec.icdCode }}
                 </span>
               </h3>
-              <p class="text-xs text-slate-400 mt-0.5">Documented by: <strong>{{ rec.doctor?.fullName || 'Dr. Sarah Jenkins' }}</strong></p>
+              <p class="text-xs text-slate-400 mt-0.5">Documented by: <strong>{{ rec.doctor?.fullName || 'Dr. Mahtab Khan' }}</strong></p>
             </div>
             <span class="text-xs font-mono text-slate-400 bg-slate-800 px-3 py-1 rounded-full">
               {{ rec.createdAt | date:'medium' }}

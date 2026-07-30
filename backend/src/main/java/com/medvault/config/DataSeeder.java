@@ -77,117 +77,117 @@ public class DataSeeder implements CommandLineRunner {
 
         System.out.println("[DataSeeder] Phase 2: Creating users...");
         // 2. Create Users
-        User admin = new User("admin", passwordEncoder.encode("admin123"), "admin@medvault.org", "Dr. Alexander Wright (Admin/Intake)");
+        User admin = new User("admin", passwordEncoder.encode("admin123"), "admin@medvault.org", "Dr. Vikramaditya Gupta (Admin/Intake)");
         admin.setRoles(Set.of(adminRole));
         admin.setDepartment("Patient Intake & Administration");
         userRepository.save(admin);
 
-        User doctor = new User("doctor", passwordEncoder.encode("doctor123"), "doctor@medvault.org", "Dr. Sarah Jenkins");
+        User doctor = new User("doctor", passwordEncoder.encode("doctor123"), "mahtab.khan@medvault.org", "Dr. Mahtab Khan");
         doctor.setRoles(Set.of(doctorRole));
         doctor.setSpecialization("Cardiology & Internal Medicine");
         doctor.setDepartment("Cardiovascular Medicine");
         userRepository.save(doctor);
 
-        User doctorJenkins = new User("doctor_jenkins", passwordEncoder.encode("doctor123"), "sarah.jenkins@medvault.org", "Dr. Sarah Jenkins");
-        doctorJenkins.setRoles(Set.of(doctorRole));
-        doctorJenkins.setSpecialization("Cardiology & Internal Medicine");
-        doctorJenkins.setDepartment("Cardiovascular Medicine");
-        userRepository.save(doctorJenkins);
+        User doctorMahtab = new User("doctor_mahtab", passwordEncoder.encode("doctor123"), "mahtab.khan@medvault.org", "Dr. Mahtab Khan");
+        doctorMahtab.setRoles(Set.of(doctorRole));
+        doctorMahtab.setSpecialization("Cardiology & Internal Medicine");
+        doctorMahtab.setDepartment("Cardiovascular Medicine");
+        userRepository.save(doctorMahtab);
 
-        User doctorMarcus = new User("doctor_marcus", passwordEncoder.encode("doctor123"), "marcus.vance@medvault.org", "Dr. Marcus Vance");
-        doctorMarcus.setRoles(Set.of(doctorRole));
-        doctorMarcus.setSpecialization("Neurology & Internal Medicine");
-        doctorMarcus.setDepartment("Neurological Sciences");
-        userRepository.save(doctorMarcus);
+        User doctorRajesh = new User("doctor_rajesh", passwordEncoder.encode("doctor123"), "rajesh.sharma@medvault.org", "Dr. Rajesh Sharma");
+        doctorRajesh.setRoles(Set.of(doctorRole));
+        doctorRajesh.setSpecialization("Neurology & Internal Medicine");
+        doctorRajesh.setDepartment("Neurological Sciences");
+        userRepository.save(doctorRajesh);
 
-        User nurse = new User("nurse", passwordEncoder.encode("nurse123"), "nurse@medvault.org", "Nurse Clara Barton");
+        User nurse = new User("nurse", passwordEncoder.encode("nurse123"), "priya.verma@medvault.org", "Nurse Priya Verma");
         nurse.setRoles(Set.of(nurseRole));
         nurse.setDepartment("Emergency / ICU Bedside");
         userRepository.save(nurse);
 
-        User nurseClara = new User("nurse_clara", passwordEncoder.encode("nurse123"), "clara.barton@medvault.org", "Nurse Clara Barton");
-        nurseClara.setRoles(Set.of(nurseRole));
-        nurseClara.setDepartment("Emergency / ICU Bedside");
-        userRepository.save(nurseClara);
+        User nursePriya = new User("nurse_priya", passwordEncoder.encode("nurse123"), "priya.verma@medvault.org", "Nurse Priya Verma");
+        nursePriya.setRoles(Set.of(nurseRole));
+        nursePriya.setDepartment("Emergency / ICU Bedside");
+        userRepository.save(nursePriya);
 
-        User auditor = new User("auditor", passwordEncoder.encode("auditor123"), "auditor@medvault.org", "Inspector Vance (Compliance Auditor)");
+        User auditor = new User("auditor", passwordEncoder.encode("auditor123"), "auditor@medvault.org", "Inspector Suresh Menon (Compliance Auditor)");
         auditor.setRoles(Set.of(auditorRole));
         auditor.setDepartment("Regulatory Compliance & Forensics");
         userRepository.save(auditor);
 
-        User patientUser = new User("patient", passwordEncoder.encode("patient123"), "patient@medvault.org", "Eleanor Vance");
+        User patientUser = new User("patient", passwordEncoder.encode("patient123"), "patient@medvault.org", "Kamran Khan");
         patientUser.setRoles(Set.of(patientRole));
         userRepository.save(patientUser);
 
-        User patientUserEleanor = new User("user_eleanor", passwordEncoder.encode("patient123"), "eleanor.vance@example.com", "Eleanor Vance");
-        patientUserEleanor.setRoles(Set.of(patientRole));
-        userRepository.save(patientUserEleanor);
+        User patientUserKamran = new User("user_kamran", passwordEncoder.encode("patient123"), "kamran.khan@example.com", "Kamran Khan");
+        patientUserKamran.setRoles(Set.of(patientRole));
+        userRepository.save(patientUserKamran);
 
-        User patientUserRobert = new User("user_robert", passwordEncoder.encode("patient123"), "robert.chen@example.com", "Robert Chen");
-        patientUserRobert.setRoles(Set.of(patientRole));
-        userRepository.save(patientUserRobert);
+        User patientUserAarav = new User("user_aarav", passwordEncoder.encode("patient123"), "aarav.patel@example.com", "Aarav Patel");
+        patientUserAarav.setRoles(Set.of(patientRole));
+        userRepository.save(patientUserAarav);
 
-        User patientUserSophia = new User("user_sophia", passwordEncoder.encode("patient123"), "sophia.m@example.com", "Sophia Martinez");
-        patientUserSophia.setRoles(Set.of(patientRole));
-        userRepository.save(patientUserSophia);
+        User patientUserAnanya = new User("user_ananya", passwordEncoder.encode("patient123"), "ananya.sharma@example.com", "Ananya Sharma");
+        patientUserAnanya.setRoles(Set.of(patientRole));
+        userRepository.save(patientUserAnanya);
 
         System.out.println("[DataSeeder] Phase 3: Creating patients...");
         // 3. Create Patients (Demographics & Identity)
         Patient p1 = new Patient();
         p1.setPatientCode("PAT-1001");
         p1.setSsn("459-00-1284");
-        p1.setFullName("Eleanor Vance");
+        p1.setFullName("Kamran Khan");
         p1.setDateOfBirth(LocalDate.of(1985, 4, 12));
-        p1.setGender("Female");
+        p1.setGender("Male");
         p1.setBloodType("O+");
-        p1.setPhone("+1 (555) 234-5678");
-        p1.setEmail("eleanor.vance@example.com");
-        p1.setAddress("742 Evergreen Terrace, Springfield");
-        p1.setEmergencyContact("Thomas Vance (Husband) - +1 (555) 987-6543");
-        p1.setInsuranceProvider("BlueCross BlueShield");
-        p1.setInsurancePolicyNumber("BCBS-9874102");
+        p1.setPhone("+91 98765 43210");
+        p1.setEmail("kamran.khan@example.com");
+        p1.setAddress("742 Marine Drive, Mumbai");
+        p1.setEmergencyContact("Farah Khan (Wife) - +91 98765 98765");
+        p1.setInsuranceProvider("Star Health Insurance");
+        p1.setInsurancePolicyNumber("STAR-9874102");
         p1.setInsuranceGroupNumber("GRP-55410");
-        p1.setCoveragePlan("PPO Preferred Premier");
+        p1.setCoveragePlan("Premier Comprehensive Care");
         p1.setMedicalAlerts("Type 2 Diabetes, Severe Penicillin Allergy, Mild Asthma");
-        p1.setUser(patientUserEleanor);
+        p1.setUser(patientUserKamran);
         patientRepository.save(p1);
 
         Patient p2 = new Patient();
         p2.setPatientCode("PAT-1002");
         p2.setSsn("218-00-9831");
-        p2.setFullName("Robert Chen");
+        p2.setFullName("Aarav Patel");
         p2.setDateOfBirth(LocalDate.of(1972, 9, 28));
         p2.setGender("Male");
         p2.setBloodType("A+");
-        p2.setPhone("+1 (555) 345-6789");
-        p2.setEmail("robert.chen@example.com");
-        p2.setAddress("1204 Pine Crest Ave, Seattle");
-        p2.setEmergencyContact("Mei Chen (Wife) - +1 (555) 876-5432");
-        p2.setInsuranceProvider("Aetna Health Choice");
-        p2.setInsurancePolicyNumber("AET-5510923");
+        p2.setPhone("+91 98765 12345");
+        p2.setEmail("aarav.patel@example.com");
+        p2.setAddress("1204 CG Road, Ahmedabad");
+        p2.setEmergencyContact("Priya Patel (Wife) - +91 98765 87654");
+        p2.setInsuranceProvider("HDFC ERGO Health");
+        p2.setInsurancePolicyNumber("HDFC-5510923");
         p2.setInsuranceGroupNumber("GRP-11092");
-        p2.setCoveragePlan("Choice POS II");
+        p2.setCoveragePlan("Optima Secure");
         p2.setMedicalAlerts("Essential Hypertension, Hyperlipidemia");
-        p2.setUser(patientUserRobert);
+        p2.setUser(patientUserAarav);
         patientRepository.save(p2);
 
         Patient p3 = new Patient();
         p3.setPatientCode("PAT-1003");
         p3.setSsn("781-00-4491");
-        p3.setFullName("Sophia Martinez");
+        p3.setFullName("Ananya Sharma");
         p3.setDateOfBirth(LocalDate.of(1996, 11, 5));
         p3.setGender("Female");
         p3.setBloodType("B-");
-        p3.setPhone("+1 (555) 456-7890");
-        p3.setEmail("sophia.m@example.com");
-        p3.setAddress("45 Ocean View Blvd, Miami");
-        p3.setEmergencyContact("Carlos Martinez (Father) - +1 (555) 765-4321");
-        p3.setInsuranceProvider("UnitedHealthcare");
-        p3.setInsurancePolicyNumber("UHC-7740192");
+        p3.setPhone("+91 98765 67890");
+        p3.setEmail("ananya.sharma@example.com");
+        p3.setAddress("45 Park Street, Kolkata");
+        p3.setEmergencyContact("Rajesh Sharma (Father) - +91 98765 76543");
+        p3.setInsuranceProvider("ICICI Lombard");
+        p3.setInsurancePolicyNumber("ICI-7740192");
         p3.setInsuranceGroupNumber("GRP-88102");
-        p3.setCoveragePlan("HMO Gold Select");
+        p3.setCoveragePlan("Health Shield Gold");
         p3.setMedicalAlerts("Latex Allergy");
-        p3.setUser(patientUserSophia);
+        p3.setUser(patientUserAnanya);
         patientRepository.save(p3);
 
         System.out.println("[DataSeeder] Phase 4: Creating encounters...");
@@ -478,7 +478,7 @@ public class DataSeeder implements CommandLineRunner {
         System.out.println("[DataSeeder] Phase 11: Creating audit logs...");
         // 11. Create Immutable Audit Ledger Entries
         auditLogRepository.save(new AuditLog("SYSTEM", "SYSTEM", "SEED", "DATABASE", "0", "Initialized MedVault EHR database with 7 sub-domain schemas and FHIR R4 synthetic cohorts."));
-        auditLogRepository.save(new AuditLog("admin", "ROLE_ADMIN", "CREATE", "USER", "1", "Provisioned RBAC clinical access credentials for Dr. Sarah Jenkins, Nurse Clara Barton, and Auditor Vance."));
+        auditLogRepository.save(new AuditLog("admin", "ROLE_ADMIN", "CREATE", "USER", "1", "Provisioned RBAC clinical access credentials for Dr. Mahtab Khan, Nurse Priya Verma, and Inspector Suresh Menon."));
         auditLogRepository.save(new AuditLog("doctor", "ROLE_DOCTOR", "CREATE", "ALLERGY", String.valueOf(a1.getId()), "Documented SEVERE Penicillin allergy (RxNorm-70618) for patient PAT-1001."));
         auditLogRepository.save(new AuditLog("auditor", "ROLE_AUDITOR", "READ", "AUDIT_LEDGER", "ALL", "Executed HIPAA § 164.312(b) compliance forensic audit review."));
         auditLogRepository.save(new AuditLog("doctor", "ROLE_DOCTOR", "CREATE", "PRESCRIPTION", String.valueOf(rx3.getId()), "Prescribed Hydroxyzine for patient PAT-1003."));

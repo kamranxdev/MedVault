@@ -130,24 +130,24 @@ import { PatientContextService } from '../../core/services/patient-context.servi
                 <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Patients</span>
               </div>
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <button (click)="quickLogin('user_eleanor', 'patient123')" class="p-4 bg-white/5 hover:bg-teal-500/10 backdrop-blur-md border border-white/5 hover:border-teal-500/30 rounded-2xl text-left transition-all group flex flex-col items-start gap-3">
+                <button (click)="quickLogin('user_kamran', 'patient123')" class="p-4 bg-white/5 hover:bg-teal-500/10 backdrop-blur-md border border-white/5 hover:border-teal-500/30 rounded-2xl text-left transition-all group flex flex-col items-start gap-3">
                   <div class="w-8 h-8 rounded-xl bg-teal-500/20 text-teal-400 flex items-center justify-center"><i class="ri-user-line"></i></div>
                   <div>
-                    <p class="font-bold text-white text-sm group-hover:text-teal-300 transition-colors">Eleanor V.</p>
+                    <p class="font-bold text-white text-sm group-hover:text-teal-300 transition-colors">Kamran K.</p>
                     <span class="text-[10px] text-slate-400 font-mono">PAT-1001</span>
                   </div>
                 </button>
-                <button (click)="quickLogin('user_robert', 'patient123')" class="p-4 bg-white/5 hover:bg-teal-500/10 backdrop-blur-md border border-white/5 hover:border-teal-500/30 rounded-2xl text-left transition-all group flex flex-col items-start gap-3">
+                <button (click)="quickLogin('user_aarav', 'patient123')" class="p-4 bg-white/5 hover:bg-teal-500/10 backdrop-blur-md border border-white/5 hover:border-teal-500/30 rounded-2xl text-left transition-all group flex flex-col items-start gap-3">
                   <div class="w-8 h-8 rounded-xl bg-teal-500/20 text-teal-400 flex items-center justify-center"><i class="ri-user-line"></i></div>
                   <div>
-                    <p class="font-bold text-white text-sm group-hover:text-teal-300 transition-colors">Robert C.</p>
+                    <p class="font-bold text-white text-sm group-hover:text-teal-300 transition-colors">Aarav P.</p>
                     <span class="text-[10px] text-slate-400 font-mono">PAT-1002</span>
                   </div>
                 </button>
-                <button (click)="quickLogin('user_sophia', 'patient123')" class="p-4 bg-white/5 hover:bg-teal-500/10 backdrop-blur-md border border-white/5 hover:border-teal-500/30 rounded-2xl text-left transition-all group flex flex-col items-start gap-3">
+                <button (click)="quickLogin('user_ananya', 'patient123')" class="p-4 bg-white/5 hover:bg-teal-500/10 backdrop-blur-md border border-white/5 hover:border-teal-500/30 rounded-2xl text-left transition-all group flex flex-col items-start gap-3">
                   <div class="w-8 h-8 rounded-xl bg-teal-500/20 text-teal-400 flex items-center justify-center"><i class="ri-user-line"></i></div>
                   <div>
-                    <p class="font-bold text-white text-sm group-hover:text-teal-300 transition-colors">Sophia M.</p>
+                    <p class="font-bold text-white text-sm group-hover:text-teal-300 transition-colors">Ananya S.</p>
                     <span class="text-[10px] text-slate-400 font-mono">PAT-1003</span>
                   </div>
                 </button>
@@ -160,17 +160,17 @@ import { PatientContextService } from '../../core/services/patient-context.servi
                 <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Physicians</span>
               </div>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <button (click)="quickLogin('doctor_jenkins', 'doctor123')" class="p-4 bg-white/5 hover:bg-emerald-500/10 backdrop-blur-md border border-white/5 hover:border-emerald-500/30 rounded-2xl text-left transition-all group flex items-center gap-4">
+                <button (click)="quickLogin('doctor_mahtab', 'doctor123')" class="p-4 bg-white/5 hover:bg-emerald-500/10 backdrop-blur-md border border-white/5 hover:border-emerald-500/30 rounded-2xl text-left transition-all group flex items-center gap-4">
                   <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-lg"><i class="ri-stethoscope-line"></i></div>
                   <div>
-                    <p class="font-bold text-white text-sm group-hover:text-emerald-300 transition-colors">Dr. Jenkins</p>
+                    <p class="font-bold text-white text-sm group-hover:text-emerald-300 transition-colors">Dr. Mahtab Khan</p>
                     <span class="text-[11px] text-slate-400">Cardiology</span>
                   </div>
                 </button>
-                <button (click)="quickLogin('doctor_marcus', 'doctor123')" class="p-4 bg-white/5 hover:bg-emerald-500/10 backdrop-blur-md border border-white/5 hover:border-emerald-500/30 rounded-2xl text-left transition-all group flex items-center gap-4">
+                <button (click)="quickLogin('doctor_rajesh', 'doctor123')" class="p-4 bg-white/5 hover:bg-emerald-500/10 backdrop-blur-md border border-white/5 hover:border-emerald-500/30 rounded-2xl text-left transition-all group flex items-center gap-4">
                   <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-lg"><i class="ri-brain-line"></i></div>
                   <div>
-                    <p class="font-bold text-white text-sm group-hover:text-emerald-300 transition-colors">Dr. Vance</p>
+                    <p class="font-bold text-white text-sm group-hover:text-emerald-300 transition-colors">Dr. Rajesh Sharma</p>
                     <span class="text-[11px] text-slate-400">Neurology</span>
                   </div>
                 </button>
@@ -183,22 +183,22 @@ import { PatientContextService } from '../../core/services/patient-context.servi
                 <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Clinical Staff & Admin</span>
               </div>
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <button (click)="quickLogin('nurse_clara', 'nurse123')" class="p-3 bg-white/5 hover:bg-amber-500/10 backdrop-blur-md border border-white/5 hover:border-amber-500/30 rounded-2xl text-left transition-all group flex items-center gap-3">
+                <button (click)="quickLogin('nurse_priya', 'nurse123')" class="p-3 bg-white/5 hover:bg-amber-500/10 backdrop-blur-md border border-white/5 hover:border-amber-500/30 rounded-2xl text-left transition-all group flex items-center gap-3">
                   <div class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center"><i class="ri-nurse-line"></i></div>
                   <div>
-                    <p class="font-bold text-white text-xs group-hover:text-amber-300 transition-colors">Nurse Clara</p>
+                    <p class="font-bold text-white text-xs group-hover:text-amber-300 transition-colors">Nurse Priya</p>
                   </div>
                 </button>
                 <button (click)="quickLogin('admin', 'admin123')" class="p-3 bg-white/5 hover:bg-blue-500/10 backdrop-blur-md border border-white/5 hover:border-blue-500/30 rounded-2xl text-left transition-all group flex items-center gap-3">
                   <div class="w-8 h-8 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center"><i class="ri-settings-3-line"></i></div>
                   <div>
-                    <p class="font-bold text-white text-xs group-hover:text-blue-300 transition-colors">Admin Wright</p>
+                    <p class="font-bold text-white text-xs group-hover:text-blue-300 transition-colors">Admin Gupta</p>
                   </div>
                 </button>
                 <button (click)="quickLogin('auditor', 'auditor123')" class="p-3 bg-white/5 hover:bg-purple-500/10 backdrop-blur-md border border-white/5 hover:border-purple-500/30 rounded-2xl text-left transition-all group flex items-center gap-3">
                   <div class="w-8 h-8 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center"><i class="ri-shield-check-line"></i></div>
                   <div>
-                    <p class="font-bold text-white text-xs group-hover:text-purple-300 transition-colors">Insp. Vance</p>
+                    <p class="font-bold text-white text-xs group-hover:text-purple-300 transition-colors">Insp. Menon</p>
                   </div>
                 </button>
               </div>

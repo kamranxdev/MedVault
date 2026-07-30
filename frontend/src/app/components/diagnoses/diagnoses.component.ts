@@ -88,7 +88,7 @@ import { Diagnosis, Patient } from '../../core/models/models';
 
             <div class="flex items-center justify-between text-xs text-slate-400 pt-2 border-t border-slate-800">
               <span>Onset: <strong>{{ dx.onsetDate | date:'mediumDate' }}</strong></span>
-              <span>Provider: {{ dx.doctor?.fullName || 'Dr. Sarah Jenkins' }}</span>
+              <span>Provider: {{ dx.doctor?.fullName || 'Dr. Mahtab Khan' }}</span>
             </div>
           </div>
         </div>

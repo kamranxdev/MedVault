@@ -1,53 +1,56 @@
 # MedVault Enterprise EHR Platform
 
-> **FHIR R4 & HIPAA § 164.312 Compliant Electronic Health Record (EHR) & Clinical Management System**
+> **HL7 FHIR R4 & HIPAA § 164.312 Compliant Electronic Health Record (EHR) & Clinical Management System**
 
-MedVault is a production-grade, enterprise-scale Electronic Health Record (EHR) platform engineered with individual patient data scoping, multi-persona clinical workspaces, real-time Smart Allergy contraindication checking, and immutable WORM compliance logging.
+MedVault is a production-grade, enterprise-scale Electronic Health Record (EHR) platform engineered with individual patient data scoping, multi-persona clinical workspaces, real-time Smart Allergy contraindication checking, an immutable WORM audit log engine, and HL7 FHIR R4 interoperability APIs.
 
 ---
 
 ## 🌟 Key Highlights & Architectural Features
 
-- **🌐 Public Landing Page**: High-impact enterprise landing page showcasing system capabilities, FHIR R4 interoperability, and instant navigation to role portals.
-- **🖼️ Modern 2-Column Split Login**: Split-screen design with dynamic visual medical backdrop, 1-click persona demo switcher, and secure credential sign-in.
-- **🔒 Individual Patient Portal & Data Scoping**: Logged-in patients (`ROLE_PATIENT`) are strictly bound to their personal patient profile (`/api/patients/user/{userId}`). Universal patient dropdowns and Master Patient Index (MPI) lists are hidden from patients to enforce HIPAA isolation.
-- **🩺 Physician Desk Workspace**: Tailored workspace for doctors (`ROLE_DOCTOR`) with SOAP progress notes, ICD-10 problem lists, eRx orders, and consultation scheduling.
-- **💉 Nurse Station Flowsheet**: Time-series bedside vitals flowsheet logging (BP, HR, Temp, Glucose, SpO2, BMI) and Medication Administration Record (MAR).
-- **⚙️ Admin & Intake Command Center**: Master Patient Index (MPI) registration, user RBAC management, and appointment dispatching.
-- **🛡️ HIPAA WORM Compliance Vault**: Immutable append-only audit ledger tracking every read/write/access action per HIPAA § 164.312(b).
-- **⚠️ Smart Allergy Safety Engine**: Real-time RxNorm allergy contraindication engine cross-checking active prescriptions against patient allergies before issuance.
+- **🌐 Public Landing Page (`/`)**: High-impact enterprise landing page showcasing clinical workspace capabilities, system security, and direct portal access.
+- **🖼️ Split 2-Column Login (`/login`)**: Split-screen design with custom medical architecture branding, 1-click persona demo switcher, and credential sign-in.
+- **🔒 Individual Patient Portal & Data Scoping**: Logged-in patients (`ROLE_PATIENT`) are strictly bound to their personal patient profile (`/api/patients/user/{userId}`). Patient dropdowns and Master Patient Index (MPI) lists are hidden from patients to enforce HIPAA isolation.
+- **🩺 Physician Desk Workspace (`/dashboard`, `/encounters`, `/diagnoses`)**: Tailored workspace for doctors (`ROLE_DOCTOR`) featuring SOAP progress notes, ICD-10 & SNOMED-CT problem lists, eRx orders with safety check overrides, and consultation scheduling.
+- **💉 Bedside Nurse Flowsheet (`/vitals`, `/encounters`)**: Longitudinal vitals flowsheet tracking Blood Pressure, Heart Rate, Temperature, Glucose, SpO2, and BMI with clinical status badges.
+- **⚙️ Admin & Intake Command Center (`/admin`, `/patients`)**: Master Patient Index (MPI) registration, user RBAC account directory, and 1-click Synthea-aligned synthetic cohort generator.
+- **🛡️ HIPAA WORM Compliance Vault (`/audit-ledger`)**: Immutable append-only audit ledger tracking every `READ`, `SEARCH`, `CREATE`, and `UPDATE` action per HIPAA § 164.312(b) with real-time log search.
+- **⚠️ Smart Allergy Safety Engine**: Real-time RxNorm/SNOMED allergy contraindication engine cross-checking active prescriptions against patient allergies before issuance with clinician override logging.
+- **🌐 HL7 FHIR R4 Interoperability API (`/fhir/v1/*`)**: HL7 FHIR R4 compliant REST endpoints for exporting standard JSON resources (`Patient`, `Encounter`, `AllergyIntolerance`, `Condition`, `MedicationRequest`, `Observation`).
 
 ---
 
 ## 🔑 Pre-Configured Demo Credentials Matrix
 
-The system seeds individual user accounts for patients, doctors, nurses, administrators, and compliance auditors:
+The system seeds pre-configured user accounts for patients, physicians, nurses, administrators, and compliance auditors:
 
 | Persona Role | Username | Password | Full Name & Specialty / MRN | Primary Scope |
 | :--- | :--- | :--- | :--- | :--- |
-| **Patient 1** | `user_eleanor` | `patient123` | **Eleanor Vance** (`PAT-1001`) | Personal Health Summary, Type 2 Diabetes, Penicillin Allergy, Prescriptions |
-| **Patient 2** | `user_robert` | `patient123` | **Robert Chen** (`PAT-1002`) | Personal Health Summary, Essential Hypertension, Lisinopril |
-| **Patient 3** | `user_sophia` | `patient123` | **Sophia Martinez** (`PAT-1003`) | Personal Health Summary, Latex Allergy |
-| **Doctor (Cardiology)**| `doctor_jenkins` | `doctor123` | **Dr. Sarah Jenkins** (Cardiology) | Physician Desk, SOAP Notes, eRx Orders, Safety Overrides |
-| **Doctor (Neurology)**| `doctor_marcus` | `doctor123` | **Dr. Marcus Vance** (Neurology) | Physician Desk, Neurology Consultations, Schedule |
-| **Clinical Nurse** | `nurse_clara` | `nurse123` | **Nurse Clara Barton** (ICU/Emergency) | Bedside Vitals Flowsheet, MAR Tracking, Ward Census |
-| **Hospital Admin** | `admin` | `admin123` | **Dr. Alexander Wright** (Admin) | MPI Registration, RBAC Management, Appointment Dispatch |
-| **Compliance Auditor**| `auditor` | `auditor123` | **Inspector Vance** (Auditor) | Read-Only WORM Audit Vault, HIPAA Forensic Exporter |
+| **Patient 1** | `user_kamran` | `patient123` | **Kamran Khan** (`PAT-1001`) | Personal Health Summary, Type 2 Diabetes, Penicillin Allergy, Prescriptions |
+| **Patient 2** | `user_aarav` | `patient123` | **Aarav Patel** (`PAT-1002`) | Personal Health Summary, Essential Hypertension, Lisinopril |
+| **Patient 3** | `user_ananya` | `patient123` | **Ananya Sharma** (`PAT-1003`) | Personal Health Summary, Latex Allergy |
+| **Doctor (Cardiology)**| `doctor_mahtab` | `doctor123` | **Dr. Mahtab Khan** (Cardiology) | Physician Desk, SOAP Notes, eRx Orders, Safety Overrides |
+| **Doctor (Neurology)**| `doctor_rajesh` | `doctor123` | **Dr. Rajesh Sharma** (Neurology) | Physician Desk, Neurology Consultations, Schedule |
+| **Clinical Nurse** | `nurse_priya` | `nurse123` | **Nurse Priya Verma** (ICU/Emergency) | Bedside Vitals Flowsheet, Encounter Logs, Ward Census |
+| **Hospital Admin** | `admin` | `admin123` | **Dr. Vikramaditya Gupta** (Admin) | MPI Registration, RBAC Management, Synthetic Data Generation |
+| **Compliance Auditor**| `auditor` | `auditor123` | **Inspector Suresh Menon** (Auditor) | Read-Only WORM Audit Vault, HIPAA Forensic Exporter |
 
 ---
 
 ## 🏗️ Technology Stack
 
 ### Frontend Architecture
-- **Framework**: Angular 19+ (Standalone Components, Signals, Reactive State)
-- **Styling**: Modern Vanilla TailwindCSS CSS utilities with custom HSL dark mode token system
+- **Framework**: Angular 19+ (Standalone Components, Signals, Reactive State Management)
+- **Styling**: Modern Vanilla CSS design system with custom HSL tokens, dark mode, glassmorphism, and responsive layouts
 - **State & Context**: `PatientContextService` providing global reactive patient context management
+- **Guards & Interceptors**: `authGuard`, `roleGuard` (RBAC), and `jwtInterceptor` (Bearer token injection)
 
 ### Backend Architecture
 - **Framework**: Java 17 / Spring Boot 3.2+
 - **Security**: Spring Security 6 with Stateless JWT Authentication & `@PreAuthorize` Method Security
-- **Database**: H2 In-Memory / Relational JPA Entity Mapping
-- **Audit Engine**: Immutable WORM Ledger (`AuditLogRepository`)
+- **Database Layer**: JPA/Hibernate with relational mapping and H2 database engine
+- **Audit Engine**: Immutable WORM Ledger (`AuditLogRepository`) logging all data access events
+- **Interoperability**: HL7 FHIR R4 standard JSON serializers (`FhirController`)
 
 ---
 
@@ -63,7 +66,7 @@ The system seeds individual user accounts for patients, doctors, nurses, adminis
 cd backend
 ./mvnw spring-boot:run
 ```
-*The REST API will start at `http://localhost:8080`.*
+*The REST API and FHIR services will start at `http://localhost:8080`.*
 
 ### 2. Running the Frontend Application
 ```bash
@@ -89,6 +92,7 @@ cd backend
 cd frontend
 HOME=/mnt/workspace/MedVault/frontend npx ng build
 ```
+Build output saved in `frontend/dist/frontend`.
 
 ---
 
@@ -96,25 +100,27 @@ HOME=/mnt/workspace/MedVault/frontend npx ng build
 
 ```
 MedVault/
-├── backend/                  # Spring Boot REST API & Security
+├── backend/                  # Spring Boot REST API, Security & FHIR Engine
 │   ├── src/main/java/com/medvault/
-│   │   ├── config/           # DataSeeder & App Configuration
-│   │   ├── controller/       # REST Endpoints (Patients, Prescriptions, Vitals, Users)
-│   │   ├── model/            # JPA Entities (User, Patient, Prescription, Vitals, Allergy)
-│   │   ├── repository/       # Data Access Repositories & WORM Audit Logs
-│   │   ├── security/         # JWT Auth Filters, Custom UserDetails, SecurityConfig
-│   │   └── service/          # SmartSafetyService & Synthetic Data Engine
-│   └── pom.xml
+│   │   ├── config/           # DataSeeder & App Security Setup
+│   │   ├── controller/       # REST Endpoints (Patients, Prescriptions, Vitals, Encounters, FHIR R4)
+│   │   ├── dto/              # Auth & JWT Payload DTOs
+│   │   ├── model/            # JPA Entities (User, Patient, Prescription, Vitals, Allergy, Encounter)
+│   │   ├── repository/       # Repositories & WORM Audit Log Storage
+│   │   ├── security/         # JwtTokenProvider, JwtAuthenticationFilter, SecurityConfig
+│   │   └── service/          # SmartSafetyService & SyntheticDataService
+│   ├── pom.xml
+│   └── README.md
 │
 ├── frontend/                 # Angular Standalone Enterprise UI
 │   ├── src/app/
-│   │   ├── components/       # Landing Page, Split Login, Dashboard, Patients, Prescriptions...
+│   │   ├── components/       # Landing, Login, Dashboard, Patients, Prescriptions, Vitals, Audit Ledger...
 │   │   ├── core/             # PatientContextService, AuthService, ApiService, Guards, Models
-│   │   ├── app.ts            # Root Layout & Active Patient Top Bar
-│   │   └── app.routes.ts     # Route Definitions
-│   └── public/assets/images/ # High-resolution hero image assets
+│   │   ├── app.ts            # Root Component & Active Patient Banner
+│   │   └── app.routes.ts     # Route Definitions & RBAC Guards
+│   └── README.md
 │
-└── docker-compose.yml
+└── README.md                 # Master Project Overview
 ```
 
 ---
@@ -123,3 +129,4 @@ MedVault/
 
 Designed & Maintained by Senior Software Engineering & Healthcare Systems Specialists.  
 Complies with **HIPAA Security Rule § 164.312** & **HL7 FHIR R4 Specification**.
+

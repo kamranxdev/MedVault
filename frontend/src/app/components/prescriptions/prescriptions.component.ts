@@ -83,7 +83,7 @@ import { Patient, Prescription, SafetyCheckResult } from '../../core/models/mode
             </div>
             <div>
               <span class="text-3xs font-bold text-slate-400 uppercase tracking-wider">Authorizing Physician</span>
-              <p class="text-slate-200 font-semibold mt-0.5">{{ rx.doctor?.fullName || 'Dr. Sarah Jenkins' }}</p>
+              <p class="text-slate-200 font-semibold mt-0.5">{{ rx.doctor?.fullName || 'Dr. Mahtab Khan' }}</p>
             </div>
           </div>
 
