@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "cli": {
+    "completion": {
+      "prompted": true,
+      "enabled": false
+    },
+    "analytics": false
+  }
+}

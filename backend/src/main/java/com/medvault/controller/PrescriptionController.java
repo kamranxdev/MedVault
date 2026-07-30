@@ -1,0 +1,139 @@
+package com.medvault.controller;
+
+import com.medvault.model.AuditLog;
+import com.medvault.model.Patient;
+import com.medvault.model.Prescription;
+import com.medvault.model.User;
+import com.medvault.repository.AuditLogRepository;
+import com.medvault.repository.PatientRepository;
+import com.medvault.repository.PrescriptionRepository;
+import com.medvault.repository.UserRepository;
+import com.medvault.service.SmartSafetyService;
+import com.medvault.service.SmartSafetyService.SafetyCheckResult;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/prescriptions")
+public class PrescriptionController {
+
+    private final PrescriptionRepository prescriptionRepository;
+    private final PatientRepository patientRepository;
+    private final UserRepository userRepository;
+    private final AuditLogRepository auditLogRepository;
+    private final SmartSafetyService safetyService;
+
+    public PrescriptionController(PrescriptionRepository prescriptionRepository,
+                                  PatientRepository patientRepository,
+                                  UserRepository userRepository,
+                                  AuditLogRepository auditLogRepository,
+                                  SmartSafetyService safetyService) {
+        this.prescriptionRepository = prescriptionRepository;
+        this.patientRepository = patientRepository;
+        this.userRepository = userRepository;
+        this.auditLogRepository = auditLogRepository;
+        this.safetyService = safetyService;
+    }
+
+    @GetMapping("/patient/{patientId}")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE', 'AUDITOR', 'PATIENT')")
+    public List<Prescription> getPrescriptionsByPatient(@PathVariable Long patientId, Authentication auth) {
+        auditLogRepository.save(new AuditLog(
+                auth.getName(),
+                auth.getAuthorities().toString(),
+                "READ",
+                "PRESCRIPTION",
+                String.valueOf(patientId),
+                "Accessed eRx prescription history for patient ID: " + patientId
+        ));
+        return prescriptionRepository.findByPatientIdOrderByPrescribedAtDesc(patientId);
+    }
+
+    @PostMapping("/safety-check")
+    @PreAuthorize("hasRole('DOCTOR')")
+    public ResponseEntity<SafetyCheckResult> checkSafety(@RequestBody Map<String, Object> body, Authentication auth) {
+        Long patientId = Long.parseLong(body.get("patientId").toString());
+        String medicationName = body.get("medicationName").toString();
+
+        SafetyCheckResult result = safetyService.checkPrescriptionSafety(
+                patientId, 
+                medicationName, 
+                auth.getName(), 
+                "ROLE_DOCTOR"
+        );
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping
+    @PreAuthorize("hasRole('DOCTOR')")
+    public ResponseEntity<?> createPrescription(@RequestBody Prescription prescription, 
+                                                 @RequestParam(value = "overrideWarning", defaultValue = "false") boolean overrideWarning,
+                                                 Authentication auth) {
+        User doctor = userRepository.findByUsername(auth.getName()).orElseThrow();
+        Patient patient = patientRepository.findById(prescription.getPatient().getId())
+                .orElseThrow(() -> new RuntimeException("Patient not found"));
+
+        // Smart Allergy Safety Engine Contraindication Check
+        SafetyCheckResult safetyResult = safetyService.checkPrescriptionSafety(
+                patient.getId(), 
+                prescription.getMedicationName(), 
+                auth.getName(), 
+                "ROLE_DOCTOR"
+        );
+
+        if (!safetyResult.isSafe() && !overrideWarning) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
+                    "error", "CONTRAINDICATION_ALERT",
+                    "safetyCheck", safetyResult,
+                    "message", safetyResult.getMessage()
+            ));
+        }
+
+        prescription.setDoctor(doctor);
+        prescription.setPatient(patient);
+
+        Prescription saved = prescriptionRepository.save(prescription);
+        
+        String auditDetail = "Prescribed " + saved.getMedicationName() + " (" + saved.getDosage() + ") to patient ID: " + patient.getId();
+        if (!safetyResult.isSafe() && overrideWarning) {
+            auditDetail += " [CLINICIAN OVERRIDE OF ALLERGY WARNING: " + safetyResult.getConflictingAllergen() + "]";
+        }
+
+        auditLogRepository.save(new AuditLog(
+                auth.getName(),
+                "ROLE_DOCTOR",
+                "CREATE",
+                "PRESCRIPTION",
+                String.valueOf(saved.getId()),
+                auditDetail
+        ));
+
+        return ResponseEntity.ok(saved);
+    }
+
+    @PutMapping("/{id}/status")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE')")
+    public ResponseEntity<?> updateStatus(@PathVariable Long id, @RequestParam String status, Authentication auth) {
+        return prescriptionRepository.findById(id)
+                .map(rx -> {
+                    rx.setStatus(status);
+                    Prescription saved = prescriptionRepository.save(rx);
+                    auditLogRepository.save(new AuditLog(
+                            auth.getName(),
+                            auth.getAuthorities().toString(),
+                            "UPDATE",
+                            "PRESCRIPTION",
+                            String.valueOf(id),
+                            "Updated prescription ID: " + id + " status to " + status
+                    ));
+                    return ResponseEntity.ok(saved);
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+}

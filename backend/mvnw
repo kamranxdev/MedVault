@@ -1,0 +1,7 @@
+#!/bin/sh
+DIR="$(cd "$(dirname "$0")" && pwd)"
+if [ -x "$DIR/.maven/bin/mvn" ]; then
+    exec "$DIR/.maven/bin/mvn" -Dmaven.repo.local="$DIR/.m2/repository" "$@"
+else
+    exec mvn -Dmaven.repo.local="$DIR/.m2/repository" "$@"
+fi
