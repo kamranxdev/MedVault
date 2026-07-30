@@ -16,9 +16,9 @@ import { Appointment, Patient, User } from '../../core/models/models';
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900 p-6 rounded-3xl border border-slate-800 shadow-xl">
         <div>
           <div class="flex items-center gap-3">
-            <span class="text-2xl">📅</span>
+            <i class="ri-calendar-schedule-line text-2xl text-teal-500"></i>
             <h1 class="text-2xl font-bold text-white tracking-tight">
-              {{ isPatient() ? 'My Scheduled Appointments & Consultations' : 'Appointments & Provider Scheduling Calendar' }}
+              {{ isPatient() ? 'My Appointments' : 'Consultation Schedule & Appointments' }}
             </h1>
           </div>
           <p class="text-xs text-slate-400 mt-1">
@@ -28,9 +28,10 @@ import { Appointment, Patient, User } from '../../core/models/models';
 
         <div class="flex items-center gap-3">
           <button 
+            *ngIf="authService.hasAnyRole(['ROLE_DOCTOR', 'ROLE_ADMIN', 'ROLE_PATIENT'])"
             (click)="openScheduleModal()" 
             class="px-4 py-2.5 bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs rounded-xl transition shadow-md flex items-center gap-2">
-            <span>+</span> {{ isPatient() ? 'Request Consultation' : 'Schedule Appointment' }}
+            <i class="ri-add-line"></i> {{ isPatient() ? 'Request Consultation' : 'Schedule Appointment' }}
           </button>
         </div>
       </div>
@@ -51,8 +52,8 @@ import { Appointment, Patient, User } from '../../core/models/models';
           <div *ngFor="let apt of appointments()" class="bg-slate-900 rounded-3xl border border-slate-800 p-6 shadow-xl space-y-4 relative overflow-hidden">
             <div class="flex items-start justify-between border-b border-slate-800 pb-3">
               <div>
-                <span class="text-3xs font-extrabold text-teal-400 uppercase tracking-wider block mb-1">
-                  📅 {{ apt.appointmentDate | date:'fullDate' }} &bull; {{ apt.appointmentDate | date:'shortTime' }}
+                <span class="text-3xs font-extrabold text-teal-400 uppercase tracking-wider flex items-center gap-1 mb-1">
+                  <i class="ri-calendar-line"></i> {{ apt.appointmentDate | date:'fullDate' }} &bull; {{ apt.appointmentDate | date:'shortTime' }}
                 </span>
                 <h3 class="text-base font-bold text-white">{{ apt.reason }}</h3>
               </div>
@@ -83,13 +84,13 @@ import { Appointment, Patient, User } from '../../core/models/models';
               <button 
                 *ngIf="apt.status === 'SCHEDULED' && apt.id" 
                 (click)="updateStatus(apt.id!, 'CONFIRMED')" 
-                class="px-3 py-1 bg-blue-600/20 hover:bg-blue-600 text-blue-300 hover:text-white rounded-lg text-3xs font-bold transition">
+                class="px-3 py-1 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white rounded-lg text-3xs font-bold transition">
                 Confirm
               </button>
               <button 
                 *ngIf="(apt.status === 'SCHEDULED' || apt.status === 'CONFIRMED') && apt.id" 
                 (click)="updateStatus(apt.id!, 'COMPLETED')" 
-                class="px-3 py-1 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white rounded-lg text-3xs font-bold transition">
+                class="px-3 py-1 bg-slate-600/20 hover:bg-slate-600 text-slate-300 hover:text-white rounded-lg text-3xs font-bold transition">
                 Complete
               </button>
               <button 
@@ -110,7 +111,7 @@ import { Appointment, Patient, User } from '../../core/models/models';
             <h3 class="text-lg font-bold text-teal-400">
               {{ isPatient() ? 'Request Physician Consultation' : 'Schedule Patient Appointment' }}
             </h3>
-            <button (click)="showModal.set(false)" class="text-slate-400 text-xl font-bold">×</button>
+            <button (click)="showModal.set(false)" class="text-slate-400 text-xl font-bold">&times;</button>
           </div>
 
           <form (ngSubmit)="saveAppointment()" class="space-y-3 text-xs">
@@ -278,10 +279,11 @@ export class AppointmentsComponent implements OnInit {
 
   getStatusBadge(status: string): string {
     switch (status) {
-      case 'CONFIRMED': return 'bg-blue-500/20 text-blue-300 border border-blue-500/30';
-      case 'COMPLETED': return 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
-      case 'CANCELLED': return 'bg-rose-500/20 text-rose-300 border border-rose-500/30';
-      default: return 'bg-amber-500/20 text-amber-300 border border-amber-500/30';
+      case 'SCHEDULED': return 'bg-blue-500/20 text-blue-400 border border-blue-500/30';
+      case 'CONFIRMED': return 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+      case 'COMPLETED': return 'bg-slate-500/20 text-slate-400 border border-slate-500/30';
+      case 'CANCELLED': return 'bg-rose-500/20 text-rose-400 border border-rose-500/30';
+      default: return 'bg-slate-500/20 text-slate-300';
     }
   }
 }

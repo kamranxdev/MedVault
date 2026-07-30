@@ -35,19 +35,19 @@ public class AppointmentController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR', 'NURSE', 'PATIENT')")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE', 'ADMIN', 'PATIENT')")
     public List<Appointment> getAllAppointments() {
         return appointmentRepository.findAll();
     }
 
     @GetMapping("/patient/{patientId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR', 'NURSE', 'PATIENT')")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE', 'ADMIN', 'PATIENT')")
     public List<Appointment> getAppointmentsByPatient(@PathVariable Long patientId) {
         return appointmentRepository.findByPatientIdOrderByAppointmentDateDesc(patientId);
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR', 'NURSE', 'PATIENT')")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'ADMIN', 'PATIENT')")
     public ResponseEntity<?> scheduleAppointment(@RequestBody Appointment appointment, Authentication auth) {
         Patient patient = patientRepository.findById(appointment.getPatient().getId())
                 .orElseThrow(() -> new RuntimeException("Patient not found"));
@@ -70,7 +70,7 @@ public class AppointmentController {
     }
 
     @PutMapping("/{id}/status")
-    @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR', 'NURSE')")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'ADMIN')")
     public ResponseEntity<?> updateStatus(@PathVariable Long id, @RequestParam String status, Authentication auth) {
         return appointmentRepository.findById(id)
                 .map(apt -> {

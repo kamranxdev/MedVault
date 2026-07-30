@@ -35,7 +35,7 @@ public class EncounterController {
     }
 
     @GetMapping("/patient/{patientId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR', 'NURSE', 'AUDITOR', 'PATIENT')")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE', 'ADMIN', 'PATIENT')")
     public List<Encounter> getEncountersByPatient(@PathVariable Long patientId, Authentication auth) {
         auditLogRepository.save(new AuditLog(
                 auth.getName(),
@@ -49,7 +49,7 @@ public class EncounterController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR')")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE', 'ADMIN')")
     public ResponseEntity<?> createEncounter(@RequestBody Encounter encounter, Authentication auth) {
         User provider = userRepository.findByUsername(auth.getName()).orElse(null);
         Patient patient = patientRepository.findById(encounter.getPatient().getId())
@@ -77,7 +77,7 @@ public class EncounterController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE')")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE', 'ADMIN')")
     public ResponseEntity<?> updateEncounter(@PathVariable Long id, @RequestBody Encounter updated, Authentication auth) {
         return encounterRepository.findById(id)
                 .map(enc -> {

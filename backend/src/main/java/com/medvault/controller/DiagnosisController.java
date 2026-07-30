@@ -35,7 +35,7 @@ public class DiagnosisController {
     }
 
     @GetMapping("/patient/{patientId}")
-    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE', 'AUDITOR', 'PATIENT')")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'PATIENT')")
     public List<Diagnosis> getDiagnosesByPatient(@PathVariable Long patientId, Authentication auth) {
         auditLogRepository.save(new AuditLog(
                 auth.getName(),

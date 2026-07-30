@@ -1,0 +1,23 @@
+# Build & Target directories
+**/target/
+**/dist/
+**/*.class
+**/.m2/
+.m2/
+
+# IDE & Editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Node modules & logs
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files
+.env
+.env.local

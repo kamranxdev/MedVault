@@ -16,9 +16,9 @@ import { Allergy, Patient } from '../../core/models/models';
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900 p-6 rounded-3xl border border-slate-800 shadow-xl">
         <div>
           <div class="flex items-center gap-3">
-            <span class="text-2xl">⚠️</span>
+            <i class="ri-alarm-warning-line text-2xl text-rose-500"></i>
             <h1 class="text-2xl font-bold text-white tracking-tight">
-              {{ isPatient() ? 'My Coded Allergies & Risk Register' : 'Coded Allergies & Drug Adverse Reaction Register' }}
+              {{ isPatient() ? 'My Allergies' : 'Allergies & Adverse Drug Reactions' }}
             </h1>
           </div>
           <p class="text-xs text-slate-400 mt-1">
@@ -43,7 +43,7 @@ import { Allergy, Patient } from '../../core/models/models';
             (click)="showModal = true"
             [disabled]="!selectedPatientId"
             class="px-4 py-2.5 bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white font-bold text-xs rounded-xl transition shadow-md flex items-center gap-2">
-            <span>+</span> Document Coded Allergy
+            <i class="ri-add-line"></i> Document Coded Allergy
           </button>
         </div>
       </div>
@@ -76,7 +76,9 @@ import { Allergy, Patient } from '../../core/models/models';
                     {{ alg.allergenCode }}
                   </span>
                 </h3>
-                <span class="text-xs text-slate-400">Category: {{ alg.category }}</span>
+                <span [class]="getCategoryBadge(alg.category)" class="mt-1 px-2 py-0.5 rounded text-xs font-semibold inline-block">
+                  {{ alg.category }}
+                </span>
               </div>
 
               <span [class]="getSeverityBadge(alg.severity)" class="px-3 py-1 rounded-full text-3xs font-extrabold uppercase tracking-wider">
@@ -89,7 +91,7 @@ import { Allergy, Patient } from '../../core/models/models';
             </p>
 
             <div class="flex items-center justify-between text-xs text-slate-400 pt-2 border-t border-slate-800">
-              <span>Status: <strong [class]="alg.status === 'ACTIVE' ? 'text-rose-400' : 'text-slate-400'">{{ alg.status }}</strong></span>
+              <span class="flex items-center gap-1">Status: <strong [class]="getStatusClass(alg.status)">{{ alg.status }}</strong></span>
               <span class="font-mono">Recorded: {{ alg.recordedAt | date:'mediumDate' }}</span>
             </div>
           </div>
@@ -97,11 +99,11 @@ import { Allergy, Patient } from '../../core/models/models';
       </div>
 
       <!-- Add Allergy Modal -->
-      <div *ngIf="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+      <div *ngIf="showModal && authService.hasAnyRole(['ROLE_DOCTOR', 'ROLE_NURSE'])" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
         <div class="bg-slate-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-800 space-y-4">
           <div class="flex items-center justify-between border-b border-slate-800 pb-3">
             <h3 class="text-lg font-bold text-white">Document Coded Allergy</h3>
-            <button (click)="showModal = false" class="text-slate-400 hover:text-white text-xl font-bold">×</button>
+            <button (click)="showModal = false" class="text-slate-400 hover:text-white text-xl font-bold">&times;</button>
           </div>
 
           <form (ngSubmit)="saveAllergy()" class="space-y-3 text-xs">
@@ -240,19 +242,39 @@ export class AllergiesComponent implements OnInit {
 
   getSeverityBorder(severity: string): string {
     switch (severity) {
-      case 'LIFE_THREATENING': return 'bg-purple-600';
-      case 'SEVERE': return 'bg-rose-500';
-      case 'MODERATE': return 'bg-amber-500';
+      case 'LIFE_THREATENING': return 'bg-rose-500';
+      case 'SEVERE': return 'bg-red-400';
+      case 'MODERATE': return 'bg-amber-400';
+      case 'MILD': return 'bg-yellow-300';
       default: return 'bg-blue-400';
     }
   }
 
   getSeverityBadge(severity: string): string {
     switch (severity) {
-      case 'LIFE_THREATENING': return 'bg-purple-500/20 text-purple-300 border border-purple-500/30';
-      case 'SEVERE': return 'bg-rose-500/20 text-rose-300 border border-rose-500/30';
-      case 'MODERATE': return 'bg-amber-500/20 text-amber-300 border border-amber-500/30';
+      case 'LIFE_THREATENING': return 'bg-rose-500/20 text-rose-500 border border-rose-500/30';
+      case 'SEVERE': return 'bg-red-400/20 text-red-400 border border-red-400/30';
+      case 'MODERATE': return 'bg-amber-400/20 text-amber-400 border border-amber-400/30';
+      case 'MILD': return 'bg-yellow-300/20 text-yellow-300 border border-yellow-300/30';
       default: return 'bg-blue-500/20 text-blue-300 border border-blue-500/30';
+    }
+  }
+
+  getCategoryBadge(category: string): string {
+    switch(category) {
+      case 'DRUG': return 'bg-blue-500/20 text-blue-300';
+      case 'FOOD': return 'bg-emerald-500/20 text-emerald-300';
+      case 'ENVIRONMENTAL': return 'bg-purple-500/20 text-purple-300';
+      default: return 'bg-slate-500/20 text-slate-300';
+    }
+  }
+
+  getStatusClass(status: string): string {
+    switch(status) {
+      case 'ACTIVE': return 'text-emerald-400';
+      case 'INACTIVE': return 'text-slate-400';
+      case 'RESOLVED': return 'text-blue-400';
+      default: return 'text-slate-400';
     }
   }
 }

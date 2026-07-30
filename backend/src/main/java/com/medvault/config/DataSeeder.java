@@ -54,10 +54,20 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        if (roleRepository.count() > 0) {
-            return;
-        }
+        System.out.println("[DataSeeder] Starting database teardown...");
+        auditLogRepository.deleteAll();
+        appointmentRepository.deleteAll();
+        prescriptionRepository.deleteAll();
+        vitalsRepository.deleteAll();
+        recordRepository.deleteAll();
+        diagnosisRepository.deleteAll();
+        allergyRepository.deleteAll();
+        encounterRepository.deleteAll();
+        patientRepository.deleteAll();
+        userRepository.deleteAll();
+        roleRepository.deleteAll();
 
+        System.out.println("[DataSeeder] Phase 1: Creating roles...");
         // 1. Create Roles
         Role adminRole = roleRepository.save(new Role("ROLE_ADMIN"));
         Role doctorRole = roleRepository.save(new Role("ROLE_DOCTOR"));
@@ -65,6 +75,7 @@ public class DataSeeder implements CommandLineRunner {
         Role auditorRole = roleRepository.save(new Role("ROLE_AUDITOR"));
         Role patientRole = roleRepository.save(new Role("ROLE_PATIENT"));
 
+        System.out.println("[DataSeeder] Phase 2: Creating users...");
         // 2. Create Users
         User admin = new User("admin", passwordEncoder.encode("admin123"), "admin@medvault.org", "Dr. Alexander Wright (Admin/Intake)");
         admin.setRoles(Set.of(adminRole));
@@ -120,6 +131,7 @@ public class DataSeeder implements CommandLineRunner {
         patientUserSophia.setRoles(Set.of(patientRole));
         userRepository.save(patientUserSophia);
 
+        System.out.println("[DataSeeder] Phase 3: Creating patients...");
         // 3. Create Patients (Demographics & Identity)
         Patient p1 = new Patient();
         p1.setPatientCode("PAT-1001");
@@ -178,6 +190,7 @@ public class DataSeeder implements CommandLineRunner {
         p3.setUser(patientUserSophia);
         patientRepository.save(p3);
 
+        System.out.println("[DataSeeder] Phase 4: Creating encounters...");
         // 4. Create Encounters & Visits
         Encounter enc1 = new Encounter();
         enc1.setPatient(p1);
@@ -201,6 +214,18 @@ public class DataSeeder implements CommandLineRunner {
         enc2.setEncounterDate(LocalDateTime.now().minusDays(3));
         encounterRepository.save(enc2);
 
+        Encounter enc3 = new Encounter();
+        enc3.setPatient(p3);
+        enc3.setAttendingProvider(doctor);
+        enc3.setEncounterType("TELEHEALTH");
+        enc3.setChiefComplaint("Follow-up for latex allergy reaction");
+        enc3.setClinicalNotes("Patient reports mild rash after using latex gloves.");
+        enc3.setDischargeSummary("Avoid latex products. Prescribed antihistamine.");
+        enc3.setStatus("COMPLETED");
+        enc3.setEncounterDate(LocalDateTime.now().minusDays(1));
+        encounterRepository.save(enc3);
+
+        System.out.println("[DataSeeder] Phase 5: Creating allergies...");
         // 5. Create Coded Allergies & Contraindications
         Allergy a1 = new Allergy();
         a1.setPatient(p1);
@@ -225,6 +250,7 @@ public class DataSeeder implements CommandLineRunner {
         a2.setRecordedBy(nurse);
         allergyRepository.save(a2);
 
+        System.out.println("[DataSeeder] Phase 6: Creating diagnoses...");
         // 6. Create Coded Diagnoses & Problem Lists
         Diagnosis d1 = new Diagnosis();
         d1.setPatient(p1);
@@ -248,6 +274,18 @@ public class DataSeeder implements CommandLineRunner {
         d2.setNotes("Baseline blood pressure controlled with ACE inhibitor therapy.");
         diagnosisRepository.save(d2);
 
+        Diagnosis d3 = new Diagnosis();
+        d3.setPatient(p3);
+        d3.setDoctor(doctor);
+        d3.setConditionName("Contact Dermatitis");
+        d3.setIcdCode("L23.8");
+        d3.setSnomedCode("4022007");
+        d3.setOnsetDate(LocalDate.now().minusDays(2));
+        d3.setStatus("ACTIVE");
+        d3.setNotes("Allergic reaction to latex exposure.");
+        diagnosisRepository.save(d3);
+
+        System.out.println("[DataSeeder] Phase 7: Creating medical records...");
         // 7. Create Medical Records
         MedicalRecord mr1 = new MedicalRecord();
         mr1.setPatient(p1);
@@ -259,6 +297,17 @@ public class DataSeeder implements CommandLineRunner {
         mr1.setNotes("Patient reports good compliance with diet. Blood pressure slightly elevated.");
         recordRepository.save(mr1);
 
+        MedicalRecord mr2 = new MedicalRecord();
+        mr2.setPatient(p2);
+        mr2.setDoctor(doctor);
+        mr2.setDiagnosis("Hypertension Management");
+        mr2.setIcdCode("I10");
+        mr2.setSymptoms("Occasional morning headaches.");
+        mr2.setTreatmentPlan("Continue Lisinopril. Monitor BP daily.");
+        mr2.setNotes("BP is stable on current medication.");
+        recordRepository.save(mr2);
+
+        System.out.println("[DataSeeder] Phase 8: Creating vitals...");
         // 8. Create Longitudinal Time-Series Vitals
         Vitals v1_1 = new Vitals();
         v1_1.setPatient(p1);
@@ -316,6 +365,46 @@ public class DataSeeder implements CommandLineRunner {
         v2_2.setRecordedAt(LocalDateTime.now().minusDays(3));
         vitalsRepository.save(v2_2);
 
+        Vitals v3_1 = new Vitals();
+        v3_1.setPatient(p3);
+        v3_1.setRecordedBy(nurse);
+        v3_1.setBloodPressure("110/70");
+        v3_1.setHeartRate(72);
+        v3_1.setTemperature(36.6);
+        v3_1.setOxygenSaturation(99);
+        v3_1.setRespiratoryRate(14);
+        v3_1.setHeightCm(160.0);
+        v3_1.setWeightKg(55.0);
+        v3_1.setRecordedAt(LocalDateTime.now().minusDays(5));
+        vitalsRepository.save(v3_1);
+
+        Vitals v3_2 = new Vitals();
+        v3_2.setPatient(p3);
+        v3_2.setRecordedBy(nurse);
+        v3_2.setBloodPressure("112/72");
+        v3_2.setHeartRate(74);
+        v3_2.setTemperature(36.7);
+        v3_2.setOxygenSaturation(98);
+        v3_2.setRespiratoryRate(14);
+        v3_2.setHeightCm(160.0);
+        v3_2.setWeightKg(55.0);
+        v3_2.setRecordedAt(LocalDateTime.now().minusDays(2));
+        vitalsRepository.save(v3_2);
+
+        Vitals v3_3 = new Vitals();
+        v3_3.setPatient(p3);
+        v3_3.setRecordedBy(nurse);
+        v3_3.setBloodPressure("115/75");
+        v3_3.setHeartRate(75);
+        v3_3.setTemperature(36.8);
+        v3_3.setOxygenSaturation(99);
+        v3_3.setRespiratoryRate(15);
+        v3_3.setHeightCm(160.0);
+        v3_3.setWeightKg(55.0);
+        v3_3.setRecordedAt(LocalDateTime.now());
+        vitalsRepository.save(v3_3);
+
+        System.out.println("[DataSeeder] Phase 9: Creating prescriptions...");
         // 9. Create Prescriptions
         Prescription rx1 = new Prescription();
         rx1.setPatient(p1);
@@ -345,6 +434,21 @@ public class DataSeeder implements CommandLineRunner {
         rx2.setStatus("ACTIVE");
         prescriptionRepository.save(rx2);
 
+        Prescription rx3 = new Prescription();
+        rx3.setPatient(p3);
+        rx3.setDoctor(doctor);
+        rx3.setMedicationName("Hydroxyzine");
+        rx3.setRxNormCode("3423");
+        rx3.setDosage("25 mg");
+        rx3.setRoute("Oral");
+        rx3.setFrequency("As needed for allergic reaction");
+        rx3.setDurationDays(14);
+        rx3.setRefills(1);
+        rx3.setInstructions("Take 1 tablet every 6 hours as needed.");
+        rx3.setStatus("ACTIVE");
+        prescriptionRepository.save(rx3);
+
+        System.out.println("[DataSeeder] Phase 10: Creating appointments...");
         // 10. Create Appointments
         Appointment apt1 = new Appointment();
         apt1.setPatient(p1);
@@ -355,10 +459,37 @@ public class DataSeeder implements CommandLineRunner {
         apt1.setNotes("Patient requested morning slot.");
         appointmentRepository.save(apt1);
 
+        Appointment apt2 = new Appointment();
+        apt2.setPatient(p2);
+        apt2.setDoctor(doctor);
+        apt2.setAppointmentDate(LocalDateTime.now().plusDays(5).withHour(14).withMinute(30));
+        apt2.setReason("Hypertension Follow-up");
+        apt2.setStatus("SCHEDULED");
+        appointmentRepository.save(apt2);
+
+        Appointment apt3 = new Appointment();
+        apt3.setPatient(p3);
+        apt3.setDoctor(doctor);
+        apt3.setAppointmentDate(LocalDateTime.now().plusDays(7).withHour(11).withMinute(0));
+        apt3.setReason("Allergy Consult");
+        apt3.setStatus("SCHEDULED");
+        appointmentRepository.save(apt3);
+
+        System.out.println("[DataSeeder] Phase 11: Creating audit logs...");
         // 11. Create Immutable Audit Ledger Entries
         auditLogRepository.save(new AuditLog("SYSTEM", "SYSTEM", "SEED", "DATABASE", "0", "Initialized MedVault EHR database with 7 sub-domain schemas and FHIR R4 synthetic cohorts."));
         auditLogRepository.save(new AuditLog("admin", "ROLE_ADMIN", "CREATE", "USER", "1", "Provisioned RBAC clinical access credentials for Dr. Sarah Jenkins, Nurse Clara Barton, and Auditor Vance."));
         auditLogRepository.save(new AuditLog("doctor", "ROLE_DOCTOR", "CREATE", "ALLERGY", String.valueOf(a1.getId()), "Documented SEVERE Penicillin allergy (RxNorm-70618) for patient PAT-1001."));
         auditLogRepository.save(new AuditLog("auditor", "ROLE_AUDITOR", "READ", "AUDIT_LEDGER", "ALL", "Executed HIPAA § 164.312(b) compliance forensic audit review."));
+        auditLogRepository.save(new AuditLog("doctor", "ROLE_DOCTOR", "CREATE", "PRESCRIPTION", String.valueOf(rx3.getId()), "Prescribed Hydroxyzine for patient PAT-1003."));
+        auditLogRepository.save(new AuditLog("nurse", "ROLE_NURSE", "CREATE", "VITALS", "ALL", "Recorded vitals for patient PAT-1003."));
+        auditLogRepository.save(new AuditLog("doctor", "ROLE_DOCTOR", "CREATE", "DIAGNOSIS", String.valueOf(d3.getId()), "Logged Contact Dermatitis diagnosis for patient PAT-1003."));
+        auditLogRepository.save(new AuditLog("doctor", "ROLE_DOCTOR", "CREATE", "ENCOUNTER", String.valueOf(enc3.getId()), "Logged TELEHEALTH encounter for patient PAT-1003."));
+
+        long userCount = userRepository.count();
+        long patientCount = patientRepository.count();
+        long encounterCount = encounterRepository.count();
+        
+        System.out.println(String.format("[DataSeeder] ✓ MedVault EHR database seeded successfully with %d users, %d patients, %d encounters...", userCount, patientCount, encounterCount));
     }
 }

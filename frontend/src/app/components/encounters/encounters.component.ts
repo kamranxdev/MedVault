@@ -16,7 +16,7 @@ import { Encounter, Patient } from '../../core/models/models';
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900 p-6 rounded-3xl border border-slate-800 shadow-xl">
         <div>
           <div class="flex items-center gap-3">
-            <span class="text-2xl">🏥</span>
+            <i class="ri-hospital-line text-2xl text-blue-400"></i>
             <h1 class="text-2xl font-bold text-white tracking-tight">
               {{ isPatient() ? 'My Visit & Consultation History' : 'Patient Encounters, Intake & Hospital Visits' }}
             </h1>

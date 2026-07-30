@@ -35,7 +35,7 @@ public class VitalsController {
     }
 
     @GetMapping("/patient/{patientId}")
-    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE', 'AUDITOR', 'PATIENT')")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE', 'ADMIN', 'PATIENT')")
     public List<Vitals> getVitalsByPatient(@PathVariable Long patientId, Authentication auth) {
         auditLogRepository.save(new AuditLog(
                 auth.getName(),
@@ -49,7 +49,7 @@ public class VitalsController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('NURSE', 'DOCTOR')")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE')")
     public ResponseEntity<?> recordVitals(@RequestBody Vitals vitals, Authentication auth) {
         User staff = userRepository.findByUsername(auth.getName()).orElseThrow();
         Patient patient = patientRepository.findById(vitals.getPatient().getId())

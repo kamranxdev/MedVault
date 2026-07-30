@@ -42,7 +42,7 @@ public class PrescriptionController {
     }
 
     @GetMapping("/patient/{patientId}")
-    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE', 'AUDITOR', 'PATIENT')")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE', 'ADMIN', 'PATIENT')")
     public List<Prescription> getPrescriptionsByPatient(@PathVariable Long patientId, Authentication auth) {
         auditLogRepository.save(new AuditLog(
                 auth.getName(),

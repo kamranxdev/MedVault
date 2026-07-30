@@ -8,38 +8,71 @@ import { User, AuditLog } from '../../core/models/models';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="admin-container">
-      <div class="header-bar">
+    <div class="space-y-6">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900 p-6 rounded-3xl border border-slate-800 shadow-xl">
         <div>
-          <h2>System Administration & Compliance</h2>
-          <p class="subtitle">User Account Directory & Security Audit Trail (ROLE_ADMIN Only)</p>
+          <div class="flex items-center gap-3">
+            <i class="ri-settings-3-line text-2xl text-blue-500"></i>
+            <h1 class="text-2xl font-bold text-white tracking-tight">System Administration & RBAC</h1>
+          </div>
+          <p class="text-xs text-slate-400 mt-1">
+            User Account Directory & Security Audit Trail (ROLE_ADMIN Only)
+          </p>
+        </div>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
+        <div class="bg-slate-900/50 backdrop-blur-md p-5 rounded-3xl border border-slate-700 shadow-xl">
+          <p class="text-3xs font-extrabold text-slate-400 uppercase tracking-wider">Total Users</p>
+          <p class="text-2xl font-black text-white mt-1">{{ users().length }}</p>
+        </div>
+        <div class="bg-slate-900/50 backdrop-blur-md p-5 rounded-3xl border border-slate-700 shadow-xl">
+          <p class="text-3xs font-extrabold text-blue-400 uppercase tracking-wider">Doctors</p>
+          <p class="text-2xl font-black text-blue-400 mt-1">{{ getRoleCount('ROLE_DOCTOR') }}</p>
+        </div>
+        <div class="bg-slate-900/50 backdrop-blur-md p-5 rounded-3xl border border-slate-700 shadow-xl">
+          <p class="text-3xs font-extrabold text-emerald-400 uppercase tracking-wider">Nurses</p>
+          <p class="text-2xl font-black text-emerald-400 mt-1">{{ getRoleCount('ROLE_NURSE') }}</p>
+        </div>
+        <div class="bg-slate-900/50 backdrop-blur-md p-5 rounded-3xl border border-slate-700 shadow-xl">
+          <p class="text-3xs font-extrabold text-purple-400 uppercase tracking-wider">Patients</p>
+          <p class="text-2xl font-black text-purple-400 mt-1">{{ getRoleCount('ROLE_PATIENT') }}</p>
+        </div>
+        <div class="bg-slate-900/50 backdrop-blur-md p-5 rounded-3xl border border-slate-700 shadow-xl">
+          <p class="text-3xs font-extrabold text-rose-400 uppercase tracking-wider">Admins</p>
+          <p class="text-2xl font-black text-rose-400 mt-1">{{ getRoleCount('ROLE_ADMIN') }}</p>
+        </div>
+        <div class="bg-slate-900/50 backdrop-blur-md p-5 rounded-3xl border border-slate-700 shadow-xl">
+          <p class="text-3xs font-extrabold text-amber-400 uppercase tracking-wider">Auditors</p>
+          <p class="text-2xl font-black text-amber-400 mt-1">{{ getRoleCount('ROLE_AUDITOR') }}</p>
         </div>
       </div>
 
       <!-- User Accounts Table -->
-      <div class="card">
-        <h3><i class="ri-user-settings-line"></i> User Account Directory</h3>
-        <div class="table-container">
-          <table class="table">
-            <thead>
+      <div class="bg-slate-900/60 backdrop-blur-md rounded-3xl border border-slate-700 shadow-xl overflow-hidden p-6">
+        <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2"><i class="ri-user-settings-line"></i> User Account Directory</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-800/80 text-3xs uppercase font-extrabold text-slate-400 border-b border-slate-800 tracking-wider">
               <tr>
-                <th>ID</th>
-                <th>Username</th>
-                <th>Full Name</th>
-                <th>Email</th>
-                <th>Specialization / Dept</th>
-                <th>Assigned Roles</th>
+                <th class="px-6 py-4">ID</th>
+                <th class="px-6 py-4">Username</th>
+                <th class="px-6 py-4">Full Name</th>
+                <th class="px-6 py-4">Email</th>
+                <th class="px-6 py-4">Specialization / Dept</th>
+                <th class="px-6 py-4">Assigned Roles</th>
               </tr>
             </thead>
-            <tbody>
-              <tr *ngFor="let u of users()">
-                <td>#{{ u.id }}</td>
-                <td><strong>{{ u.username }}</strong></td>
-                <td>{{ u.fullName }}</td>
-                <td>{{ u.email }}</td>
-                <td>{{ u.specialization || u.department || 'N/A' }}</td>
-                <td>
-                  <span *ngFor="let r of u.roles" [class]="getRoleBadge(r)" class="role-tag">
+            <tbody class="divide-y divide-slate-800/60">
+              <tr *ngFor="let u of users()" class="hover:bg-slate-800/40 transition text-slate-300">
+                <td class="px-6 py-4">#{{ u.id }}</td>
+                <td class="px-6 py-4 font-bold text-white">{{ u.username }}</td>
+                <td class="px-6 py-4">{{ u.fullName }}</td>
+                <td class="px-6 py-4">{{ u.email }}</td>
+                <td class="px-6 py-4">{{ u.specialization || u.department || 'N/A' }}</td>
+                <td class="px-6 py-4 flex gap-1 flex-wrap">
+                  <span *ngFor="let r of u.roles" [class]="getRoleBadge(r)" class="px-2 py-0.5 rounded text-3xs font-extrabold uppercase tracking-wider">
                     {{ r.replace('ROLE_', '') }}
                   </span>
                 </td>
@@ -48,54 +81,8 @@ import { User, AuditLog } from '../../core/models/models';
           </table>
         </div>
       </div>
-
-      <!-- Audit Logs Table -->
-      <div class="card">
-        <h3><i class="ri-shield-keyhole-line"></i> HIPAA Compliance Audit Trail</h3>
-        <div class="table-container">
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Timestamp</th>
-                <th>User</th>
-                <th>Role</th>
-                <th>Action</th>
-                <th>Entity</th>
-                <th>Details</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let log of auditLogs()">
-                <td><span class="log-time">{{ log.timestamp | date:'short' }}</span></td>
-                <td><strong>{{ log.username }}</strong></td>
-                <td><span class="role-tag badge-admin">{{ log.userRole.replace('ROLE_', '') }}</span></td>
-                <td>
-                  <span [class]="getActionBadge(log.action)">{{ log.action }}</span>
-                </td>
-                <td><span class="entity-code">{{ log.entityName }}</span></td>
-                <td><span class="log-details">{{ log.details }}</span></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
     </div>
-  `,
-  styles: [`
-    .admin-container { display: flex; flex-direction: column; gap: 1.5rem; }
-    .header-bar h2 { font-size: 1.5rem; color: #f8fafc; }
-    .subtitle { font-size: 0.85rem; color: #94a3b8; }
-    .card h3 { font-size: 1.1rem; color: #f8fafc; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
-    .role-tag { display: inline-block; padding: 0.15rem 0.45rem; font-size: 0.75rem; font-weight: 700; border-radius: 4px; margin-right: 0.25rem; }
-    .log-time { font-family: monospace; font-size: 0.8rem; color: #94a3b8; }
-    .entity-code { font-family: monospace; font-weight: 700; color: #38bdf8; }
-    .log-details { font-size: 0.85rem; color: #cbd5e1; }
-    
-    .act-create { background: rgba(16, 185, 129, 0.2); color: #34d399; padding: 0.15rem 0.4rem; border-radius: 4px; font-weight: 700; font-size: 0.75rem; }
-    .act-read { background: rgba(2, 132, 199, 0.2); color: #38bdf8; padding: 0.15rem 0.4rem; border-radius: 4px; font-weight: 700; font-size: 0.75rem; }
-    .act-update { background: rgba(245, 158, 11, 0.2); color: #fbbf24; padding: 0.15rem 0.4rem; border-radius: 4px; font-weight: 700; font-size: 0.75rem; }
-    .act-login { background: rgba(99, 102, 241, 0.2); color: #a5b4fc; padding: 0.15rem 0.4rem; border-radius: 4px; font-weight: 700; font-size: 0.75rem; }
-  `]
+  `
 })
 export class AdminComponent implements OnInit {
   users = signal<User[]>([]);
@@ -108,20 +95,15 @@ export class AdminComponent implements OnInit {
     this.apiService.getAuditLogs().subscribe(l => this.auditLogs.set(l));
   }
 
-  getRoleBadge(role: string): string {
-    if (role.includes('ADMIN')) return 'badge badge-admin';
-    if (role.includes('DOCTOR')) return 'badge badge-doctor';
-    if (role.includes('NURSE')) return 'badge badge-nurse';
-    return 'badge badge-patient';
+  getRoleCount(role: string): number {
+    return this.users().filter(u => u.roles.includes(role)).length;
   }
 
-  getActionBadge(action: string): string {
-    switch (action) {
-      case 'CREATE': return 'act-create';
-      case 'READ': return 'act-read';
-      case 'UPDATE': return 'act-update';
-      case 'LOGIN': return 'act-login';
-      default: return 'act-read';
-    }
+  getRoleBadge(role: string): string {
+    if (role.includes('ADMIN')) return 'bg-rose-500/20 text-rose-400 border border-rose-500/30';
+    if (role.includes('DOCTOR')) return 'bg-blue-500/20 text-blue-400 border border-blue-500/30';
+    if (role.includes('NURSE')) return 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+    if (role.includes('AUDITOR')) return 'bg-amber-500/20 text-amber-400 border border-amber-500/30';
+    return 'bg-purple-500/20 text-purple-400 border border-purple-500/30';
   }
 }

@@ -16,7 +16,7 @@ import { Patient, Vitals } from '../../core/models/models';
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900 p-6 rounded-3xl border border-slate-800 shadow-xl">
         <div>
           <div class="flex items-center gap-3">
-            <span class="text-2xl">📈</span>
+            <i class="ri-pulse-line text-2xl text-amber-400"></i>
             <h1 class="text-2xl font-bold text-white tracking-tight">
               {{ isPatient() ? 'My Bedside Vitals History' : 'Longitudinal Bedside Vital Signs Flowsheet' }}
             </h1>

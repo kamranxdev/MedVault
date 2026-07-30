@@ -16,7 +16,7 @@ import { Patient, Vitals, Prescription, Encounter, Allergy, Diagnosis, SafetyChe
       <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
         <div class="space-y-1">
           <div class="flex items-center gap-3">
-            <span class="text-2xl">🏥</span>
+            <i class="ri-user-heart-line text-2xl text-indigo-400"></i>
             <h1 class="text-2xl font-bold text-white tracking-tight">Clinical EHR Patient Chart Workspace</h1>
           </div>
           <p class="text-xs text-slate-400">Master Patient Index &bull; FHIR R4 Compliant Enterprise Health Record</p>
@@ -31,7 +31,7 @@ import { Patient, Vitals, Prescription, Encounter, Allergy, Diagnosis, SafetyChe
               (input)="executeMpiSearch()" 
               placeholder="Search MPI by MRN, SSN, Name, Phone..." 
               class="w-full pl-9 pr-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500" />
-            <span class="absolute left-3 top-2.5 text-slate-400 text-xs">🔍</span>
+            <i class="ri-search-line absolute left-3 top-3 text-slate-400 text-xs"></i>
           </div>
 
           <button 
@@ -100,7 +100,7 @@ import { Patient, Vitals, Prescription, Encounter, Allergy, Diagnosis, SafetyChe
           <!-- Active Allergy & Risk Safety Banner Ribbon -->
           <div class="bg-rose-950/40 border border-rose-800/50 rounded-2xl p-4 flex items-center justify-between gap-4">
             <div class="flex items-center gap-3">
-              <span class="text-xl">⚠️</span>
+              <i class="ri-alarm-warning-line text-xl text-rose-400"></i>
               <div>
                 <span class="text-xs font-bold uppercase tracking-wider text-rose-400 block">Critical Allergy & Contraindication Safety Banner</span>
                 <p class="text-xs text-rose-200 font-medium">
@@ -130,22 +130,22 @@ import { Patient, Vitals, Prescription, Encounter, Allergy, Diagnosis, SafetyChe
         <div class="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
           <div class="flex border-b border-slate-800 overflow-x-auto text-xs font-bold uppercase tracking-wider">
             <button (click)="chartTab.set('summary')" [class.bg-indigo-600]="chartTab() === 'summary'" [class.text-white]="chartTab() === 'summary'" [class.text-slate-400]="chartTab() !== 'summary'" class="px-6 py-4 transition flex items-center gap-2">
-              <span>📊</span> Chart Summary
+              <i class="ri-bar-chart-box-line"></i> Chart Summary
             </button>
             <button (click)="chartTab.set('encounters')" [class.bg-indigo-600]="chartTab() === 'encounters'" [class.text-white]="chartTab() === 'encounters'" [class.text-slate-400]="chartTab() !== 'encounters'" class="px-6 py-4 transition flex items-center gap-2">
-              <span>🏥</span> Visits & Encounters ({{ patientEncounters().length }})
+              <i class="ri-hospital-line"></i> Visits & Encounters ({{ patientEncounters().length }})
             </button>
             <button (click)="chartTab.set('allergies')" [class.bg-indigo-600]="chartTab() === 'allergies'" [class.text-white]="chartTab() === 'allergies'" [class.text-slate-400]="chartTab() !== 'allergies'" class="px-6 py-4 transition flex items-center gap-2">
-              <span>⚠️</span> Allergies ({{ patientAllergies().length }})
+              <i class="ri-alarm-warning-line"></i> Allergies ({{ patientAllergies().length }})
             </button>
             <button (click)="chartTab.set('diagnoses')" [class.bg-indigo-600]="chartTab() === 'diagnoses'" [class.text-white]="chartTab() === 'diagnoses'" [class.text-slate-400]="chartTab() !== 'diagnoses'" class="px-6 py-4 transition flex items-center gap-2">
-              <span>📋</span> Problem List ({{ patientDiagnoses().length }})
+              <i class="ri-list-check-2"></i> Problem List ({{ patientDiagnoses().length }})
             </button>
             <button (click)="chartTab.set('rx')" [class.bg-indigo-600]="chartTab() === 'rx'" [class.text-white]="chartTab() === 'rx'" [class.text-slate-400]="chartTab() !== 'rx'" class="px-6 py-4 transition flex items-center gap-2">
-              <span>💊</span> eRx Orders ({{ patientRx().length }})
+              <i class="ri-capsule-line"></i> eRx Orders ({{ patientRx().length }})
             </button>
             <button (click)="chartTab.set('vitals')" [class.bg-indigo-600]="chartTab() === 'vitals'" [class.text-white]="chartTab() === 'vitals'" [class.text-slate-400]="chartTab() !== 'vitals'" class="px-6 py-4 transition flex items-center gap-2">
-              <span>📈</span> Observations & Vitals ({{ patientVitals().length }})
+              <i class="ri-pulse-line"></i> Observations & Vitals ({{ patientVitals().length }})
             </button>
           </div>
 
@@ -157,7 +157,7 @@ import { Patient, Vitals, Prescription, Encounter, Allergy, Diagnosis, SafetyChe
               <!-- Active Problem List Card -->
               <div class="bg-slate-800/60 p-5 rounded-2xl border border-slate-800 space-y-3">
                 <div class="flex justify-between items-center">
-                  <h3 class="font-bold text-white text-sm flex items-center gap-2">📋 Active Problem List (ICD-10 / SNOMED)</h3>
+                  <h3 class="font-bold text-white text-sm flex items-center gap-2"><i class="ri-list-check-2 text-indigo-400"></i> Active Problem List (ICD-10 / SNOMED)</h3>
                   <button *ngIf="authService.hasRole('ROLE_DOCTOR')" (click)="showDiagnosisModal.set(true)" class="text-xs text-indigo-400 font-semibold hover:underline">+ Add Problem</button>
                 </div>
                 <div class="space-y-2">
@@ -175,7 +175,7 @@ import { Patient, Vitals, Prescription, Encounter, Allergy, Diagnosis, SafetyChe
               <!-- Active eRx Prescriptions Card -->
               <div class="bg-slate-800/60 p-5 rounded-2xl border border-slate-800 space-y-3">
                 <div class="flex justify-between items-center">
-                  <h3 class="font-bold text-white text-sm flex items-center gap-2">💊 Active Medication Orders (eRx)</h3>
+                  <h3 class="font-bold text-white text-sm flex items-center gap-2"><i class="ri-capsule-line text-emerald-400"></i> Active Medication Orders (eRx)</h3>
                   <button *ngIf="authService.hasRole('ROLE_DOCTOR')" (click)="showRxModal.set(true)" class="text-xs text-emerald-400 font-semibold hover:underline">+ Order eRx</button>
                 </div>
                 <div class="space-y-2">
@@ -193,7 +193,7 @@ import { Patient, Vitals, Prescription, Encounter, Allergy, Diagnosis, SafetyChe
               <!-- Latest Physiological Vitals Card -->
               <div class="bg-slate-800/60 p-5 rounded-2xl border border-slate-800 space-y-3">
                 <div class="flex justify-between items-center">
-                  <h3 class="font-bold text-white text-sm flex items-center gap-2">📈 Bedside Vitals & Observations</h3>
+                  <h3 class="font-bold text-white text-sm flex items-center gap-2"><i class="ri-pulse-line text-amber-400"></i> Bedside Vitals & Observations</h3>
                   <button *ngIf="authService.hasAnyRole(['ROLE_NURSE', 'ROLE_DOCTOR'])" (click)="showVitalsModal.set(true)" class="text-xs text-amber-400 font-semibold hover:underline">+ Log Vitals</button>
                 </div>
                 <div *ngIf="patientVitals().length > 0; else noVitalsSummary" class="grid grid-cols-3 gap-3 text-center">
@@ -221,7 +221,7 @@ import { Patient, Vitals, Prescription, Encounter, Allergy, Diagnosis, SafetyChe
               <!-- Recent Consultations Card -->
               <div class="bg-slate-800/60 p-5 rounded-2xl border border-slate-800 space-y-3">
                 <div class="flex justify-between items-center">
-                  <h3 class="font-bold text-white text-sm flex items-center gap-2">🏥 Recent Visits & Consultations</h3>
+                  <h3 class="font-bold text-white text-sm flex items-center gap-2"><i class="ri-hospital-line text-blue-400"></i> Recent Visits & Consultations</h3>
                   <button *ngIf="authService.hasRole('ROLE_DOCTOR')" (click)="showEncounterModal.set(true)" class="text-xs text-indigo-400 font-semibold hover:underline">+ Log Encounter</button>
                 </div>
                 <div class="space-y-2">
@@ -382,7 +382,7 @@ import { Patient, Vitals, Prescription, Encounter, Allergy, Diagnosis, SafetyChe
       <!-- Empty State if No Patient Selected -->
       <ng-template #noPatientSelected>
         <div class="bg-slate-900 border border-slate-800 rounded-3xl p-12 text-center space-y-3">
-          <span class="text-4xl">📇</span>
+          <i class="ri-contacts-book-line text-4xl text-indigo-400"></i>
           <h3 class="text-xl font-bold text-white">Select a Patient Profile from Master Patient Index</h3>
           <p class="text-xs text-slate-400 max-w-md mx-auto">Choose a patient from the horizontal selection bar above or use the MPI search input to view full clinical chart details.</p>
         </div>
@@ -526,7 +526,7 @@ import { Patient, Vitals, Prescription, Encounter, Allergy, Diagnosis, SafetyChe
           <!-- Smart Safety Alert Display -->
           <div *ngIf="safetyAlert()" class="p-4 bg-rose-950 border border-rose-600 rounded-2xl space-y-2">
             <div class="flex items-center gap-2 text-rose-300 font-bold text-xs uppercase tracking-wider">
-              <span>⚠️</span> SMART SAFETY ENGINE CONTRAINDICATION ALERT
+              <i class="ri-alarm-warning-fill text-rose-400"></i> SMART SAFETY ENGINE CONTRAINDICATION ALERT
             </div>
             <p class="text-xs text-rose-100 font-medium">{{ safetyAlert()?.message }}</p>
             <div class="flex justify-end gap-2 pt-1">

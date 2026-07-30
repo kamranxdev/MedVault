@@ -35,7 +35,7 @@ public class AllergyController {
     }
 
     @GetMapping("/patient/{patientId}")
-    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE', 'AUDITOR', 'PATIENT')")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE', 'ADMIN', 'PATIENT')")
     public List<Allergy> getAllergiesByPatient(@PathVariable Long patientId, Authentication auth) {
         auditLogRepository.save(new AuditLog(
                 auth.getName(),
@@ -49,7 +49,7 @@ public class AllergyController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('DOCTOR')")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE')")
     public ResponseEntity<?> createAllergy(@RequestBody Allergy allergy, Authentication auth) {
         User clinician = userRepository.findByUsername(auth.getName()).orElseThrow();
         Patient patient = patientRepository.findById(allergy.getPatient().getId())
@@ -72,7 +72,7 @@ public class AllergyController {
     }
 
     @PutMapping("/{id}/status")
-    @PreAuthorize("hasRole('DOCTOR')")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE')")
     public ResponseEntity<?> updateAllergyStatus(@PathVariable Long id, @RequestParam String status, Authentication auth) {
         return allergyRepository.findById(id)
                 .map(allergy -> {

@@ -12,11 +12,11 @@ import { AuditLog } from '../../core/models/models';
   template: `
     <div class="space-y-6">
       <!-- Enterprise Header -->
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900 p-6 rounded-3xl border border-slate-800 shadow-xl">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/60 backdrop-blur-md p-6 rounded-3xl border border-slate-700 shadow-xl">
         <div>
           <div class="flex items-center gap-3">
-            <span class="text-2xl">🛡️</span>
-            <h1 class="text-2xl font-bold text-white tracking-tight">HIPAA Compliance & WORM Audit Vault</h1>
+            <i class="ri-shield-check-line text-2xl text-emerald-500"></i>
+            <h1 class="text-2xl font-bold text-white tracking-tight">HIPAA WORM Compliance Audit Vault</h1>
           </div>
           <p class="text-xs text-slate-400 mt-1">
             Immutable Write-Once-Read-Many (WORM) ledger capturing clinical access events, role assertions, and eRx safety alerts.
@@ -24,38 +24,38 @@ import { AuditLog } from '../../core/models/models';
         </div>
 
         <div class="flex items-center gap-3">
-          <button (click)="exportAuditLogJSON()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl shadow-md">
-            Export JSON
+          <button (click)="exportAuditLogJSON()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl shadow-md flex items-center gap-2">
+            <i class="ri-download-line"></i> JSON
           </button>
-          <button (click)="exportAuditLogCSV()" class="px-4 py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-xl shadow-md">
-            Export CSV Report
+          <button (click)="exportAuditLogCSV()" class="px-4 py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-xl shadow-md flex items-center gap-2">
+            <i class="ri-download-line"></i> CSV Report
           </button>
         </div>
       </div>
 
       <!-- Compliance Metrics Overview -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div class="bg-slate-900 p-5 rounded-3xl border border-slate-800 shadow-xl">
+        <div class="bg-slate-900/50 backdrop-blur-md p-5 rounded-3xl border border-slate-700 shadow-xl">
           <p class="text-3xs font-extrabold text-slate-400 uppercase tracking-wider">Total WORM Audit Logs</p>
           <p class="text-2xl font-black text-white mt-1">{{ auditLogs().length }}</p>
         </div>
-        <div class="bg-slate-900 p-5 rounded-3xl border border-slate-800 shadow-xl">
+        <div class="bg-slate-900/50 backdrop-blur-md p-5 rounded-3xl border border-slate-700 shadow-xl">
           <p class="text-3xs font-extrabold text-rose-400 uppercase tracking-wider">Contraindication Alerts</p>
           <p class="text-2xl font-black text-rose-400 mt-1">{{ getAlertCount() }}</p>
         </div>
-        <div class="bg-slate-900 p-5 rounded-3xl border border-slate-800 shadow-xl">
+        <div class="bg-slate-900/50 backdrop-blur-md p-5 rounded-3xl border border-slate-700 shadow-xl">
           <p class="text-3xs font-extrabold text-indigo-400 uppercase tracking-wider">Resource Reads</p>
           <p class="text-2xl font-black text-indigo-400 mt-1">{{ getActionCount('READ') }}</p>
         </div>
-        <div class="bg-slate-900 p-5 rounded-3xl border border-slate-800 shadow-xl">
+        <div class="bg-slate-900/50 backdrop-blur-md p-5 rounded-3xl border border-slate-700 shadow-xl">
           <p class="text-3xs font-extrabold text-emerald-400 uppercase tracking-wider">Data Mutations</p>
           <p class="text-2xl font-black text-emerald-400 mt-1">{{ getActionCount('CREATE') + getActionCount('UPDATE') }}</p>
         </div>
       </div>
 
       <!-- Search & Filters -->
-      <div class="bg-slate-900 p-4 rounded-3xl border border-slate-800 flex items-center gap-3 shadow-xl">
-        <span class="text-slate-400">🔍</span>
+      <div class="bg-slate-900/60 backdrop-blur-md p-4 rounded-3xl border border-slate-700 flex items-center gap-3 shadow-xl">
+        <i class="ri-search-line text-slate-400"></i>
         <input 
           [(ngModel)]="searchQuery" 
           (input)="onSearchChange()" 
@@ -64,7 +64,7 @@ import { AuditLog } from '../../core/models/models';
       </div>
 
       <!-- Audit Ledger Table -->
-      <div class="bg-slate-900 rounded-3xl border border-slate-800 overflow-hidden shadow-xl">
+      <div class="bg-slate-900/60 backdrop-blur-md rounded-3xl border border-slate-700 overflow-hidden shadow-xl">
         <div *ngIf="loading()" class="text-center py-12">
           <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-purple-500 border-t-transparent"></div>
           <p class="text-slate-400 text-xs mt-2">Querying WORM Audit Ledger...</p>
@@ -86,7 +86,7 @@ import { AuditLog } from '../../core/models/models';
             <tbody class="divide-y divide-slate-800/60 font-mono text-xs">
               <tr *ngFor="let log of auditLogs()" class="hover:bg-slate-800/40 transition">
                 <td class="px-6 py-4 text-slate-400">
-                  {{ log.timestamp | date:'medium' }}
+                  {{ log.timestamp | date:'MMM d, y, h:mm:ss a' }}
                 </td>
                 <td class="px-6 py-4 font-bold text-white">
                   {{ log.username }}
@@ -97,7 +97,7 @@ import { AuditLog } from '../../core/models/models';
                   </span>
                 </td>
                 <td class="px-6 py-4">
-                  <span [class]="getActionBadge(log.action)" class="px-2.5 py-0.5 rounded font-bold">
+                  <span [class]="getActionBadge(log.action)" class="px-2.5 py-0.5 rounded font-bold uppercase tracking-wider text-3xs">
                     {{ log.action }}
                   </span>
                 </td>
@@ -154,12 +154,14 @@ export class AuditLedgerComponent implements OnInit {
 
   getActionBadge(action: string): string {
     switch (action) {
-      case 'ERX_ALERT': return 'bg-rose-500/20 text-rose-300 border border-rose-500/30';
-      case 'CREATE': return 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
-      case 'UPDATE': return 'bg-amber-500/20 text-amber-300 border border-amber-500/30';
-      case 'DELETE': return 'bg-red-500/20 text-red-300 border border-red-500/30';
-      case 'READ': return 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30';
-      default: return 'bg-slate-500/20 text-slate-300';
+      case 'CREATE': return 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+      case 'READ': return 'bg-blue-500/20 text-blue-400 border border-blue-500/30';
+      case 'UPDATE': return 'bg-amber-500/20 text-amber-400 border border-amber-500/30';
+      case 'DELETE': return 'bg-rose-500/20 text-rose-400 border border-rose-500/30';
+      case 'LOGIN': return 'bg-purple-500/20 text-purple-400 border border-purple-500/30';
+      case 'SEED': return 'bg-slate-500/20 text-slate-400 border border-slate-500/30';
+      case 'ERX_ALERT': return 'bg-rose-500/20 text-rose-400 border border-rose-500/30';
+      default: return 'bg-slate-500/20 text-slate-300 border border-slate-500/30';
     }
   }
 

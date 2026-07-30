@@ -16,7 +16,7 @@ import { Patient, Prescription, SafetyCheckResult } from '../../core/models/mode
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900 p-6 rounded-3xl border border-slate-800 shadow-xl">
         <div>
           <div class="flex items-center gap-3">
-            <span class="text-2xl">💊</span>
+            <i class="ri-capsule-line text-2xl text-emerald-400"></i>
             <h1 class="text-2xl font-bold text-white tracking-tight">
               {{ isPatient() ? 'My Active Prescriptions & Refills' : 'Pharmacy & Electronic Prescriptions (eRx)' }}
             </h1>
@@ -160,7 +160,7 @@ import { Patient, Prescription, SafetyCheckResult } from '../../core/models/mode
       <div *ngIf="safetyAlert()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
         <div class="bg-slate-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border-2 border-rose-500 space-y-4">
           <div class="flex items-center gap-3 text-rose-400">
-            <span class="text-3xl">⚠️</span>
+            <i class="ri-alarm-warning-fill text-3xl text-rose-400"></i>
             <div>
               <h3 class="text-lg font-bold">CONTRAINDICATION SAFETY WARNING</h3>
               <p class="text-xs text-rose-300 font-semibold uppercase">Smart Allergy Cross-Checking Engine</p>

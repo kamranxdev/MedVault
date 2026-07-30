@@ -16,9 +16,9 @@ import { Diagnosis, Patient } from '../../core/models/models';
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900 p-6 rounded-3xl border border-slate-800 shadow-xl">
         <div>
           <div class="flex items-center gap-3">
-            <span class="text-2xl">📋</span>
+            <i class="ri-list-check-2 text-2xl text-purple-500"></i>
             <h1 class="text-2xl font-bold text-white tracking-tight">
-              {{ isPatient() ? 'My Health Conditions & Problem List' : 'Problem List & Coded Diagnoses (ICD-10 / SNOMED CT)' }}
+              {{ isPatient() ? 'My Problem List' : 'Problem List & ICD-10 Diagnoses' }}
             </h1>
           </div>
           <p class="text-xs text-slate-400 mt-1">
@@ -43,7 +43,7 @@ import { Diagnosis, Patient } from '../../core/models/models';
             (click)="showModal = true"
             [disabled]="!selectedPatientId"
             class="px-4 py-2.5 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white font-bold text-xs rounded-xl transition shadow-md flex items-center gap-2">
-            <span>+</span> Add ICD-10 Diagnosis
+            <i class="ri-add-line"></i> Add Diagnosis
           </button>
         </div>
       </div>
@@ -95,11 +95,11 @@ import { Diagnosis, Patient } from '../../core/models/models';
       </div>
 
       <!-- Add Diagnosis Modal -->
-      <div *ngIf="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+      <div *ngIf="showModal && authService.hasRole('ROLE_DOCTOR')" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
         <div class="bg-slate-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-800 space-y-4">
           <div class="flex items-center justify-between border-b border-slate-800 pb-3">
             <h3 class="text-lg font-bold text-purple-400">Add ICD-10 Coded Diagnosis</h3>
-            <button (click)="showModal = false" class="text-slate-400 hover:text-white text-xl font-bold">×</button>
+            <button (click)="showModal = false" class="text-slate-400 hover:text-white text-xl font-bold">&times;</button>
           </div>
 
           <form (ngSubmit)="saveDiagnosis()" class="space-y-3 text-xs">
@@ -229,9 +229,10 @@ export class DiagnosesComponent implements OnInit {
 
   getStatusBadge(status: string): string {
     switch (status) {
-      case 'CHRONIC': return 'bg-purple-500/20 text-purple-300 border border-purple-500/30';
-      case 'ACTIVE': return 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
-      case 'REMISSION': return 'bg-amber-500/20 text-amber-300 border border-amber-500/30';
+      case 'CHRONIC': return 'bg-amber-500/20 text-amber-500 border border-amber-500/30';
+      case 'ACTIVE': return 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+      case 'REMISSION': return 'bg-slate-500/20 text-slate-300 border border-slate-500/30';
+      case 'RESOLVED': return 'bg-blue-500/20 text-blue-400 border border-blue-500/30';
       default: return 'bg-slate-800 text-slate-400';
     }
   }
