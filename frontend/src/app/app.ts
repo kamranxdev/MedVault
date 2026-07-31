@@ -27,7 +27,6 @@ import {
 import { AuthService } from './core/services/auth.service';
 import { PatientContextService } from './core/services/patient-context.service';
 import { ThemeService } from './core/services/theme.service';
-import { HasRoleDirective, HasAnyRoleDirective } from './core/directives/has-role.directive';
 
 import { HlmAvatarImports } from '@spartan-ng/helm/avatar';
 import { HlmBadgeImports } from '@spartan-ng/helm/badge';
@@ -62,8 +61,6 @@ interface PatientOption {
     RouterModule,
     FormsModule,
     NgIcon,
-    HasRoleDirective,
-    HasAnyRoleDirective,
     HlmAvatarImports,
     HlmBadgeImports,
     HlmButtonImports,

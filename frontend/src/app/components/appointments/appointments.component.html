@@ -51,8 +51,8 @@
         <tbody hlmTableBody>
           <tr hlmTableRow *ngFor="let apt of appointments()">
             <td hlmTableCell class="font-mono text-muted-foreground">{{ apt.appointmentDate | date:'medium' }}</td>
-            <td hlmTableCell class="font-semibold text-foreground">{{ apt.patient?.fullName || 'Patient' }}</td>
-            <td hlmTableCell class="text-muted-foreground">{{ apt.doctor?.fullName || 'Physician' }}</td>
+            <td hlmTableCell class="font-semibold text-foreground">{{ apt.patient.fullName || 'Patient' }}</td>
+            <td hlmTableCell class="text-muted-foreground">{{ apt.doctor.fullName || 'Physician' }}</td>
             <td hlmTableCell class="text-foreground">{{ apt.reason }}</td>
             <td hlmTableCell>
               <span hlmBadge [variant]="apt.status === 'CONFIRMED' ? 'default' : (apt.status === 'CANCELLED' ? 'destructive' : 'secondary')" class="text-[10px]">

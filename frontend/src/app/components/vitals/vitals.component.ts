@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { PatientContextService } from '../../core/services/patient-context.service';
-import { HasRoleDirective, HasAnyRoleDirective } from '../../core/directives/has-role.directive';
 import { Patient, Vitals } from '../../core/models/models';
 
 import { HlmCardImports } from '@spartan-ng/helm/card';
@@ -30,8 +29,6 @@ import { lucidePlus, lucideActivity, lucideAlertCircle } from '@ng-icons/lucide'
     HlmDialogImports, 
     HlmInputImports, 
     HlmSelectImports, 
-    HasRoleDirective, 
-    HasAnyRoleDirective,
     NgIcon
   ],
   providers: [
