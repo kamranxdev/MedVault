@@ -1,415 +1,249 @@
-<div
-  class="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-indigo-500 selection:text-white pb-20 lg:pb-0">
-
-  <!-- Top Navigation Bar -->
-  <nav
-    class="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-white/10 px-6 py-4 flex items-center justify-between">
-    <!-- Logo -->
-    <div class="flex items-center gap-3 group cursor-pointer">
-      <div
-        class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20 group-hover:shadow-indigo-500/40 transition-all duration-300">
-        <i class="ri-heart-pulse-fill text-xl"></i>
+<div class="min-h-screen bg-background text-foreground flex flex-col justify-between">
+  <!-- Header / Navigation -->
+  <header class="sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-border px-4 lg:px-8 py-3.5 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="size-9 rounded-lg bg-primary text-primary-foreground flex items-center justify-center">
+        <ng-icon name="lucideHeartPulse" size="18" />
       </div>
-      <div>
-        <span class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-          MedVault <span
-            class="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 font-bold uppercase tracking-wider backdrop-blur-md">Enterprise</span>
-        </span>
+      <div class="flex items-center gap-2">
+        <span class="font-semibold text-base tracking-tight">MedVault</span>
+        <span hlmBadge variant="outline" class="text-[11px] font-medium px-2 py-0.5">Enterprise</span>
       </div>
     </div>
 
-    <!-- Desktop Navigation Links -->
-    <div class="hidden lg:flex items-center gap-8 text-sm font-medium text-slate-300">
-      <a href="#features" class="hover:text-white transition-colors duration-200">Features</a>
-      <a href="#workspaces" class="hover:text-white transition-colors duration-200">Workspaces</a>
-      <a href="#security" class="hover:text-white transition-colors duration-200">Security</a>
-      <a href="#architecture" class="hover:text-white transition-colors duration-200">Architecture</a>
-    </div>
+    <nav class="hidden md:flex items-center gap-6 text-xs font-medium text-muted-foreground">
+      <a href="#features" class="hover:text-foreground transition-colors">Capabilities</a>
+      <a href="#workspaces" class="hover:text-foreground transition-colors">Workspaces</a>
+      <a href="#security" class="hover:text-foreground transition-colors">Security</a>
+      <a href="#architecture" class="hover:text-foreground transition-colors">Architecture</a>
+    </nav>
 
-    <!-- Auth Navigation Action Button -->
-    <div class="flex items-center gap-4">
-      <a routerLink="/login" pButton class="p-button-outlined p-button-sm flex items-center gap-2">
-        <i class="pi pi-sign-in"></i>
+    <div class="flex items-center gap-3">
+      <a routerLink="/login" hlmBtn variant="default" size="sm" class="gap-2">
         <span>Sign In</span>
+        <ng-icon name="lucideLogIn" size="15" />
       </a>
     </div>
-  </nav>
+  </header>
 
   <!-- Hero Section -->
-  <section class="relative pt-20 pb-24 px-6 max-w-7xl mx-auto overflow-hidden">
-    <div class="absolute top-1/4 -left-64 w-96 h-96 rounded-full blur-3xl"></div>
-    <div class="absolute bottom-0 right-0 w-[30rem] h-[30rem] rounded-full blur-3xl"></div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center relative z-10">
-
-      <!-- Hero Left Copy -->
-      <div class="space-y-8">
+  <section class="px-4 lg:px-8 py-16 lg:py-24 max-w-6xl mx-auto space-y-12">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+      <div class="lg:col-span-7 space-y-6">
         <div>
-          <p-tag value="FHIR R4 & HIPAA Compliant" severity="success" icon="pi pi-shield"></p-tag>
+          <span hlmBadge variant="secondary" class="gap-1.5 py-1 px-3 text-xs">
+            <ng-icon name="lucideShield" size="14" />
+            FHIR R4 & HIPAA Compliant EHR
+          </span>
         </div>
 
-        <h1 class="text-5xl sm:text-6xl font-extrabold text-white tracking-tight leading-[1.1]">
-          The Future of <br />
-          <span
-            class="bg-gradient-to-r from-indigo-400 via-teal-300 to-emerald-400 bg-clip-text text-transparent animate-gradient-x">Connected
-            Healthcare.</span>
+        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-foreground leading-tight">
+          Connected Healthcare Platform for Modern Care Delivery.
         </h1>
 
-        <p class="text-slate-400 text-lg leading-relaxed max-w-xl">
-          MedVault empowers healthcare systems with individual patient self-service portals, physician desk workspaces,
-          real-time Smart Safety contraindication checking, and immutable WORM compliance audit logs.
+        <p class="text-sm sm:text-base text-muted-foreground leading-relaxed max-w-xl">
+          MedVault unifies patient self-service, clinician desk workflows, real-time eRx allergy checking, and immutable WORM compliance auditing into a single secure platform.
         </p>
 
-        <div class="flex flex-wrap gap-4">
-          <a routerLink="/login" pButton class="p-button-primary p-button-raised px-6 py-3 flex items-center gap-2">
-            <span>Get Started</span>
-            <i class="pi pi-arrow-right"></i>
+        <div class="flex items-center gap-3 pt-2">
+          <a routerLink="/login" hlmBtn variant="default" class="gap-2">
+            <span>Access Workspace</span>
+            <ng-icon name="lucideArrowRight" size="16" />
           </a>
-          <a href="#features" pButton class="p-button-outlined p-button-secondary px-6 py-3 flex items-center gap-2">
-            <i class="pi pi-compass"></i>
+          <a href="#features" hlmBtn variant="outline" class="gap-2">
+            <ng-icon name="lucideCompass" size="16" />
             <span>Explore Platform</span>
           </a>
         </div>
 
-        <!-- Trust / Spec Badges -->
-        <div class="pt-8 border-t border-white/10 grid grid-cols-3 gap-6">
-          <div>
-            <strong class="text-white text-2xl font-bold block mb-1">100%</strong>
-            <span class="text-xs text-slate-400 font-medium">Patient Scoping</span>
+        <!-- Metrics bar -->
+        <div class="pt-8 border-t border-border grid grid-cols-3 gap-4">
+          <div class="space-y-1">
+            <span class="text-xl font-semibold text-foreground block">100%</span>
+            <span class="text-xs text-muted-foreground block">Patient Scoping</span>
           </div>
-          <div>
-            <strong class="text-emerald-400 text-2xl font-bold block mb-1">RxNorm</strong>
-            <span class="text-xs text-slate-400 font-medium">Safety Engine</span>
+          <div class="space-y-1">
+            <span class="text-xl font-semibold text-foreground block">RxNorm</span>
+            <span class="text-xs text-muted-foreground block">Safety Engine</span>
           </div>
-          <div>
-            <strong class="text-purple-400 text-2xl font-bold block mb-1">WORM</strong>
-            <span class="text-xs text-slate-400 font-medium">Vault Storage</span>
+          <div class="space-y-1">
+            <span class="text-xl font-semibold text-foreground block">WORM Vault</span>
+            <span class="text-xs text-muted-foreground block">Immutable Storage</span>
           </div>
         </div>
       </div>
 
-      <!-- Hero Right Graphic Backdrop Card -->
-      <div class="relative">
-        <div
-          class="relative rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl shadow-indigo-900/20 group">
-          <div
-            class="absolute inset-0 bg-gradient-to-tr from-indigo-950/80 via-slate-900/40 to-transparent z-10 pointer-events-none">
-          </div>
-          <img src="/assets/images/hospital_hero.jpg" alt="MedVault Healthcare Center"
-            class="w-full h-[540px] object-cover scale-105 group-hover:scale-110 transition-transform duration-1000" />
-
-          <!-- Overlay Card Badge -->
-          <div
-            class="absolute bottom-8 left-8 right-8 p-6 bg-slate-950/60 backdrop-blur-xl rounded-2xl border border-white/10 z-20 shadow-xl">
-            <div class="flex justify-between items-center mb-3">
-              <span class="font-medium text-white flex items-center gap-2 text-sm">
-                <i class="ri-server-line text-emerald-400"></i> Live EHR Node Status
-              </span>
-              <span
-                class="text-[10px] font-mono text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 px-2 py-1 rounded-md font-semibold tracking-wider">ONLINE</span>
+      <div class="lg:col-span-5">
+        <div class="rounded-xl border border-border bg-card p-4 space-y-4">
+          <div class="flex items-center justify-between border-b border-border pb-3">
+            <div class="flex items-center gap-2">
+              <ng-icon name="lucideServer" size="16" class="text-muted-foreground" />
+              <span class="text-xs font-semibold text-foreground">Live EHR Node Status</span>
             </div>
-            <p class="text-xs text-slate-300 leading-relaxed">
-              Master Patient Index (MPI), SOAP Notes, eRx Orders, Bedside Vitals Flowsheets, and HIPAA WORM Compliance
-              Vault currently active.
-            </p>
+            <span hlmBadge variant="outline" class="text-[11px]">ACTIVE</span>
           </div>
-        </div>
 
-        <!-- Floating Decorative Elements -->
-        <div
-          class="absolute -top-6 -right-6 w-24 h-24 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full blur-2xl opacity-40">
-        </div>
-        <div
-          class="absolute -bottom-10 -left-10 w-32 h-32 bg-gradient-to-br from-teal-400 to-emerald-500 rounded-full blur-2xl opacity-30">
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- Features Grid Section -->
-  <section id="features" class="py-24 px-6 relative border-t border-white/5 bg-slate-900/30">
-    <div class="max-w-7xl mx-auto">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 mb-16">
-        <div class="lg:col-span-1 space-y-4">
-          <h2 class="text-sm font-bold tracking-widest text-indigo-400 uppercase">Core Capabilities</h2>
-          <h3 class="text-3xl md:text-4xl font-bold text-white leading-tight">Advanced tools for modern healthcare.</h3>
-          <p class="text-slate-400">Built to ensure security, improve patient outcomes, and streamline clinical
-            workflows with state-of-the-art technology.</p>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- Feature 1 -->
-        <div
-          class="p-8 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/5 hover:border-white/10 hover:bg-white/[0.07] transition-all group">
-          <div
-            class="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-            <i class="ri-git-merge-line text-2xl text-blue-400"></i>
+          <div class="space-y-2.5 text-xs text-muted-foreground">
+            <div class="flex items-center justify-between p-2 rounded bg-muted/40">
+              <span>Master Patient Index (MPI)</span>
+              <span hlmBadge variant="secondary" class="text-[10px]">Operational</span>
+            </div>
+            <div class="flex items-center justify-between p-2 rounded bg-muted/40">
+              <span>Smart Allergy & eRx Engine</span>
+              <span hlmBadge variant="secondary" class="text-[10px]">Operational</span>
+            </div>
+            <div class="flex items-center justify-between p-2 rounded bg-muted/40">
+              <span>Bedside Vitals Flowsheets</span>
+              <span hlmBadge variant="secondary" class="text-[10px]">Operational</span>
+            </div>
+            <div class="flex items-center justify-between p-2 rounded bg-muted/40">
+              <span>HIPAA WORM Compliance Vault</span>
+              <span hlmBadge variant="secondary" class="text-[10px]">Operational</span>
+            </div>
           </div>
-          <h4 class="text-lg font-bold text-white mb-2">FHIR R4 Interoperability</h4>
-          <p class="text-sm text-slate-400 leading-relaxed">Seamlessly exchange health data using the latest HL7 FHIR R4
-            standards for maximum compatibility.</p>
-        </div>
-
-        <!-- Feature 2 -->
-        <div
-          class="p-8 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/5 hover:border-white/10 hover:bg-white/[0.07] transition-all group">
-          <div
-            class="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-            <i class="ri-medicine-bottle-line text-2xl text-emerald-400"></i>
-          </div>
-          <h4 class="text-lg font-bold text-white mb-2">Smart Allergy Engine</h4>
-          <p class="text-sm text-slate-400 leading-relaxed">Real-time RxNorm cross-checking prevents adverse drug events
-            with intelligent contraindication alerts.</p>
-        </div>
-
-        <!-- Feature 3 -->
-        <div
-          class="p-8 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/5 hover:border-white/10 hover:bg-white/[0.07] transition-all group">
-          <div
-            class="w-12 h-12 rounded-xl bg-teal-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-            <i class="ri-user-heart-line text-2xl text-teal-400"></i>
-          </div>
-          <h4 class="text-lg font-bold text-white mb-2">Individual Patient Scoping</h4>
-          <p class="text-sm text-slate-400 leading-relaxed">Strict data segregation ensures patients only see their own
-            information securely and privately.</p>
-        </div>
-
-        <!-- Feature 4 -->
-        <div
-          class="p-8 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/5 hover:border-white/10 hover:bg-white/[0.07] transition-all group">
-          <div
-            class="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-            <i class="ri-shield-keyhole-line text-2xl text-purple-400"></i>
-          </div>
-          <h4 class="text-lg font-bold text-white mb-2">HIPAA WORM Vault</h4>
-          <p class="text-sm text-slate-400 leading-relaxed">Immutable Write-Once-Read-Many audit logs satisfy rigorous
-            HIPAA § 164.312 tracking requirements.</p>
-        </div>
-
-        <!-- Feature 5 -->
-        <div
-          class="p-8 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/5 hover:border-white/10 hover:bg-white/[0.07] transition-all group">
-          <div
-            class="w-12 h-12 rounded-xl bg-indigo-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-            <i class="ri-layout-masonry-line text-2xl text-indigo-400"></i>
-          </div>
-          <h4 class="text-lg font-bold text-white mb-2">Multi-Persona Workspaces</h4>
-          <p class="text-sm text-slate-400 leading-relaxed">Tailored UI experiences designed specifically for doctors,
-            nurses, patients, and admins.</p>
-        </div>
-
-        <!-- Feature 6 -->
-        <div
-          class="p-8 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/5 hover:border-white/10 hover:bg-white/[0.07] transition-all group">
-          <div
-            class="w-12 h-12 rounded-xl bg-rose-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-            <i class="ri-pulse-line text-2xl text-rose-400"></i>
-          </div>
-          <h4 class="text-lg font-bold text-white mb-2">Real-Time Vitals</h4>
-          <p class="text-sm text-slate-400 leading-relaxed">Instantly stream and record bedside flowsheets to the
-            central patient chart for rapid decision-making.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Workspaces Feature Showcase Section -->
-  <section id="workspaces" class="py-24 px-6 relative">
-    <div class="max-w-7xl mx-auto space-y-16">
-      <div class="text-center max-w-2xl mx-auto space-y-4">
-        <h2 class="text-sm font-bold tracking-widest text-indigo-400 uppercase">Role-Tailored Architecture</h2>
-        <h3 class="text-3xl md:text-4xl font-bold text-white leading-tight">5 Dedicated Workspaces</h3>
-        <p class="text-slate-400 text-sm">Every persona experiences a custom-tailored interface matching their clinical
-          scope and security access rights.</p>
+  <!-- Core Capabilities Grid -->
+  <section id="features" class="px-4 lg:px-8 py-16 border-t border-border bg-card/30">
+    <div class="max-w-6xl mx-auto space-y-10">
+      <div class="space-y-2">
+        <span hlmBadge variant="outline" class="text-[11px] uppercase tracking-wide">Core Capabilities</span>
+        <h2 class="text-2xl font-semibold tracking-tight">Enterprise Clinical System Features</h2>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
-        <!-- Workspace 1: Patient Portal -->
-        <div
-          class="bg-white/5 backdrop-blur-md p-6 rounded-2xl border border-white/10 hover:border-teal-500/50 hover:bg-teal-500/5 hover:-translate-y-1 transition-all duration-300 group flex flex-col h-full">
-          <div
-            class="w-12 h-12 rounded-xl bg-teal-500/20 text-teal-400 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform shadow-lg shadow-teal-500/10">
-            <i class="ri-user-smile-line"></i>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="p-5 rounded-lg border border-border bg-card space-y-3">
+          <div class="size-9 rounded-md bg-muted flex items-center justify-center text-foreground">
+            <ng-icon name="lucideActivity" size="18" />
           </div>
-          <h4 class="font-bold text-white text-lg mb-2">Patient Portal</h4>
-          <p class="text-sm text-slate-400 leading-relaxed flex-grow">
-            View personal health card, active prescriptions, vitals trends, and request consultations.
-          </p>
+          <h3 class="text-sm font-semibold text-foreground">FHIR R4 Interoperability</h3>
+          <p class="text-xs text-muted-foreground leading-relaxed">Exchange clinical data seamlessly using HL7 FHIR R4 standardized data models.</p>
         </div>
 
-        <!-- Workspace 2: Doctor Desk -->
-        <div
-          class="bg-white/5 backdrop-blur-md p-6 rounded-2xl border border-white/10 hover:border-emerald-500/50 hover:bg-emerald-500/5 hover:-translate-y-1 transition-all duration-300 group flex flex-col h-full">
-          <div
-            class="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform shadow-lg shadow-emerald-500/10">
-            <i class="ri-stethoscope-line"></i>
+        <div class="p-5 rounded-lg border border-border bg-card space-y-3">
+          <div class="size-9 rounded-md bg-muted flex items-center justify-center text-foreground">
+            <ng-icon name="lucidePill" size="18" />
           </div>
-          <h4 class="font-bold text-white text-lg mb-2">Physician Desk</h4>
-          <p class="text-sm text-slate-400 leading-relaxed flex-grow">
-            SOAP progress notes, ICD-10 problem lists, schedule, and eRx ordering with safety checks.
-          </p>
+          <h3 class="text-sm font-semibold text-foreground">Smart Allergy & eRx Engine</h3>
+          <p class="text-xs text-muted-foreground leading-relaxed">RxNorm cross-checking prevents adverse drug events with clinical contraindication alerts.</p>
         </div>
 
-        <!-- Workspace 3: Nurse Station -->
-        <div
-          class="bg-white/5 backdrop-blur-md p-6 rounded-2xl border border-white/10 hover:border-amber-500/50 hover:bg-amber-500/5 hover:-translate-y-1 transition-all duration-300 group flex flex-col h-full">
-          <div
-            class="w-12 h-12 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform shadow-lg shadow-amber-500/10">
-            <i class="ri-nurse-line"></i>
+        <div class="p-5 rounded-lg border border-border bg-card space-y-3">
+          <div class="size-9 rounded-md bg-muted flex items-center justify-center text-foreground">
+            <ng-icon name="lucideUserRound" size="18" />
           </div>
-          <h4 class="font-bold text-white text-lg mb-2">Nurse Station</h4>
-          <p class="text-sm text-slate-400 leading-relaxed flex-grow">
-            Bedside vitals entry, Medication Administration Record (MAR), and ward intake census.
-          </p>
+          <h3 class="text-sm font-semibold text-foreground">Patient Data Scoping</h3>
+          <p class="text-xs text-muted-foreground leading-relaxed">Strict data segregation guarantees patient privacy and role-restricted record access.</p>
         </div>
 
-        <!-- Workspace 4: Admin Center -->
-        <div
-          class="bg-white/5 backdrop-blur-md p-6 rounded-2xl border border-white/10 hover:border-blue-500/50 hover:bg-blue-500/5 hover:-translate-y-1 transition-all duration-300 group flex flex-col h-full">
-          <div
-            class="w-12 h-12 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform shadow-lg shadow-blue-500/10">
-            <i class="ri-settings-4-line"></i>
+        <div class="p-5 rounded-lg border border-border bg-card space-y-3">
+          <div class="size-9 rounded-md bg-muted flex items-center justify-center text-foreground">
+            <ng-icon name="lucideShieldCheck" size="18" />
           </div>
-          <h4 class="font-bold text-white text-lg mb-2">Admin Center</h4>
-          <p class="text-sm text-slate-400 leading-relaxed flex-grow">
-            Master Patient Index registration, RBAC management, and hospital facility metrics.
-          </p>
+          <h3 class="text-sm font-semibold text-foreground">HIPAA WORM Audit Vault</h3>
+          <p class="text-xs text-muted-foreground leading-relaxed">Write-Once-Read-Many cryptographic audit logging for HIPAA compliance verification.</p>
         </div>
 
-        <!-- Workspace 5: Compliance Vault -->
-        <div
-          class="bg-white/5 backdrop-blur-md p-6 rounded-2xl border border-white/10 hover:border-purple-500/50 hover:bg-purple-500/5 hover:-translate-y-1 transition-all duration-300 group flex flex-col h-full">
-          <div
-            class="w-12 h-12 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform shadow-lg shadow-purple-500/10">
-            <i class="ri-safe-2-line"></i>
+        <div class="p-5 rounded-lg border border-border bg-card space-y-3">
+          <div class="size-9 rounded-md bg-muted flex items-center justify-center text-foreground">
+            <ng-icon name="lucideStethoscope" size="18" />
           </div>
-          <h4 class="font-bold text-white text-lg mb-2">Compliance Vault</h4>
-          <p class="text-sm text-slate-400 leading-relaxed flex-grow">
-            Immutable WORM audit ledger, HIPAA access log inspector, and forensic export tools.
-          </p>
+          <h3 class="text-sm font-semibold text-foreground">Multi-Role Workspaces</h3>
+          <p class="text-xs text-muted-foreground leading-relaxed">Dedicated interfaces for physicians, nurses, administrators, compliance auditors, and patients.</p>
+        </div>
+
+        <div class="p-5 rounded-lg border border-border bg-card space-y-3">
+          <div class="size-9 rounded-md bg-muted flex items-center justify-center text-foreground">
+            <ng-icon name="lucideHospital" size="18" />
+          </div>
+          <h3 class="text-sm font-semibold text-foreground">Bedside Vitals & Flowsheets</h3>
+          <p class="text-xs text-muted-foreground leading-relaxed">Record blood pressure, pulse, temperature, and metabolic parameters directly to EHR charts.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Security & Architecture -->
-  <section id="security" class="py-24 px-6 border-t border-white/5 bg-slate-900/30">
-    <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16">
+  <!-- Workspaces Section -->
+  <section id="workspaces" class="px-4 lg:px-8 py-16 border-t border-border">
+    <div class="max-w-6xl mx-auto space-y-10">
+      <div class="space-y-2">
+        <span hlmBadge variant="outline" class="text-[11px] uppercase tracking-wide">Role Workspaces</span>
+        <h2 class="text-2xl font-semibold tracking-tight">Tailored Clinical Experiences</h2>
+      </div>
 
-      <!-- Security -->
-      <div class="space-y-8">
-        <div>
-          <h2 class="text-sm font-bold tracking-widest text-indigo-400 uppercase mb-2">HIPAA & Security</h2>
-          <h3 class="text-3xl font-bold text-white">Military-Grade Protection</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div class="p-4 rounded-lg border border-border bg-card flex flex-col justify-between space-y-3">
+          <div class="size-8 rounded bg-muted flex items-center justify-center">
+            <ng-icon name="lucideUserRound" size="16" />
+          </div>
+          <div>
+            <h4 class="text-xs font-semibold text-foreground">Patient Portal</h4>
+            <p class="text-[11px] text-muted-foreground mt-1">Personal record, prescriptions, vitals, and consultation booking.</p>
+          </div>
         </div>
 
-        <div class="p-8 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 relative overflow-hidden">
-          <div class="absolute top-0 right-0 p-4 opacity-10 text-9xl pointer-events-none">
-            <i class="ri-shield-check-fill text-white"></i>
+        <div class="p-4 rounded-lg border border-border bg-card flex flex-col justify-between space-y-3">
+          <div class="size-8 rounded bg-muted flex items-center justify-center">
+            <ng-icon name="lucideStethoscope" size="16" />
           </div>
-          <div class="relative z-10 space-y-6">
-            <div class="flex items-start gap-4">
-              <div
-                class="mt-1 w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
-                <i class="ri-check-line"></i>
-              </div>
-              <div>
-                <h5 class="text-white font-bold text-base mb-1">End-to-End Encryption</h5>
-                <p class="text-sm text-slate-400">All data in transit (TLS 1.3) and at rest (AES-256) is secured.</p>
-              </div>
-            </div>
-            <div class="flex items-start gap-4">
-              <div
-                class="mt-1 w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
-                <i class="ri-check-line"></i>
-              </div>
-              <div>
-                <h5 class="text-white font-bold text-base mb-1">Strict Access Controls</h5>
-                <p class="text-sm text-slate-400">Granular Role-Based Access Control (RBAC) ensures minimum necessary
-                  access.</p>
-              </div>
-            </div>
-            <div class="flex items-start gap-4">
-              <div
-                class="mt-1 w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
-                <i class="ri-check-line"></i>
-              </div>
-              <div>
-                <h5 class="text-white font-bold text-base mb-1">Immutable Auditing</h5>
-                <p class="text-sm text-slate-400">Cryptographically signed WORM storage for all electronic Protected
-                  Health Information (ePHI) access.</p>
-              </div>
-            </div>
+          <div>
+            <h4 class="text-xs font-semibold text-foreground">Physician Desk</h4>
+            <p class="text-[11px] text-muted-foreground mt-1">SOAP notes, ICD-10 problem lists, and eRx ordering.</p>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-lg border border-border bg-card flex flex-col justify-between space-y-3">
+          <div class="size-8 rounded bg-muted flex items-center justify-center">
+            <ng-icon name="lucideActivity" size="16" />
+          </div>
+          <div>
+            <h4 class="text-xs font-semibold text-foreground">Nurse Station</h4>
+            <p class="text-[11px] text-muted-foreground mt-1">Bedside vitals entry, MAR orders, and ward patient intake.</p>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-lg border border-border bg-card flex flex-col justify-between space-y-3">
+          <div class="size-8 rounded bg-muted flex items-center justify-center">
+            <ng-icon name="lucideSettings" size="16" />
+          </div>
+          <div>
+            <h4 class="text-xs font-semibold text-foreground">Admin Desk</h4>
+            <p class="text-[11px] text-muted-foreground mt-1">MPI registration, user RBAC management, and facility metrics.</p>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-lg border border-border bg-card flex flex-col justify-between space-y-3">
+          <div class="size-8 rounded bg-muted flex items-center justify-center">
+            <ng-icon name="lucideShieldCheck" size="16" />
+          </div>
+          <div>
+            <h4 class="text-xs font-semibold text-foreground">Audit Vault</h4>
+            <p class="text-[11px] text-muted-foreground mt-1">Immutable WORM logs and forensic HIPAA access tracking.</p>
           </div>
         </div>
       </div>
-
-      <!-- Architecture -->
-      <div id="architecture" class="space-y-8">
-        <div>
-          <h2 class="text-sm font-bold tracking-widest text-indigo-400 uppercase mb-2">Modern Stack</h2>
-          <h3 class="text-3xl font-bold text-white">Enterprise Architecture</h3>
-        </div>
-
-        <div class="grid grid-cols-2 gap-4">
-          <div
-            class="p-6 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 hover:bg-white/10 transition-colors flex items-center gap-4">
-            <i class="ri-angularjs-fill text-3xl text-red-500"></i>
-            <div>
-              <div class="font-bold text-white">Angular 19+</div>
-              <div class="text-xs text-slate-400">Frontend Framework</div>
-            </div>
-          </div>
-          <div
-            class="p-6 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 hover:bg-white/10 transition-colors flex items-center gap-4">
-            <i class="ri-java-fill text-3xl text-orange-400"></i>
-            <div>
-              <div class="font-bold text-white">Spring Boot 3</div>
-              <div class="text-xs text-slate-400">Backend Services</div>
-            </div>
-          </div>
-          <div
-            class="p-6 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 hover:bg-white/10 transition-colors flex items-center gap-4">
-            <i class="ri-database-2-fill text-3xl text-blue-400"></i>
-            <div>
-              <div class="font-bold text-white">H2 / Oracle</div>
-              <div class="text-xs text-slate-400">Relational Database</div>
-            </div>
-          </div>
-          <div
-            class="p-6 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 hover:bg-white/10 transition-colors flex items-center gap-4">
-            <i class="ri-key-2-fill text-3xl text-amber-400"></i>
-            <div>
-              <div class="font-bold text-white">JWT Auth</div>
-              <div class="text-xs text-slate-400">Stateless Security</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
     </div>
   </section>
 
   <!-- Footer -->
-  <footer class="py-12 px-6 border-t border-white/10 text-sm text-slate-400 bg-slate-950">
-    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-      <div class="flex items-center gap-3">
-        <i class="ri-heart-pulse-fill text-2xl text-indigo-500"></i>
-        <span class="font-bold text-white">MedVault Enterprise</span>
-        <span class="hidden md:inline">&bull;</span>
+  <footer class="border-t border-border px-4 lg:px-8 py-6 bg-card">
+    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
+      <div class="flex items-center gap-2">
+        <ng-icon name="lucideHeartPulse" size="16" class="text-foreground" />
+        <span class="font-semibold text-foreground">MedVault EHR</span>
+        <span>&bull;</span>
         <span>&copy; 2026 MedVault System. All rights reserved.</span>
       </div>
 
-      <div class="flex items-center gap-6 font-medium">
-        <a href="#" class="hover:text-white transition-colors">Privacy</a>
-        <a href="#" class="hover:text-white transition-colors">Terms</a>
-        <a href="#" class="hover:text-white transition-colors">HIPAA</a>
-        <a routerLink="/login" class="text-indigo-400 hover:text-indigo-300 flex items-center gap-1">Sign In <i
-            class="ri-arrow-right-s-line"></i></a>
+      <div class="flex items-center gap-4">
+        <a routerLink="/login" class="hover:text-foreground transition-colors flex items-center gap-1">
+          <span>Sign In</span>
+          <ng-icon name="lucideChevronRight" size="14" />
+        </a>
       </div>
     </div>
   </footer>
-
 </div>

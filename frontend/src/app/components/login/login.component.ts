@@ -5,17 +5,45 @@ import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { PatientContextService } from '../../core/services/patient-context.service';
 
-import { CardModule } from 'primeng/card';
-import { InputTextModule } from 'primeng/inputtext';
-import { PasswordModule } from 'primeng/password';
-import { ButtonModule } from 'primeng/button';
-import { TagModule } from 'primeng/tag';
-import { MessageModule } from 'primeng/message';
+import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { HlmInputImports } from '@spartan-ng/helm/input';
+import { HlmCardImports } from '@spartan-ng/helm/card';
+import { HlmBadgeImports } from '@spartan-ng/helm/badge';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import {
+  lucideLogIn,
+  lucideLoader2,
+  lucideAlertCircle,
+  lucideHeartPulse,
+  lucideShieldCheck,
+  lucideHome,
+  lucideKeyRound
+} from '@ng-icons/lucide';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, CardModule, InputTextModule, PasswordModule, ButtonModule, TagModule, MessageModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    HlmButtonImports,
+    HlmInputImports,
+    HlmCardImports,
+    HlmBadgeImports,
+    NgIcon
+  ],
+  providers: [
+    provideIcons({
+      lucideLogIn,
+      lucideLoader2,
+      lucideAlertCircle,
+      lucideHeartPulse,
+      lucideShieldCheck,
+      lucideHome,
+      lucideKeyRound
+    })
+  ],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
@@ -26,7 +54,7 @@ export class LoginComponent {
   errorMessage = signal<string | null>(null);
 
   constructor(
-    private authService: AuthService, 
+    private authService: AuthService,
     private patientContext: PatientContextService,
     private router: Router
   ) {}

@@ -1,88 +1,77 @@
-<div class="flex flex-col gap-6">
-  <p-card class="shadow-xl">
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-      <div>
-        <div class="flex items-center gap-3">
-          <i class="ri-settings-3-line text-2xl text-blue-500"></i>
-          <h1 class="text-2xl font-bold tracking-tight">System Administration & RBAC</h1>
-        </div>
-        <p class="text-xs text-slate-400 mt-1">
-          User Account Directory & Security Audit Trail (ROLE_ADMIN Only)
-        </p>
+<div class="space-y-6">
+  <!-- Header -->
+  <div class="p-6 rounded-xl border border-border bg-card flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-2.5">
+        <ng-icon name="lucideSettings" size="20" class="text-foreground" />
+        <h1 class="text-xl font-semibold tracking-tight text-foreground">User RBAC Management & Administration</h1>
       </div>
+      <p class="text-xs text-muted-foreground mt-0.5">
+        User account directory, role-based access assignment, and system security privileges (ROLE_ADMIN access).
+      </p>
     </div>
-  </p-card>
-
-  <!-- Stats Cards -->
-  <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
-    <p-card class="shadow-xl">
-      <p class="text-3xs font-extrabold text-slate-400 uppercase tracking-wider">Total Users</p>
-      <p class="text-2xl font-black mt-1">{{ users().length }}</p>
-    </p-card>
-    <p-card class="shadow-xl">
-      <p class="text-3xs font-extrabold text-blue-400 uppercase tracking-wider">Doctors</p>
-      <p class="text-2xl font-black text-blue-400 mt-1">{{ getRoleCount('ROLE_DOCTOR') }}</p>
-    </p-card>
-    <p-card class="shadow-xl">
-      <p class="text-3xs font-extrabold text-emerald-400 uppercase tracking-wider">Nurses</p>
-      <p class="text-2xl font-black text-emerald-400 mt-1">{{ getRoleCount('ROLE_NURSE') }}</p>
-    </p-card>
-    <p-card class="shadow-xl">
-      <p class="text-3xs font-extrabold text-purple-400 uppercase tracking-wider">Patients</p>
-      <p class="text-2xl font-black text-purple-400 mt-1">{{ getRoleCount('ROLE_PATIENT') }}</p>
-    </p-card>
-    <p-card class="shadow-xl">
-      <p class="text-3xs font-extrabold text-rose-400 uppercase tracking-wider">Admins</p>
-      <p class="text-2xl font-black text-rose-400 mt-1">{{ getRoleCount('ROLE_ADMIN') }}</p>
-    </p-card>
-    <p-card class="shadow-xl">
-      <p class="text-3xs font-extrabold text-amber-400 uppercase tracking-wider">Auditors</p>
-      <p class="text-2xl font-black text-amber-400 mt-1">{{ getRoleCount('ROLE_AUDITOR') }}</p>
-    </p-card>
   </div>
 
-  <!-- User Accounts PrimeNG Table -->
-  <p-card class="shadow-xl">
-    <ng-template pTemplate="header">
-      <div class="p-6 pb-0">
-        <h3 class="text-lg font-bold flex items-center gap-2">
-          <i class="ri-user-settings-line text-blue-400"></i> User Account Directory
-        </h3>
-      </div>
-    </ng-template>
-    
-    <p-table 
-      [value]="users()" 
-      [paginator]="true" 
-      [rows]="10"
-      responsiveLayout="scroll">
-      <ng-template pTemplate="header">
-        <tr>
-          <th pSortableColumn="id">ID <p-sorticon field="id"></p-sorticon></th>
-          <th pSortableColumn="username">Username <p-sorticon field="username"></p-sorticon></th>
-          <th pSortableColumn="fullName">Full Name <p-sorticon field="fullName"></p-sorticon></th>
-          <th>Email</th>
-          <th>Specialization / Dept</th>
-          <th>Assigned Roles</th>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="body" let-u>
-        <tr>
-          <td class="font-mono text-slate-400">#{{ u.id }}</td>
-          <td class="font-bold font-mono">{{ u.username }}</td>
-          <td>{{ u.fullName }}</td>
-          <td class="text-slate-300">{{ u.email }}</td>
-          <td class="text-slate-300">{{ u.specialization || u.department || 'N/A' }}</td>
-          <td>
-            <div class="flex gap-1 flex-wrap">
-              <p-tag *ngFor="let r of u.roles" 
-                [value]="r.replace('ROLE_', '')" 
-                [class]="getRoleBadge(r) + ' px-2 py-0.5 rounded text-3xs font-extrabold uppercase tracking-wider font-mono'">
-              </p-tag>
-            </div>
-          </td>
-        </tr>
-      </ng-template>
-    </p-table>
-  </p-card>
+  <!-- Role Metrics Grid -->
+  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+    <div class="p-4 rounded-xl border border-border bg-card space-y-1">
+      <span class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block">Total Accounts</span>
+      <span class="text-2xl font-semibold text-foreground block">{{ users().length }}</span>
+    </div>
+    <div class="p-4 rounded-xl border border-border bg-card space-y-1">
+      <span class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block">Physicians</span>
+      <span class="text-2xl font-semibold text-foreground block">{{ getRoleCount('ROLE_DOCTOR') }}</span>
+    </div>
+    <div class="p-4 rounded-xl border border-border bg-card space-y-1">
+      <span class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block">Nurses</span>
+      <span class="text-2xl font-semibold text-foreground block">{{ getRoleCount('ROLE_NURSE') }}</span>
+    </div>
+    <div class="p-4 rounded-xl border border-border bg-card space-y-1">
+      <span class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block">Patients</span>
+      <span class="text-2xl font-semibold text-foreground block">{{ getRoleCount('ROLE_PATIENT') }}</span>
+    </div>
+    <div class="p-4 rounded-xl border border-border bg-card space-y-1">
+      <span class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block">Administrators</span>
+      <span class="text-2xl font-semibold text-foreground block">{{ getRoleCount('ROLE_ADMIN') }}</span>
+    </div>
+    <div class="p-4 rounded-xl border border-border bg-card space-y-1">
+      <span class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block">Auditors</span>
+      <span class="text-2xl font-semibold text-foreground block">{{ getRoleCount('ROLE_AUDITOR') }}</span>
+    </div>
+  </div>
+
+  <!-- User Account Table -->
+  <div class="space-y-3">
+    <h2 class="text-sm font-semibold text-foreground">User Account Directory</h2>
+    <div class="border border-border rounded-xl bg-card overflow-hidden">
+      <table hlmTable class="w-full text-xs">
+        <thead hlmTableHeader>
+          <tr hlmTableRow class="bg-muted/40">
+            <th hlmTableHead class="w-16">ID</th>
+            <th hlmTableHead>Username</th>
+            <th hlmTableHead>Full Name</th>
+            <th hlmTableHead>Email</th>
+            <th hlmTableHead>Specialization / Department</th>
+            <th hlmTableHead>Assigned Roles</th>
+          </tr>
+        </thead>
+        <tbody hlmTableBody>
+          <tr hlmTableRow *ngFor="let u of users()">
+            <td hlmTableCell class="font-mono text-muted-foreground">#{{ u.id }}</td>
+            <td hlmTableCell class="font-semibold font-mono text-foreground">{{ u.username }}</td>
+            <td hlmTableCell class="text-foreground">{{ u.fullName }}</td>
+            <td hlmTableCell class="text-muted-foreground">{{ u.email }}</td>
+            <td hlmTableCell class="text-muted-foreground">{{ u.specialization || u.department || 'General Staff' }}</td>
+            <td hlmTableCell>
+              <div class="flex gap-1 flex-wrap">
+                <span hlmBadge *ngFor="let r of u.roles" [variant]="r.includes('ADMIN') ? 'destructive' : (r.includes('DOCTOR') ? 'default' : 'secondary')" class="text-[10px] font-mono">
+                  {{ r.replace('ROLE_', '') }}
+                </span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>

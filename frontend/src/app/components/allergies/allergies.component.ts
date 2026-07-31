@@ -7,35 +7,37 @@ import { PatientContextService } from '../../core/services/patient-context.servi
 import { HasRoleDirective, HasAnyRoleDirective } from '../../core/directives/has-role.directive';
 import { Allergy, Patient } from '../../core/models/models';
 
-import { TableModule } from 'primeng/table';
-import { DialogModule } from 'primeng/dialog';
-import { ButtonModule } from 'primeng/button';
-import { TagModule } from 'primeng/tag';
-import { CardModule } from 'primeng/card';
-import { InputTextModule } from 'primeng/inputtext';
-import { SelectModule } from 'primeng/select';
-import { TextareaModule } from 'primeng/textarea';
-import { MessageModule } from 'primeng/message';
-import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { HlmCardImports } from '@spartan-ng/helm/card';
+import { HlmTableImports } from '@spartan-ng/helm/table';
+import { HlmBadgeImports } from '@spartan-ng/helm/badge';
+import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { HlmDialogImports } from '@spartan-ng/helm/dialog';
+import { HlmInputImports } from '@spartan-ng/helm/input';
+import { HlmSelectImports } from '@spartan-ng/helm/select';
+import { HlmTextareaImports } from '@spartan-ng/helm/textarea';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucidePlus, lucideLoader2, lucideAlertCircle, lucideTriangleAlert } from '@ng-icons/lucide';
 
 @Component({
   selector: 'app-allergies',
   standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
-    TableModule, 
-    DialogModule, 
-    ButtonModule, 
-    TagModule, 
-    CardModule, 
-    InputTextModule, 
-    SelectModule, 
-    TextareaModule, 
-    MessageModule, 
-    ProgressSpinnerModule,
+    CommonModule,
+    FormsModule,
+    HlmCardImports,
+    HlmTableImports,
+    HlmBadgeImports,
+    HlmButtonImports,
+    HlmDialogImports,
+    HlmInputImports,
+    HlmSelectImports,
+    HlmTextareaImports,
     HasRoleDirective,
-    HasAnyRoleDirective
+    HasAnyRoleDirective,
+    NgIcon
+  ],
+  providers: [
+    provideIcons({ lucidePlus, lucideLoader2, lucideAlertCircle, lucideTriangleAlert })
   ],
   templateUrl: './allergies.component.html',
   styleUrl: './allergies.component.css'
@@ -76,7 +78,7 @@ export class AllergiesComponent implements OnInit {
   ];
 
   constructor(
-    private apiService: ApiService, 
+    private apiService: ApiService,
     public authService: AuthService,
     public patientContext: PatientContextService
   ) {
@@ -143,33 +145,5 @@ export class AllergiesComponent implements OnInit {
       this.newAlg = { allergenName: '', allergenCode: '', category: 'DRUG', severity: 'SEVERE', reactionDescription: '', status: 'ACTIVE' };
       this.loadAllergies();
     });
-  }
-
-  getSeveritySeverity(severity: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' {
-    switch (severity) {
-      case 'LIFE_THREATENING': return 'danger';
-      case 'SEVERE': return 'danger';
-      case 'MODERATE': return 'warn';
-      case 'MILD': return 'info';
-      default: return 'info';
-    }
-  }
-
-  getCategorySeverity(category: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' {
-    switch(category) {
-      case 'DRUG': return 'info';
-      case 'FOOD': return 'success';
-      case 'ENVIRONMENTAL': return 'warn';
-      default: return 'secondary';
-    }
-  }
-
-  getStatusSeverity(status: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' {
-    switch(status) {
-      case 'ACTIVE': return 'success';
-      case 'INACTIVE': return 'secondary';
-      case 'RESOLVED': return 'info';
-      default: return 'secondary';
-    }
   }
 }

@@ -7,18 +7,37 @@ import { PatientContextService } from '../../core/services/patient-context.servi
 import { HasRoleDirective, HasAnyRoleDirective } from '../../core/directives/has-role.directive';
 import { Patient, Vitals, Prescription, Encounter, Allergy, Diagnosis, SafetyCheckResult } from '../../core/models/models';
 
-import { TableModule } from 'primeng/table';
-import { DialogModule } from 'primeng/dialog';
-import { ButtonModule } from 'primeng/button';
-import { InputTextModule } from 'primeng/inputtext';
-import { TagModule } from 'primeng/tag';
-import { CardModule } from 'primeng/card';
-import { SelectModule } from 'primeng/select';
-import { DatePickerModule } from 'primeng/datepicker';
-import { TextareaModule } from 'primeng/textarea';
-import { MessageModule } from 'primeng/message';
-import { ToolbarModule } from 'primeng/toolbar';
-import { TabsModule } from 'primeng/tabs';
+import { HlmCardImports } from '@spartan-ng/helm/card';
+import { HlmTableImports } from '@spartan-ng/helm/table';
+import { HlmBadgeImports } from '@spartan-ng/helm/badge';
+import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { HlmDialogImports } from '@spartan-ng/helm/dialog';
+import { HlmInputImports } from '@spartan-ng/helm/input';
+import { HlmSelectImports } from '@spartan-ng/helm/select';
+import { HlmTextareaImports } from '@spartan-ng/helm/textarea';
+import { HlmTabsImports } from '@spartan-ng/helm/tabs';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import {
+  lucideUserPlus,
+  lucidePlus,
+  lucideSearch,
+  lucideBarChart3,
+  lucideBuilding,
+  lucideTriangleAlert,
+  lucideListChecks,
+  lucideReceipt,
+  lucideHeart,
+  lucideUsers,
+  lucideAlertCircle,
+  lucideX,
+  lucideCalendarClock,
+  lucideActivity,
+  lucidePill,
+  lucideFileText,
+  lucideStethoscope,
+  lucideShieldCheck,
+  lucideUserRound
+} from '@ng-icons/lucide';
 
 @Component({
   selector: 'app-patients',
@@ -26,20 +45,41 @@ import { TabsModule } from 'primeng/tabs';
   imports: [
     CommonModule,
     FormsModule,
-    TableModule,
-    DialogModule,
-    ButtonModule,
-    InputTextModule,
-    TagModule,
-    CardModule,
-    SelectModule,
-    DatePickerModule,
-    TextareaModule,
-    MessageModule,
-    ToolbarModule,
-    TabsModule,
+    HlmCardImports,
+    HlmTableImports,
+    HlmBadgeImports,
+    HlmButtonImports,
+    HlmDialogImports,
+    HlmInputImports,
+    HlmSelectImports,
+    HlmTextareaImports,
+    HlmTabsImports,
     HasRoleDirective,
-    HasAnyRoleDirective
+    HasAnyRoleDirective,
+    NgIcon
+  ],
+  providers: [
+    provideIcons({
+      lucideUserPlus,
+      lucidePlus,
+      lucideSearch,
+      lucideBarChart3,
+      lucideBuilding,
+      lucideTriangleAlert,
+      lucideListChecks,
+      lucideReceipt,
+      lucideHeart,
+      lucideUsers,
+      lucideAlertCircle,
+      lucideX,
+      lucideCalendarClock,
+      lucideActivity,
+      lucidePill,
+      lucideFileText,
+      lucideStethoscope,
+      lucideShieldCheck,
+      lucideUserRound
+    })
   ],
   templateUrl: './patients.component.html',
   styleUrl: './patients.component.css'
@@ -190,7 +230,6 @@ export class PatientsComponent implements OnInit {
   savePatient(): void {
     if (!this.newPatient.fullName) return;
 
-    // Convert Date object to string if DatePicker is used
     if ((this.newPatient.dateOfBirth as any) instanceof Date) {
       this.newPatient.dateOfBirth = (this.newPatient.dateOfBirth as any).toISOString().split('T')[0];
     }
@@ -220,7 +259,6 @@ export class PatientsComponent implements OnInit {
     const p = this.selectedPatient();
     if (!p || !this.newDiagnosisInput.conditionName) return;
 
-    // Handle Date object
     let onset = this.newDiagnosisInput.onsetDate;
     if (onset instanceof Date) {
       onset = onset.toISOString().split('T')[0];

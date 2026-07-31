@@ -7,14 +7,66 @@ import { PatientContextService } from '../../core/services/patient-context.servi
 import { HasRoleDirective, HasAnyRoleDirective } from '../../core/directives/has-role.directive';
 import { Appointment, Patient, Prescription, Vitals } from '../../core/models/models';
 
-import { CardModule } from 'primeng/card';
-import { ButtonModule } from 'primeng/button';
-import { TagModule } from 'primeng/tag';
+import { HlmCardImports } from '@spartan-ng/helm/card';
+import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { HlmBadgeImports } from '@spartan-ng/helm/badge';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import {
+  lucideUserRound,
+  lucideHospital,
+  lucideShieldCheck,
+  lucideCalendarClock,
+  lucideTriangleAlert,
+  lucidePill,
+  lucideActivity,
+  lucideFileText,
+  lucideFolderGit2,
+  lucideStethoscope,
+  lucideListChecks,
+  lucideShield,
+  lucideUsers,
+  lucideArrowUpRight,
+  lucideSparkles,
+  lucideLoader2,
+  lucideHeartPulse,
+  lucideChevronRight
+} from '@ng-icons/lucide';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, CardModule, ButtonModule, TagModule, HasRoleDirective, HasAnyRoleDirective],
+  imports: [
+    CommonModule,
+    RouterModule,
+    HlmCardImports,
+    HlmButtonImports,
+    HlmBadgeImports,
+    HasRoleDirective,
+    HasAnyRoleDirective,
+    NgIcon
+  ],
+  providers: [
+    provideIcons({
+      lucideUserRound,
+      lucideHospital,
+      lucideShieldCheck,
+      lucideCalendarClock,
+      lucideTriangleAlert,
+      lucidePill,
+      lucideActivity,
+      lucideFileText,
+      lucideFolderGit2,
+      lucideStethoscope,
+      lucideListChecks,
+      lucideShield,
+      lucideUsers,
+      lucideArrowUpRight,
+      lucideSparkles,
+      lucideLoader2,
+      lucideHeartPulse,
+      lucideChevronRight
+    })
+  ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
@@ -28,7 +80,7 @@ export class DashboardComponent implements OnInit {
   latestVitals = signal<Vitals | null>(null);
 
   constructor(
-    public authService: AuthService, 
+    public authService: AuthService,
     private apiService: ApiService,
     public patientContext: PatientContextService
   ) {
@@ -98,19 +150,10 @@ export class DashboardComponent implements OnInit {
 
   primaryRole(): string {
     const roles = this.currentUser?.roles || [];
-    if (roles.includes('ROLE_ADMIN')) return 'ADMINISTRATOR / RECEPTION';
-    if (roles.includes('ROLE_DOCTOR')) return 'PHYSICIAN / CLINICIAN';
-    if (roles.includes('ROLE_NURSE')) return 'CLINICAL NURSE';
-    if (roles.includes('ROLE_AUDITOR')) return 'COMPLIANCE AUDITOR';
-    return 'PATIENT PORTAL';
-  }
-
-  getRoleBadgeClass(): string {
-    const role = this.primaryRole();
-    if (role.includes('ADMIN')) return 'bg-blue-500/20 text-blue-300 border border-blue-500/30';
-    if (role.includes('PHYSICIAN')) return 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
-    if (role.includes('NURSE')) return 'bg-amber-500/20 text-amber-300 border border-amber-500/30';
-    if (role.includes('AUDITOR')) return 'bg-purple-500/20 text-purple-300 border border-purple-500/30';
-    return 'bg-teal-500/20 text-teal-300 border border-teal-500/30';
+    if (roles.includes('ROLE_ADMIN')) return 'Admin / Reception';
+    if (roles.includes('ROLE_DOCTOR')) return 'Physician / Clinician';
+    if (roles.includes('ROLE_NURSE')) return 'Clinical Nurse';
+    if (roles.includes('ROLE_AUDITOR')) return 'Compliance Auditor';
+    return 'Patient Portal';
   }
 }

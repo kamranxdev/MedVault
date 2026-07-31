@@ -7,18 +7,36 @@ import { PatientContextService } from '../../core/services/patient-context.servi
 import { HasRoleDirective, HasAnyRoleDirective } from '../../core/directives/has-role.directive';
 import { Patient, Vitals } from '../../core/models/models';
 
-import { TableModule } from 'primeng/table';
-import { DialogModule } from 'primeng/dialog';
-import { ButtonModule } from 'primeng/button';
-import { CardModule } from 'primeng/card';
-import { TagModule } from 'primeng/tag';
-import { SelectModule } from 'primeng/select';
-import { InputTextModule } from 'primeng/inputtext';
+import { HlmCardImports } from '@spartan-ng/helm/card';
+import { HlmTableImports } from '@spartan-ng/helm/table';
+import { HlmBadgeImports } from '@spartan-ng/helm/badge';
+import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { HlmDialogImports } from '@spartan-ng/helm/dialog';
+import { HlmInputImports } from '@spartan-ng/helm/input';
+import { HlmSelectImports } from '@spartan-ng/helm/select';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucidePlus, lucideActivity, lucideAlertCircle } from '@ng-icons/lucide';
 
 @Component({
   selector: 'app-vitals',
   standalone: true,
-  imports: [CommonModule, FormsModule, TableModule, DialogModule, ButtonModule, CardModule, TagModule, SelectModule, InputTextModule, HasRoleDirective, HasAnyRoleDirective],
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    HlmCardImports, 
+    HlmTableImports, 
+    HlmBadgeImports, 
+    HlmButtonImports, 
+    HlmDialogImports, 
+    HlmInputImports, 
+    HlmSelectImports, 
+    HasRoleDirective, 
+    HasAnyRoleDirective,
+    NgIcon
+  ],
+  providers: [
+    provideIcons({ lucidePlus, lucideActivity, lucideAlertCircle })
+  ],
   templateUrl: './vitals.component.html',
   styleUrl: './vitals.component.css'
 })

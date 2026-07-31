@@ -1,628 +1,729 @@
-<div class="flex flex-col gap-6">
-  <p-toolbar *hasAnyRole="['ROLE_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE', 'ROLE_AUDITOR']">
-    <ng-template #start>
-      <div class="flex flex-col">
-        <h1 class="text-2xl font-bold m-0">Master Patient Index</h1>
-        <span class="text-gray-500 text-sm">FHIR R4 Compliant Enterprise Health Record</span>
-      </div>
-    </ng-template>
-    
-    <ng-template #end>
-      <div class="flex gap-4 items-center">
-        <input 
-          pInputText 
-          type="text" 
-          [(ngModel)]="searchQuery" 
-          (input)="executeMpiSearch()" 
-          placeholder="Search MPI..." 
-          class="w-64" />
-          
-        <p-button 
-          *hasRole="'ROLE_ADMIN'" 
-          label="Intake New Patient" 
-          icon="pi pi-user-plus" 
-          (onClick)="showIntakeModal.set(true)" />
-      </div>
-    </ng-template>
-  </p-toolbar>
+<div class="space-y-6">
+  <!-- MPI Header -->
+  <div *hasAnyRole="['ROLE_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE', 'ROLE_AUDITOR']" class="p-6 rounded-xl border border-border bg-card flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-xl font-semibold tracking-tight text-foreground">Master Patient Index (MPI)</h1>
+      <p class="text-xs text-muted-foreground mt-0.5">FHIR R4 Enterprise Health Record Directory</p>
+    </div>
+    <div class="flex gap-3 items-center">
+      <input
+        hlmInput
+        type="text"
+        [(ngModel)]="searchQuery"
+        (input)="executeMpiSearch()"
+        placeholder="Search MPI..."
+        class="w-64 h-9 text-xs" />
 
-  <div *hasAnyRole="['ROLE_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE', 'ROLE_AUDITOR']" class="flex overflow-x-auto gap-4 pb-2">
-    <div 
-      *ngFor="let p of filteredPatients()" 
+      <button
+        *hasRole="'ROLE_ADMIN'"
+        hlmBtn
+        variant="default"
+        size="sm"
+        (click)="showIntakeModal.set(true)"
+        class="gap-1.5">
+        <ng-icon name="lucideUserPlus" size="15" />
+        <span>Intake Patient</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Patient Selector Bar -->
+  <div *hasAnyRole="['ROLE_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE', 'ROLE_AUDITOR']" class="flex overflow-x-auto gap-2.5 pb-1">
+    <div
+      *ngFor="let p of filteredPatients()"
       (click)="selectPatient(p)"
-      class="flex items-center gap-3 p-3 rounded-lg border cursor-pointer min-w-56 hover:bg-gray-100"
-      [class.bg-blue-50]="selectedPatient()?.id === p.id"
-      [class.border-blue-500]="selectedPatient()?.id === p.id">
-      
-      <div class="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100 text-blue-600 font-bold">
+      class="flex items-center gap-3 p-3 rounded-lg border cursor-pointer min-w-56 transition-colors"
+      [class.bg-accent]="selectedPatient()?.id === p.id"
+      [class.text-accent-foreground]="selectedPatient()?.id === p.id"
+      [class.border-border]="selectedPatient()?.id === p.id"
+      [class.bg-card]="selectedPatient()?.id !== p.id">
+
+      <div class="size-8 rounded-full bg-primary/10 text-primary font-semibold text-xs flex items-center justify-center shrink-0">
         {{ p.fullName.charAt(0) }}
       </div>
-      
-      <div class="flex flex-col">
-        <span class="font-bold text-sm">{{ p.fullName }}</span>
-        <span class="text-xs text-gray-500">{{ p.patientCode }} • {{ p.bloodType }}</span>
+
+      <div class="flex flex-col overflow-hidden">
+        <span class="font-medium text-xs truncate">{{ p.fullName }}</span>
+        <span class="text-[11px] text-muted-foreground font-mono">MRN: {{ p.patientCode }}</span>
       </div>
     </div>
   </div>
 
-  <div *ngIf="selectedPatient() as p; else noPatientSelected" class="flex flex-col gap-6">
-    <p-card>
+  <!-- Patient Chart Details -->
+  <div *ngIf="selectedPatient() as p; else noPatientSelected" class="space-y-6">
+    <div class="p-6 rounded-xl border border-border bg-card space-y-4">
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div class="flex items-center gap-4">
-          <div class="flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 text-2xl font-bold">
+          <div class="size-14 rounded-full bg-primary/10 text-primary text-xl font-semibold flex items-center justify-center shrink-0 border border-border">
             {{ p.fullName.charAt(0) }}
           </div>
-          <div class="flex flex-col gap-1">
-            <div class="flex items-center gap-2">
-              <h2 class="text-2xl font-bold m-0">{{ p.fullName }}</h2>
-              <p-tag severity="danger" [value]="p.bloodType"></p-tag>
-              <p-tag severity="info" [value]="p.patientCode"></p-tag>
+          <div class="space-y-1">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h2 class="text-xl font-semibold text-foreground m-0">{{ p.fullName }}</h2>
+              <span hlmBadge variant="destructive" class="text-[10px] font-semibold">{{ p.bloodType }}</span>
+              <span hlmBadge variant="outline" class="font-mono text-[10px]">MRN: {{ p.patientCode }}</span>
             </div>
-            <span class="text-gray-500 text-sm">
-              DOB: <strong>{{ p.dateOfBirth }}</strong> • Gender: <strong>{{ p.gender }}</strong> • SSN: <strong>{{ p.ssn || 'XXX-XX-XXXX' }}</strong>
+            <span class="text-xs text-muted-foreground">
+              DOB: <strong class="text-foreground">{{ p.dateOfBirth }}</strong> • Gender: <strong class="text-foreground">{{ p.gender }}</strong> • SSN: <strong class="text-foreground">{{ p.ssn || 'XXX-XX-XXXX' }}</strong>
             </span>
           </div>
         </div>
-        
-        <div class="flex gap-4">
-          <div class="flex flex-col p-3 border rounded-lg bg-gray-50">
-            <span class="text-xs text-gray-500 uppercase font-semibold">Insurance Provider</span>
-            <span class="font-bold">{{ p.insuranceProvider || 'Self-Pay' }}</span>
+
+        <div class="flex gap-3">
+          <div class="p-3 border border-border rounded-lg bg-muted/40 text-xs">
+            <span class="text-muted-foreground block text-[10px] uppercase font-semibold">Insurance Provider</span>
+            <span class="font-semibold text-foreground block mt-0.5">{{ p.insuranceProvider || 'Self-Pay' }}</span>
           </div>
-          <div class="flex flex-col p-3 border rounded-lg bg-gray-50">
-            <span class="text-xs text-gray-500 uppercase font-semibold">Policy Number</span>
-            <span class="font-bold">{{ p.insurancePolicyNumber || 'POL-N/A' }}</span>
+          <div class="p-3 border border-border rounded-lg bg-muted/40 text-xs">
+            <span class="text-muted-foreground block text-[10px] uppercase font-semibold">Policy Number</span>
+            <span class="font-semibold text-foreground font-mono block mt-0.5">{{ p.insurancePolicyNumber || 'POL-N/A' }}</span>
           </div>
         </div>
       </div>
 
-      <div class="mt-4 p-4 rounded-lg bg-red-50 border border-red-200 flex justify-between items-center">
-        <div class="flex flex-col gap-1">
-          <span class="font-bold text-red-600 uppercase text-sm">Critical Allergy Safety Banner</span>
-          <span class="text-sm text-red-800" *ngIf="patientAllergies().length > 0">
-            Active Allergies: <strong *ngFor="let a of patientAllergies()" class="mr-2 underline">{{ a.allergenName }} ({{ a.severity }})</strong>
+      <!-- Allergy Safety Banner -->
+      <div class="p-4 rounded-lg bg-destructive/10 border border-destructive/20 flex justify-between items-center gap-4">
+        <div class="space-y-1 text-xs">
+          <span class="font-semibold text-destructive uppercase tracking-wide flex items-center gap-1.5">
+            <ng-icon name="lucideTriangleAlert" size="14" /> Critical Allergy Safety Register
           </span>
-          <span class="text-sm text-gray-500" *ngIf="patientAllergies().length === 0">
-            No active allergies documented.
-          </span>
+          <div class="text-foreground" *ngIf="patientAllergies().length > 0">
+            Active Allergies:
+            <span *ngFor="let a of patientAllergies()" class="mr-2 inline-flex items-center">
+              <span hlmBadge variant="destructive" class="text-[10px] mr-1">{{ a.allergenName }} ({{ a.severity }})</span>
+            </span>
+          </div>
+          <div class="text-muted-foreground" *ngIf="patientAllergies().length === 0">
+            No active allergies documented for this patient chart.
+          </div>
         </div>
-        
-        <p-button 
+
+        <button
           *ngIf="authService.hasAnyRole(['ROLE_DOCTOR', 'ROLE_NURSE'])"
-          severity="danger" 
-          size="small" 
-          label="Log Allergy" 
-          icon="pi pi-plus" 
-          (onClick)="showAllergyModal.set(true)" />
+          hlmBtn
+          variant="destructive"
+          size="sm"
+          (click)="showAllergyModal.set(true)"
+          class="gap-1.5 shrink-0">
+          <ng-icon name="lucidePlus" size="14" /> Log Allergy
+        </button>
       </div>
-    </p-card>
+    </div>
 
-    <p-card>
-      <p-tabs [value]="chartTab()" (valueChange)="setChartTab($event)">
-        <p-tablist>
-          <p-tab value="summary"><i class="pi pi-chart-bar mr-2"></i> Chart Summary</p-tab>
-          <p-tab value="encounters"><i class="pi pi-building mr-2"></i> Visits ({{ patientEncounters().length }})</p-tab>
-          <p-tab value="allergies"><i class="pi pi-exclamation-triangle mr-2"></i> Allergies ({{ patientAllergies().length }})</p-tab>
-          <p-tab value="diagnoses"><i class="pi pi-list mr-2"></i> Problem List ({{ patientDiagnoses().length }})</p-tab>
-          <p-tab value="rx"><i class="pi pi-receipt mr-2"></i> eRx Orders ({{ patientRx().length }})</p-tab>
-          <p-tab value="vitals"><i class="pi pi-heart-fill mr-2"></i> Vitals ({{ patientVitals().length }})</p-tab>
-        </p-tablist>
-        
-        <p-tabpanels>
-          <!-- TAB 1: CHART SUMMARY -->
-          <p-tabpanel value="summary">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              
-              <p-card header="Active Problem List">
-                <ng-template #title>
-                  <div class="flex justify-between items-center">
-                    <span class="font-bold text-lg">Active Problem List</span>
-                    <p-button *ngIf="authService.hasRole('ROLE_DOCTOR')" label="Add Problem" icon="pi pi-plus" size="small" text (onClick)="showDiagnosisModal.set(true)" />
-                  </div>
-                </ng-template>
-                <div class="flex flex-col gap-2">
-                  <div *ngFor="let d of patientDiagnoses()" class="flex justify-between items-center p-3 border rounded-lg">
-                    <div class="flex flex-col">
-                      <span class="font-bold">{{ d.conditionName }}</span>
-                      <span class="text-sm text-gray-500">{{ d.notes }}</span>
-                    </div>
-                    <p-tag [value]="d.icdCode"></p-tag>
-                  </div>
-                  <p-message *ngIf="patientDiagnoses().length === 0" severity="info">No active diagnoses logged.</p-message>
-                </div>
-              </p-card>
+    <!-- Chart Tabs -->
+    <div class="p-6 rounded-xl border border-border bg-card space-y-6">
+      <div class="flex gap-2 border-b border-border pb-3 overflow-x-auto">
+        <button
+          hlmBtn
+          [variant]="chartTab() === 'summary' ? 'default' : 'ghost'" size="sm"
+          (click)="setChartTab('summary')" class="gap-1.5">
+          <ng-icon name="lucideBarChart3" size="14" /> Chart Summary
+        </button>
+        <button
+          hlmBtn
+          [variant]="chartTab() === 'encounters' ? 'default' : 'ghost'" size="sm"
+          (click)="setChartTab('encounters')" class="gap-1.5">
+          <ng-icon name="lucideBuilding" size="14" /> Visits ({{ patientEncounters().length }})
+        </button>
+        <button
+          hlmBtn
+          [variant]="chartTab() === 'allergies' ? 'default' : 'ghost'" size="sm"
+          (click)="setChartTab('allergies')" class="gap-1.5">
+          <ng-icon name="lucideTriangleAlert" size="14" /> Allergies ({{ patientAllergies().length }})
+        </button>
+        <button
+          hlmBtn
+          [variant]="chartTab() === 'diagnoses' ? 'default' : 'ghost'" size="sm"
+          (click)="setChartTab('diagnoses')" class="gap-1.5">
+          <ng-icon name="lucideListChecks" size="14" /> Problem List ({{ patientDiagnoses().length }})
+        </button>
+        <button
+          hlmBtn
+          [variant]="chartTab() === 'rx' ? 'default' : 'ghost'" size="sm"
+          (click)="setChartTab('rx')" class="gap-1.5">
+          <ng-icon name="lucideReceipt" size="14" /> eRx Orders ({{ patientRx().length }})
+        </button>
+        <button
+          hlmBtn
+          [variant]="chartTab() === 'vitals' ? 'default' : 'ghost'" size="sm"
+          (click)="setChartTab('vitals')" class="gap-1.5">
+          <ng-icon name="lucideHeart" size="14" /> Vitals ({{ patientVitals().length }})
+        </button>
+      </div>
 
-              <p-card header="Active eRx Prescriptions">
-                <ng-template #title>
-                  <div class="flex justify-between items-center">
-                    <span class="font-bold text-lg">Active eRx Prescriptions</span>
-                    <p-button *ngIf="authService.hasRole('ROLE_DOCTOR')" label="Order eRx" icon="pi pi-plus" size="small" text severity="success" (onClick)="showRxModal.set(true)" />
-                  </div>
-                </ng-template>
-                <div class="flex flex-col gap-2">
-                  <div *ngFor="let rx of patientRx()" class="flex justify-between items-center p-3 border rounded-lg">
-                    <div class="flex flex-col">
-                      <span class="font-bold text-green-600">{{ rx.medicationName }}</span>
-                      <span class="text-sm text-gray-500">{{ rx.dosage }} • {{ rx.frequency }} ({{ rx.route }})</span>
-                    </div>
-                    <p-tag severity="success" [value]="rx.status"></p-tag>
-                  </div>
-                  <p-message *ngIf="patientRx().length === 0" severity="info">No active prescriptions.</p-message>
-                </div>
-              </p-card>
-
-              <p-card header="Bedside Vitals">
-                <ng-template #title>
-                  <div class="flex justify-between items-center">
-                    <span class="font-bold text-lg">Bedside Vitals</span>
-                    <p-button *ngIf="authService.hasAnyRole(['ROLE_NURSE', 'ROLE_DOCTOR'])" label="Log Vitals" icon="pi pi-plus" size="small" text severity="warn" (onClick)="showVitalsModal.set(true)" />
-                  </div>
-                </ng-template>
-                <div class="grid grid-cols-3 gap-4 text-center" *ngIf="patientVitals().length > 0">
-                  <div class="flex flex-col p-3 border rounded-lg bg-gray-50">
-                    <span class="text-xs text-gray-500 uppercase">Blood Pressure</span>
-                    <span class="font-bold text-lg text-red-500">{{ patientVitals()[0].bloodPressure }}</span>
-                    <span class="text-xs text-gray-500">mmHg</span>
-                  </div>
-                  <div class="flex flex-col p-3 border rounded-lg bg-gray-50">
-                    <span class="text-xs text-gray-500 uppercase">Heart Rate</span>
-                    <span class="font-bold text-lg text-green-500">{{ patientVitals()[0].heartRate }}</span>
-                    <span class="text-xs text-gray-500">bpm</span>
-                  </div>
-                  <div class="flex flex-col p-3 border rounded-lg bg-gray-50">
-                    <span class="text-xs text-gray-500 uppercase">BMI</span>
-                    <span class="font-bold text-lg text-yellow-500">{{ patientVitals()[0].bmi || '23.5' }}</span>
-                    <span class="text-xs text-gray-500">kg/m²</span>
-                  </div>
-                </div>
-                <p-message *ngIf="patientVitals().length === 0" severity="info">No vital signs recorded yet.</p-message>
-              </p-card>
-
-              <p-card header="Recent Visits">
-                <ng-template #title>
-                  <div class="flex justify-between items-center">
-                    <span class="font-bold text-lg">Recent Visits</span>
-                    <p-button *ngIf="authService.hasRole('ROLE_DOCTOR')" label="Log Encounter" icon="pi pi-plus" size="small" text (onClick)="showEncounterModal.set(true)" />
-                  </div>
-                </ng-template>
-                <div class="flex flex-col gap-2">
-                  <div *ngFor="let enc of patientEncounters().slice(0, 2)" class="flex flex-col p-3 border rounded-lg">
-                    <div class="flex justify-between items-center mb-1">
-                      <span class="font-bold">{{ enc.encounterType }} Visit</span>
-                      <span class="text-xs text-gray-500">{{ enc.encounterDate | date:'shortDate' }}</span>
-                    </div>
-                    <span class="text-sm">{{ enc.chiefComplaint }}</span>
-                  </div>
-                  <p-message *ngIf="patientEncounters().length === 0" severity="info">No visits recorded.</p-message>
-                </div>
-              </p-card>
-            </div>
-          </p-tabpanel>
-
-          <!-- TAB 2: VISITS & ENCOUNTERS -->
-          <p-tabpanel value="encounters">
-            <div class="flex flex-col gap-4">
-              <div class="flex justify-between items-center">
-                <h3 class="font-bold text-lg m-0">Encounter Timeline</h3>
-                <p-button *ngIf="authService.hasRole('ROLE_DOCTOR')" label="Log Encounter Visit" icon="pi pi-plus" size="small" (onClick)="showEncounterModal.set(true)" />
+      <!-- TAB 1: SUMMARY -->
+      <div *ngIf="chartTab() === 'summary'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="p-4 rounded-lg border border-border bg-card space-y-3">
+          <div class="flex justify-between items-center border-b border-border pb-2">
+            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wide">Active Problem List</h3>
+            <button *ngIf="authService.hasRole('ROLE_DOCTOR')" hlmBtn variant="ghost" size="sm" class="h-6 text-[11px] px-2" (click)="showDiagnosisModal.set(true)">
+              + Add Problem
+            </button>
+          </div>
+          <div class="space-y-2">
+            <div *ngFor="let d of patientDiagnoses()" class="p-3 border border-border rounded-lg bg-muted/30 flex justify-between items-center text-xs">
+              <div>
+                <span class="font-semibold text-foreground block">{{ d.conditionName }}</span>
+                <span class="text-muted-foreground block text-[11px]">{{ d.notes }}</span>
               </div>
-              
-              <p-table [value]="patientEncounters()" [paginator]="true" [rows]="5" responsiveLayout="scroll">
-                <ng-template pTemplate="header">
-                  <tr>
-                    <th pSortableColumn="encounterDate">Date <p-sorticon field="encounterDate"></p-sorticon></th>
-                    <th pSortableColumn="encounterType">Type <p-sorticon field="encounterType"></p-sorticon></th>
-                    <th pSortableColumn="chiefComplaint">Complaint <p-sorticon field="chiefComplaint"></p-sorticon></th>
-                    <th>Clinical Notes</th>
-                  </tr>
-                </ng-template>
-                <ng-template pTemplate="body" let-enc>
-                  <tr>
-                    <td>{{ enc.encounterDate | date:'short' }}</td>
-                    <td><p-tag [value]="enc.encounterType"></p-tag></td>
-                    <td class="font-bold">{{ enc.chiefComplaint }}</td>
-                    <td class="text-sm">
-                      <div>{{ enc.clinicalNotes }}</div>
-                      <div *ngIf="enc.dischargeSummary" class="mt-1 text-green-600 font-semibold">DC Summary: {{ enc.dischargeSummary }}</div>
-                    </td>
-                  </tr>
-                </ng-template>
-                <ng-template pTemplate="emptymessage">
-                  <tr>
-                    <td colspan="4" class="text-center p-4">No encounter records documented.</td>
-                  </tr>
-                </ng-template>
-              </p-table>
+              <span hlmBadge variant="outline" class="font-mono text-[10px]">{{ d.icdCode }}</span>
             </div>
-          </p-tabpanel>
+            <div *ngIf="patientDiagnoses().length === 0" class="p-3 rounded bg-muted/30 text-muted-foreground text-xs">No active diagnoses logged.</div>
+          </div>
+        </div>
 
-          <!-- TAB 3: ALLERGIES -->
-          <p-tabpanel value="allergies">
-            <div class="flex flex-col gap-4">
-              <div class="flex justify-between items-center">
-                <h3 class="font-bold text-lg m-0">Coded Allergies</h3>
-                <p-button *ngIf="authService.hasAnyRole(['ROLE_DOCTOR', 'ROLE_NURSE'])" severity="danger" label="Add Allergy" icon="pi pi-plus" size="small" (onClick)="showAllergyModal.set(true)" />
+        <div class="p-4 rounded-lg border border-border bg-card space-y-3">
+          <div class="flex justify-between items-center border-b border-border pb-2">
+            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wide">Active eRx Prescriptions</h3>
+            <button *ngIf="authService.hasRole('ROLE_DOCTOR')" hlmBtn variant="ghost" size="sm" class="h-6 text-[11px] px-2" (click)="showRxModal.set(true)">
+              + Order eRx
+            </button>
+          </div>
+          <div class="space-y-2">
+            <div *ngFor="let rx of patientRx()" class="p-3 border border-border rounded-lg bg-muted/30 flex justify-between items-center text-xs">
+              <div>
+                <span class="font-semibold text-foreground block">{{ rx.medicationName }}</span>
+                <span class="text-muted-foreground block text-[11px]">{{ rx.dosage }} • {{ rx.frequency }} ({{ rx.route }})</span>
               </div>
-              
-              <p-table [value]="patientAllergies()" [paginator]="true" [rows]="5" responsiveLayout="scroll">
-                <ng-template pTemplate="header">
-                  <tr>
-                    <th pSortableColumn="allergenName">Allergen <p-sorticon field="allergenName"></p-sorticon></th>
-                    <th pSortableColumn="category">Category <p-sorticon field="category"></p-sorticon></th>
-                    <th pSortableColumn="severity">Severity <p-sorticon field="severity"></p-sorticon></th>
-                    <th>Reaction</th>
-                    <th pSortableColumn="status">Status <p-sorticon field="status"></p-sorticon></th>
-                  </tr>
-                </ng-template>
-                <ng-template pTemplate="body" let-a>
-                  <tr>
-                    <td class="font-bold text-red-500">{{ a.allergenName }}</td>
-                    <td>{{ a.category }}</td>
-                    <td><p-tag severity="danger" [value]="a.severity"></p-tag></td>
-                    <td class="text-sm">{{ a.reactionDescription }}</td>
-                    <td><p-tag severity="info" [value]="a.status"></p-tag></td>
-                  </tr>
-                </ng-template>
-                <ng-template pTemplate="emptymessage">
-                  <tr>
-                    <td colspan="5" class="text-center p-4">No active allergies documented.</td>
-                  </tr>
-                </ng-template>
-              </p-table>
+              <span hlmBadge variant="secondary" class="text-[10px]">{{ rx.status }}</span>
             </div>
-          </p-tabpanel>
+            <div *ngIf="patientRx().length === 0" class="p-3 rounded bg-muted/30 text-muted-foreground text-xs">No active prescriptions.</div>
+          </div>
+        </div>
 
-          <!-- TAB 4: DIAGNOSES -->
-          <p-tabpanel value="diagnoses">
-            <div class="flex flex-col gap-4">
-              <div class="flex justify-between items-center">
-                <h3 class="font-bold text-lg m-0">Active Problem List</h3>
-                <p-button *ngIf="authService.hasRole('ROLE_DOCTOR')" label="Add Diagnosis" icon="pi pi-plus" size="small" (onClick)="showDiagnosisModal.set(true)" />
-              </div>
-              
-              <p-table [value]="patientDiagnoses()" [paginator]="true" [rows]="5" responsiveLayout="scroll">
-                <ng-template pTemplate="header">
-                  <tr>
-                    <th pSortableColumn="conditionName">Condition <p-sorticon field="conditionName"></p-sorticon></th>
-                    <th pSortableColumn="icdCode">ICD-10 <p-sorticon field="icdCode"></p-sorticon></th>
-                    <th pSortableColumn="onsetDate">Onset Date <p-sorticon field="onsetDate"></p-sorticon></th>
-                    <th>Notes</th>
-                    <th pSortableColumn="status">Status <p-sorticon field="status"></p-sorticon></th>
-                  </tr>
-                </ng-template>
-                <ng-template pTemplate="body" let-d>
-                  <tr>
-                    <td class="font-bold">{{ d.conditionName }}</td>
-                    <td><p-tag [value]="d.icdCode"></p-tag></td>
-                    <td>{{ d.onsetDate | date:'mediumDate' }}</td>
-                    <td class="text-sm">{{ d.notes }}</td>
-                    <td><p-tag severity="info" [value]="d.status"></p-tag></td>
-                  </tr>
-                </ng-template>
-                <ng-template pTemplate="emptymessage">
-                  <tr>
-                    <td colspan="5" class="text-center p-4">No coded diagnoses recorded.</td>
-                  </tr>
-                </ng-template>
-              </p-table>
+        <div class="p-4 rounded-lg border border-border bg-card space-y-3">
+          <div class="flex justify-between items-center border-b border-border pb-2">
+            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wide">Bedside Vitals Summary</h3>
+            <button *ngIf="authService.hasAnyRole(['ROLE_NURSE', 'ROLE_DOCTOR'])" hlmBtn variant="ghost" size="sm" class="h-6 text-[11px] px-2" (click)="showVitalsModal.set(true)">
+              + Log Vitals
+            </button>
+          </div>
+          <div *ngIf="patientVitals().length > 0" class="grid grid-cols-3 gap-2 text-center text-xs">
+            <div class="p-2.5 border border-border rounded-lg bg-muted/30">
+              <span class="text-[10px] text-muted-foreground font-semibold block uppercase">Blood Pressure</span>
+              <span class="font-semibold font-mono text-foreground text-sm block mt-0.5">{{ patientVitals()[0].bloodPressure }}</span>
             </div>
-          </p-tabpanel>
+            <div class="p-2.5 border border-border rounded-lg bg-muted/30">
+              <span class="text-[10px] text-muted-foreground font-semibold block uppercase">Heart Rate</span>
+              <span class="font-semibold font-mono text-foreground text-sm block mt-0.5">{{ patientVitals()[0].heartRate }} bpm</span>
+            </div>
+            <div class="p-2.5 border border-border rounded-lg bg-muted/30">
+              <span class="text-[10px] text-muted-foreground font-semibold block uppercase">BMI</span>
+              <span class="font-semibold font-mono text-foreground text-sm block mt-0.5">{{ patientVitals()[0].bmi || '23.5' }}</span>
+            </div>
+          </div>
+          <div *ngIf="patientVitals().length === 0" class="p-3 rounded bg-muted/30 text-muted-foreground text-xs">No vital signs recorded yet.</div>
+        </div>
 
-          <!-- TAB 5: eRx -->
-          <p-tabpanel value="rx">
-            <div class="flex flex-col gap-4">
+        <div class="p-4 rounded-lg border border-border bg-card space-y-3">
+          <div class="flex justify-between items-center border-b border-border pb-2">
+            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wide">Recent Encounters</h3>
+            <button *ngIf="authService.hasRole('ROLE_DOCTOR')" hlmBtn variant="ghost" size="sm" class="h-6 text-[11px] px-2" (click)="showEncounterModal.set(true)">
+              + Log Visit
+            </button>
+          </div>
+          <div class="space-y-2">
+            <div *ngFor="let enc of patientEncounters().slice(0, 2)" class="p-3 border border-border rounded-lg bg-muted/30 space-y-1 text-xs">
               <div class="flex justify-between items-center">
-                <h3 class="font-bold text-lg m-0">Medication Orders</h3>
-                <p-button *ngIf="authService.hasRole('ROLE_DOCTOR')" severity="success" label="Issue eRx" icon="pi pi-plus" size="small" (onClick)="showRxModal.set(true)" />
+                <span class="font-semibold text-foreground">{{ enc.encounterType }} Visit</span>
+                <span class="text-[11px] text-muted-foreground">{{ enc.encounterDate | date:'shortDate' }}</span>
               </div>
-              
-              <p-table [value]="patientRx()" [paginator]="true" [rows]="5" responsiveLayout="scroll">
-                <ng-template pTemplate="header">
-                  <tr>
-                    <th pSortableColumn="medicationName">Medication <p-sorticon field="medicationName"></p-sorticon></th>
-                    <th>Dosage / Route</th>
-                    <th>Instructions</th>
-                    <th>Duration / Refills</th>
-                    <th pSortableColumn="status">Status <p-sorticon field="status"></p-sorticon></th>
-                  </tr>
-                </ng-template>
-                <ng-template pTemplate="body" let-rx>
-                  <tr>
-                    <td class="font-bold text-green-600">{{ rx.medicationName }}</td>
-                    <td>{{ rx.dosage }} ({{ rx.route }})</td>
-                    <td>{{ rx.frequency }}</td>
-                    <td>{{ rx.durationDays }} days / {{ rx.refills }} refills</td>
-                    <td><p-tag severity="success" [value]="rx.status"></p-tag></td>
-                  </tr>
-                </ng-template>
-                <ng-template pTemplate="emptymessage">
-                  <tr>
-                    <td colspan="5" class="text-center p-4">No active medication orders.</td>
-                  </tr>
-                </ng-template>
-              </p-table>
+              <span class="text-muted-foreground block text-[11px]">{{ enc.chiefComplaint }}</span>
             </div>
-          </p-tabpanel>
+            <div *ngIf="patientEncounters().length === 0" class="p-3 rounded bg-muted/30 text-muted-foreground text-xs">No visits recorded.</div>
+          </div>
+        </div>
+      </div>
 
-          <!-- TAB 6: VITALS -->
-          <p-tabpanel value="vitals">
-            <div class="flex flex-col gap-4">
-              <div class="flex justify-between items-center">
-                <h3 class="font-bold text-lg m-0">Vitals & Observations</h3>
-                <p-button *ngIf="authService.hasAnyRole(['ROLE_NURSE', 'ROLE_DOCTOR'])" severity="warn" label="Record Vitals" icon="pi pi-plus" size="small" (onClick)="showVitalsModal.set(true)" />
-              </div>
-              
-              <p-table [value]="patientVitals()" [paginator]="true" [rows]="5" responsiveLayout="scroll">
-                <ng-template pTemplate="header">
-                  <tr>
-                    <th pSortableColumn="recordedAt">Date <p-sorticon field="recordedAt"></p-sorticon></th>
-                    <th>BP</th>
-                    <th>HR</th>
-                    <th>Temp</th>
-                    <th>SpO2</th>
-                    <th>BMI</th>
-                  </tr>
-                </ng-template>
-                <ng-template pTemplate="body" let-v>
-                  <tr>
-                    <td>{{ v.recordedAt | date:'short' }}</td>
-                    <td class="font-bold text-red-500">{{ v.bloodPressure }}</td>
-                    <td class="font-bold text-green-500">{{ v.heartRate }} bpm</td>
-                    <td>{{ v.temperature }} °C</td>
-                    <td>{{ v.oxygenSaturation }} %</td>
-                    <td><p-tag severity="warn" [value]="v.bmi || '23.5'"></p-tag></td>
-                  </tr>
-                </ng-template>
-                <ng-template pTemplate="emptymessage">
-                  <tr>
-                    <td colspan="6" class="text-center p-4">No vital signs recorded.</td>
-                  </tr>
-                </ng-template>
-              </p-table>
-            </div>
-          </p-tabpanel>
-        </p-tabpanels>
-      </p-tabs>
-    </p-card>
+      <!-- TAB 2: VISITS -->
+      <div *ngIf="chartTab() === 'encounters'" class="space-y-4">
+        <div class="flex justify-between items-center">
+          <h3 class="text-sm font-semibold text-foreground">Encounter Timeline</h3>
+          <button *ngIf="authService.hasRole('ROLE_DOCTOR')" hlmBtn variant="default" size="sm" (click)="showEncounterModal.set(true)">
+            + Log Visit
+          </button>
+        </div>
+
+        <div class="border border-border rounded-lg overflow-hidden">
+          <table hlmTable class="w-full text-xs">
+            <thead hlmTableHeader>
+              <tr hlmTableRow class="bg-muted/40">
+                <th hlmTableHead>Date</th>
+                <th hlmTableHead>Type</th>
+                <th hlmTableHead>Complaint</th>
+                <th hlmTableHead>Clinical Notes</th>
+              </tr>
+            </thead>
+            <tbody hlmTableBody>
+              <tr hlmTableRow *ngFor="let enc of patientEncounters()">
+                <td hlmTableCell class="font-mono text-muted-foreground">{{ enc.encounterDate | date:'short' }}</td>
+                <td hlmTableCell>
+                  <span hlmBadge variant="outline" class="text-[10px]">{{ enc.encounterType }}</span>
+                </td>
+                <td hlmTableCell class="font-semibold text-foreground">{{ enc.chiefComplaint }}</td>
+                <td hlmTableCell class="text-muted-foreground">
+                  <div>{{ enc.clinicalNotes }}</div>
+                  <div *ngIf="enc.dischargeSummary" class="mt-1 font-semibold text-foreground">DC Summary: {{ enc.dischargeSummary }}</div>
+                </td>
+              </tr>
+              <tr hlmTableRow *ngIf="patientEncounters().length === 0">
+                <td hlmTableCell colspan="4" class="text-center p-6 text-muted-foreground">No encounter records documented.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 3: ALLERGIES -->
+      <div *ngIf="chartTab() === 'allergies'" class="space-y-4">
+        <div class="flex justify-between items-center">
+          <h3 class="text-sm font-semibold text-foreground">Coded Allergies</h3>
+          <button *ngIf="authService.hasAnyRole(['ROLE_DOCTOR', 'ROLE_NURSE'])" hlmBtn variant="destructive" size="sm" (click)="showAllergyModal.set(true)">
+            + Add Allergy
+          </button>
+        </div>
+
+        <div class="border border-border rounded-lg overflow-hidden">
+          <table hlmTable class="w-full text-xs">
+            <thead hlmTableHeader>
+              <tr hlmTableRow class="bg-muted/40">
+                <th hlmTableHead>Allergen</th>
+                <th hlmTableHead>Category</th>
+                <th hlmTableHead>Severity</th>
+                <th hlmTableHead>Reaction</th>
+                <th hlmTableHead>Status</th>
+              </tr>
+            </thead>
+            <tbody hlmTableBody>
+              <tr hlmTableRow *ngFor="let a of patientAllergies()">
+                <td hlmTableCell class="font-semibold text-foreground">{{ a.allergenName }}</td>
+                <td hlmTableCell class="text-muted-foreground">{{ a.category }}</td>
+                <td hlmTableCell>
+                  <span hlmBadge [variant]="a.severity === 'SEVERE' || a.severity === 'LIFE_THREATENING' ? 'destructive' : 'secondary'" class="text-[10px]">{{ a.severity }}</span>
+                </td>
+                <td hlmTableCell class="text-muted-foreground">{{ a.reactionDescription }}</td>
+                <td hlmTableCell>
+                  <span hlmBadge variant="outline" class="text-[10px]">{{ a.status }}</span>
+                </td>
+              </tr>
+              <tr hlmTableRow *ngIf="patientAllergies().length === 0">
+                <td hlmTableCell colspan="5" class="text-center p-6 text-muted-foreground">No active allergies documented.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 4: DIAGNOSES -->
+      <div *ngIf="chartTab() === 'diagnoses'" class="space-y-4">
+        <div class="flex justify-between items-center">
+          <h3 class="text-sm font-semibold text-foreground">Active Problem List</h3>
+          <button *ngIf="authService.hasRole('ROLE_DOCTOR')" hlmBtn variant="default" size="sm" (click)="showDiagnosisModal.set(true)">
+            + Add Diagnosis
+          </button>
+        </div>
+
+        <div class="border border-border rounded-lg overflow-hidden">
+          <table hlmTable class="w-full text-xs">
+            <thead hlmTableHeader>
+              <tr hlmTableRow class="bg-muted/40">
+                <th hlmTableHead>Condition</th>
+                <th hlmTableHead>ICD-10</th>
+                <th hlmTableHead>Onset Date</th>
+                <th hlmTableHead>Notes</th>
+                <th hlmTableHead>Status</th>
+              </tr>
+            </thead>
+            <tbody hlmTableBody>
+              <tr hlmTableRow *ngFor="let d of patientDiagnoses()">
+                <td hlmTableCell class="font-semibold text-foreground">{{ d.conditionName }}</td>
+                <td hlmTableCell>
+                  <span hlmBadge variant="outline" class="font-mono text-[10px]">{{ d.icdCode }}</span>
+                </td>
+                <td hlmTableCell class="text-muted-foreground">{{ d.onsetDate | date:'mediumDate' }}</td>
+                <td hlmTableCell class="text-muted-foreground">{{ d.notes }}</td>
+                <td hlmTableCell>
+                  <span hlmBadge variant="secondary" class="text-[10px]">{{ d.status }}</span>
+                </td>
+              </tr>
+              <tr hlmTableRow *ngIf="patientDiagnoses().length === 0">
+                <td hlmTableCell colspan="5" class="text-center p-6 text-muted-foreground">No coded diagnoses recorded.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 5: RX -->
+      <div *ngIf="chartTab() === 'rx'" class="space-y-4">
+        <div class="flex justify-between items-center">
+          <h3 class="text-sm font-semibold text-foreground">Medication Orders</h3>
+          <button *ngIf="authService.hasRole('ROLE_DOCTOR')" hlmBtn variant="default" size="sm" (click)="showRxModal.set(true)">
+            + Issue eRx
+          </button>
+        </div>
+
+        <div class="border border-border rounded-lg overflow-hidden">
+          <table hlmTable class="w-full text-xs">
+            <thead hlmTableHeader>
+              <tr hlmTableRow class="bg-muted/40">
+                <th hlmTableHead>Medication</th>
+                <th hlmTableHead>Dosage / Route</th>
+                <th hlmTableHead>Instructions</th>
+                <th hlmTableHead>Duration / Refills</th>
+                <th hlmTableHead>Status</th>
+              </tr>
+            </thead>
+            <tbody hlmTableBody>
+              <tr hlmTableRow *ngFor="let rx of patientRx()">
+                <td hlmTableCell class="font-semibold text-foreground">{{ rx.medicationName }}</td>
+                <td hlmTableCell class="text-muted-foreground">{{ rx.dosage }} ({{ rx.route }})</td>
+                <td hlmTableCell class="text-muted-foreground">{{ rx.frequency }}</td>
+                <td hlmTableCell class="text-muted-foreground">{{ rx.durationDays }} days / {{ rx.refills }} refills</td>
+                <td hlmTableCell>
+                  <span hlmBadge variant="secondary" class="text-[10px]">{{ rx.status }}</span>
+                </td>
+              </tr>
+              <tr hlmTableRow *ngIf="patientRx().length === 0">
+                <td hlmTableCell colspan="5" class="text-center p-6 text-muted-foreground">No active medication orders.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 6: VITALS -->
+      <div *ngIf="chartTab() === 'vitals'" class="space-y-4">
+        <div class="flex justify-between items-center">
+          <h3 class="text-sm font-semibold text-foreground">Vitals & Observations</h3>
+          <button *ngIf="authService.hasAnyRole(['ROLE_NURSE', 'ROLE_DOCTOR'])" hlmBtn variant="default" size="sm" (click)="showVitalsModal.set(true)">
+            + Record Vitals
+          </button>
+        </div>
+
+        <div class="border border-border rounded-lg overflow-hidden">
+          <table hlmTable class="w-full text-xs">
+            <thead hlmTableHeader>
+              <tr hlmTableRow class="bg-muted/40">
+                <th hlmTableHead>Date</th>
+                <th hlmTableHead>BP</th>
+                <th hlmTableHead>HR</th>
+                <th hlmTableHead>Temp</th>
+                <th hlmTableHead>SpO2</th>
+                <th hlmTableHead>BMI</th>
+              </tr>
+            </thead>
+            <tbody hlmTableBody>
+              <tr hlmTableRow *ngFor="let v of patientVitals()">
+                <td hlmTableCell class="font-mono text-muted-foreground">{{ v.recordedAt | date:'short' }}</td>
+                <td hlmTableCell class="font-semibold font-mono text-foreground">{{ v.bloodPressure }}</td>
+                <td hlmTableCell class="font-semibold font-mono text-foreground">{{ v.heartRate }} bpm</td>
+                <td hlmTableCell class="font-mono text-muted-foreground">{{ v.temperature }} °C</td>
+                <td hlmTableCell class="font-mono text-muted-foreground">{{ v.oxygenSaturation }} %</td>
+                <td hlmTableCell>
+                  <span hlmBadge variant="outline" class="font-mono text-[10px]">{{ v.bmi || '23.5' }}</span>
+                </td>
+              </tr>
+              <tr hlmTableRow *ngIf="patientVitals().length === 0">
+                <td hlmTableCell colspan="6" class="text-center p-6 text-muted-foreground">No vital signs recorded.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
   </div>
 
   <ng-template #noPatientSelected>
-    <div class="flex flex-col items-center justify-center p-12 text-center border rounded-lg bg-gray-50 mt-4 gap-4">
-      <i class="pi pi-users text-6xl text-blue-300"></i>
-      <h3 class="text-xl font-bold m-0">Select a Patient Profile</h3>
-      <p class="text-gray-500 max-w-md">Choose a patient from the selection bar above or use the MPI search input to view full clinical chart details.</p>
+    <div class="flex flex-col items-center justify-center p-12 text-center border border-border rounded-xl bg-card space-y-3">
+      <ng-icon name="lucideUsers" size="32" class="text-muted-foreground" />
+      <h3 class="text-base font-semibold text-foreground">Select a Patient Profile</h3>
+      <p class="text-xs text-muted-foreground max-w-sm">Choose a patient from the bar above or search the MPI to open complete EHR clinical charts.</p>
     </div>
   </ng-template>
 </div>
 
-<!-- Modals -->
+<!-- MODALS -->
 
 <!-- Intake Modal -->
-<p-dialog header="Demographic Intake Registration" [modal]="true" [(visible)]="showIntakeModal" [style]="{width: '50rem'}">
-  <form (ngSubmit)="savePatient()" class="flex flex-col gap-4 mt-2">
-    <div class="grid grid-cols-2 gap-4">
-      <div class="flex flex-col gap-2">
-        <label class="font-semibold">Full Name *</label>
-        <input pInputText [(ngModel)]="newPatient.fullName" name="fullName" required />
+<hlm-dialog *ngIf="showIntakeModal()" (closed)="showIntakeModal.set(false)">
+  <hlm-dialog-content class="sm:max-w-[500px]">
+    <hlm-dialog-header>
+      <h3 hlmDialogTitle class="text-base font-semibold">Demographic Intake Registration</h3>
+    </hlm-dialog-header>
+
+    <form (ngSubmit)="savePatient()" class="space-y-4 my-2 text-xs">
+      <div class="grid grid-cols-2 gap-3">
+        <div class="space-y-1">
+          <label class="font-medium text-foreground block">Full Name *</label>
+          <input hlmInput [(ngModel)]="newPatient.fullName" name="fullName" required class="w-full h-8 text-xs" />
+        </div>
+        <div class="space-y-1">
+          <label class="font-medium text-foreground block">SSN</label>
+          <input hlmInput [(ngModel)]="newPatient.ssn" name="ssn" placeholder="XXX-XX-XXXX" class="w-full h-8 text-xs" />
+        </div>
       </div>
-      <div class="flex flex-col gap-2">
-        <label class="font-semibold">SSN</label>
-        <input pInputText [(ngModel)]="newPatient.ssn" name="ssn" placeholder="XXX-XX-XXXX" />
+
+      <div class="grid grid-cols-3 gap-3">
+        <div class="space-y-1">
+          <label class="font-medium text-foreground block">Date of Birth</label>
+          <input hlmInput type="date" [(ngModel)]="newPatient.dateOfBirth" name="dateOfBirth" class="w-full h-8 text-xs" />
+        </div>
+        <div class="space-y-1">
+          <label class="font-medium text-foreground block">Gender</label>
+          <select hlmInput [(ngModel)]="newPatient.gender" name="gender" class="w-full h-8 text-xs">
+            <option *ngFor="let g of genderOptions" [value]="g.value">{{ g.label }}</option>
+          </select>
+        </div>
+        <div class="space-y-1">
+          <label class="font-medium text-foreground block">Blood Type</label>
+          <select hlmInput [(ngModel)]="newPatient.bloodType" name="bloodType" class="w-full h-8 text-xs">
+            <option *ngFor="let bt of bloodTypeOptions" [value]="bt.value">{{ bt.label }}</option>
+          </select>
+        </div>
       </div>
-    </div>
-    
-    <div class="grid grid-cols-3 gap-4">
-      <div class="flex flex-col gap-2">
-        <label class="font-semibold">Date of Birth</label>
-        <p-datepicker [(ngModel)]="newPatient.dateOfBirth" name="dateOfBirth" dateFormat="yy-mm-dd" [showIcon]="true" appendTo="body"></p-datepicker>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div class="space-y-1">
+          <label class="font-medium text-foreground block">Insurance Provider</label>
+          <input hlmInput [(ngModel)]="newPatient.insuranceProvider" name="insuranceProvider" class="w-full h-8 text-xs" />
+        </div>
+        <div class="space-y-1">
+          <label class="font-medium text-foreground block">Policy Number</label>
+          <input hlmInput [(ngModel)]="newPatient.insurancePolicyNumber" name="insurancePolicyNumber" class="w-full h-8 text-xs" />
+        </div>
       </div>
-      <div class="flex flex-col gap-2">
-        <label class="font-semibold">Gender</label>
-        <p-select [options]="genderOptions" [(ngModel)]="newPatient.gender" name="gender" appendTo="body"></p-select>
-      </div>
-      <div class="flex flex-col gap-2">
-        <label class="font-semibold">Blood Type</label>
-        <p-select [options]="bloodTypeOptions" [(ngModel)]="newPatient.bloodType" name="bloodType" appendTo="body"></p-select>
-      </div>
-    </div>
-    
-    <div class="grid grid-cols-2 gap-4">
-      <div class="flex flex-col gap-2">
-        <label class="font-semibold">Insurance Provider</label>
-        <input pInputText [(ngModel)]="newPatient.insuranceProvider" name="insuranceProvider" />
-      </div>
-      <div class="flex flex-col gap-2">
-        <label class="font-semibold">Policy Number</label>
-        <input pInputText [(ngModel)]="newPatient.insurancePolicyNumber" name="insurancePolicyNumber" />
-      </div>
-    </div>
-    
-    <div class="flex justify-end gap-2 mt-4">
-      <p-button label="Cancel" severity="secondary" (onClick)="showIntakeModal.set(false)"></p-button>
-      <p-button label="Register Patient" type="submit"></p-button>
-    </div>
-  </form>
-</p-dialog>
+
+      <hlm-dialog-footer class="mt-4 flex justify-end gap-2">
+        <button hlmBtn type="button" variant="ghost" size="sm" (click)="showIntakeModal.set(false)">Cancel</button>
+        <button hlmBtn type="submit" variant="default" size="sm">Register Patient</button>
+      </hlm-dialog-footer>
+    </form>
+  </hlm-dialog-content>
+</hlm-dialog>
 
 <!-- Allergy Modal -->
-<p-dialog header="Log Coded Allergy" [modal]="true" [(visible)]="showAllergyModal" [style]="{width: '30rem'}">
-  <form (ngSubmit)="saveAllergy()" class="flex flex-col gap-4 mt-2">
-    <div class="flex flex-col gap-2">
-      <label class="font-semibold">Allergen Name *</label>
-      <input pInputText [(ngModel)]="newAllergyInput.allergenName" name="allergenName" required placeholder="e.g. Penicillin" />
-    </div>
-    
-    <div class="grid grid-cols-2 gap-4">
-      <div class="flex flex-col gap-2">
-        <label class="font-semibold">Category</label>
-        <p-select [options]="allergyCategoryOptions" [(ngModel)]="newAllergyInput.category" name="category" appendTo="body"></p-select>
+<hlm-dialog *ngIf="showAllergyModal()" (closed)="showAllergyModal.set(false)">
+  <hlm-dialog-content class="sm:max-w-[420px]">
+    <hlm-dialog-header>
+      <h3 hlmDialogTitle class="text-base font-semibold">Log Coded Allergy</h3>
+    </hlm-dialog-header>
+
+    <form (ngSubmit)="saveAllergy()" class="space-y-4 my-2 text-xs">
+      <div class="space-y-1">
+        <label class="font-medium text-foreground block">Allergen Name *</label>
+        <input hlmInput [(ngModel)]="newAllergyInput.allergenName" name="allergenName" required placeholder="e.g. Penicillin" class="w-full h-8 text-xs" />
       </div>
-      <div class="flex flex-col gap-2">
-        <label class="font-semibold">Severity</label>
-        <p-select [options]="severityOptions" [(ngModel)]="newAllergyInput.severity" name="severity" appendTo="body"></p-select>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div class="space-y-1">
+          <label class="font-medium text-foreground block">Category</label>
+          <select hlmInput [(ngModel)]="newAllergyInput.category" name="category" class="w-full h-8 text-xs">
+            <option *ngFor="let opt of allergyCategoryOptions" [value]="opt.value">{{ opt.label }}</option>
+          </select>
+        </div>
+        <div class="space-y-1">
+          <label class="font-medium text-foreground block">Severity</label>
+          <select hlmInput [(ngModel)]="newAllergyInput.severity" name="severity" class="w-full h-8 text-xs">
+            <option *ngFor="let opt of severityOptions" [value]="opt.value">{{ opt.label }}</option>
+          </select>
+        </div>
       </div>
-    </div>
-    
-    <div class="flex flex-col gap-2">
-      <label class="font-semibold">Reaction Description</label>
-      <textarea pTextarea [(ngModel)]="newAllergyInput.reactionDescription" name="reactionDescription" rows="3"></textarea>
-    </div>
-    
-    <div class="flex justify-end gap-2 mt-4">
-      <p-button label="Cancel" severity="secondary" (onClick)="showAllergyModal.set(false)"></p-button>
-      <p-button label="Save Allergy" severity="danger" type="submit"></p-button>
-    </div>
-  </form>
-</p-dialog>
+
+      <div class="space-y-1">
+        <label class="font-medium text-foreground block">Reaction Description</label>
+        <textarea hlmTextarea [(ngModel)]="newAllergyInput.reactionDescription" name="reactionDescription" rows="3" class="w-full text-xs"></textarea>
+      </div>
+
+      <hlm-dialog-footer class="mt-4 flex justify-end gap-2">
+        <button hlmBtn type="button" variant="ghost" size="sm" (click)="showAllergyModal.set(false)">Cancel</button>
+        <button hlmBtn type="submit" variant="destructive" size="sm">Save Allergy</button>
+      </hlm-dialog-footer>
+    </form>
+  </hlm-dialog-content>
+</hlm-dialog>
 
 <!-- Diagnosis Modal -->
-<p-dialog header="Add Coded Problem" [modal]="true" [(visible)]="showDiagnosisModal" [style]="{width: '35rem'}">
-  <form (ngSubmit)="saveDiagnosis()" class="flex flex-col gap-4 mt-2">
-    <div class="flex flex-col gap-2">
-      <label class="font-semibold">Condition Name *</label>
-      <input pInputText [(ngModel)]="newDiagnosisInput.conditionName" name="conditionName" required />
-    </div>
-    
-    <div class="grid grid-cols-2 gap-4">
-      <div class="flex flex-col gap-2">
-        <label class="font-semibold">ICD-10 Code</label>
-        <input pInputText [(ngModel)]="newDiagnosisInput.icdCode" name="icdCode" />
+<hlm-dialog *ngIf="showDiagnosisModal()" (closed)="showDiagnosisModal.set(false)">
+  <hlm-dialog-content class="sm:max-w-[450px]">
+    <hlm-dialog-header>
+      <h3 hlmDialogTitle class="text-base font-semibold">Add Coded Problem</h3>
+    </hlm-dialog-header>
+
+    <form (ngSubmit)="saveDiagnosis()" class="space-y-4 my-2 text-xs">
+      <div class="space-y-1">
+        <label class="font-medium text-foreground block">Condition Name *</label>
+        <input hlmInput [(ngModel)]="newDiagnosisInput.conditionName" name="conditionName" required class="w-full h-8 text-xs" />
       </div>
-      <div class="flex flex-col gap-2">
-        <label class="font-semibold">Onset Date</label>
-        <p-datepicker [(ngModel)]="newDiagnosisInput.onsetDate" name="onsetDate" dateFormat="yy-mm-dd" appendTo="body"></p-datepicker>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div class="space-y-1">
+          <label class="font-medium text-foreground block">ICD-10 Code</label>
+          <input hlmInput [(ngModel)]="newDiagnosisInput.icdCode" name="icdCode" class="w-full h-8 text-xs font-mono" />
+        </div>
+        <div class="space-y-1">
+          <label class="font-medium text-foreground block">Onset Date</label>
+          <input hlmInput type="date" [(ngModel)]="newDiagnosisInput.onsetDate" name="onsetDate" class="w-full h-8 text-xs" />
+        </div>
       </div>
-    </div>
-    
-    <div class="flex flex-col gap-2">
-      <label class="font-semibold">Notes</label>
-      <textarea pTextarea [(ngModel)]="newDiagnosisInput.notes" name="notes" rows="3"></textarea>
-    </div>
-    
-    <div class="flex justify-end gap-2 mt-4">
-      <p-button label="Cancel" severity="secondary" (onClick)="showDiagnosisModal.set(false)"></p-button>
-      <p-button label="Save Diagnosis" type="submit"></p-button>
-    </div>
-  </form>
-</p-dialog>
+
+      <div class="space-y-1">
+        <label class="font-medium text-foreground block">Notes</label>
+        <textarea hlmTextarea [(ngModel)]="newDiagnosisInput.notes" name="notes" rows="3" class="w-full text-xs"></textarea>
+      </div>
+
+      <hlm-dialog-footer class="mt-4 flex justify-end gap-2">
+        <button hlmBtn type="button" variant="ghost" size="sm" (click)="showDiagnosisModal.set(false)">Cancel</button>
+        <button hlmBtn type="submit" variant="default" size="sm">Save Diagnosis</button>
+      </hlm-dialog-footer>
+    </form>
+  </hlm-dialog-content>
+</hlm-dialog>
 
 <!-- Rx Modal -->
-<p-dialog header="Issue Electronic Prescription" [modal]="true" [(visible)]="showRxModal" [style]="{width: '40rem'}">
-  <div *ngIf="safetyAlert()" class="mb-4">
-    <p-message severity="error">{{ safetyAlert()?.message || 'Contraindication alert!' }}</p-message>
-    <div class="flex justify-end gap-2 mt-2">
-      <p-button label="Revise Order" severity="secondary" size="small" (onClick)="safetyAlert.set(null)"></p-button>
-      <p-button label="Authorize Override" severity="danger" size="small" (onClick)="confirmOverrideRx()"></p-button>
-    </div>
-  </div>
+<hlm-dialog *ngIf="showRxModal()" (closed)="showRxModal.set(false)">
+  <hlm-dialog-content class="sm:max-w-[480px]">
+    <hlm-dialog-header>
+      <h3 hlmDialogTitle class="text-base font-semibold">Issue Electronic Prescription</h3>
+    </hlm-dialog-header>
 
-  <form (ngSubmit)="performSafetyCheckAndSaveRx()" class="flex flex-col gap-4 mt-2">
-    <div class="flex flex-col gap-2">
-      <label class="font-semibold">Medication Name *</label>
-      <input pInputText [(ngModel)]="newRxInput.medicationName" name="medicationName" required />
-    </div>
-    
-    <div class="grid grid-cols-2 gap-4">
-      <div class="flex flex-col gap-2">
-        <label class="font-semibold">Dosage</label>
-        <input pInputText [(ngModel)]="newRxInput.dosage" name="dosage" />
+    <div *ngIf="safetyAlert()" class="p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive text-xs space-y-2 mb-2">
+      <div class="flex items-center gap-1.5 font-semibold">
+        <ng-icon name="lucideAlertCircle" size="16" /> {{ safetyAlert()?.message || 'Contraindication alert!' }}
       </div>
-      <div class="flex flex-col gap-2">
-        <label class="font-semibold">Route</label>
-        <p-select [options]="routeOptions" [(ngModel)]="newRxInput.route" name="route" appendTo="body"></p-select>
+      <div class="flex justify-end gap-2 pt-1">
+        <button hlmBtn variant="ghost" size="sm" (click)="safetyAlert.set(null)">Revise Order</button>
+        <button hlmBtn variant="destructive" size="sm" (click)="confirmOverrideRx()">Authorize Override</button>
       </div>
     </div>
-    
-    <div class="grid grid-cols-2 gap-4">
-      <div class="flex flex-col gap-2">
-        <label class="font-semibold">Frequency</label>
-        <input pInputText [(ngModel)]="newRxInput.frequency" name="frequency" />
+
+    <form (ngSubmit)="performSafetyCheckAndSaveRx()" class="space-y-4 my-2 text-xs">
+      <div class="space-y-1">
+        <label class="font-medium text-foreground block">Medication Name *</label>
+        <input hlmInput [(ngModel)]="newRxInput.medicationName" name="medicationName" required class="w-full h-8 text-xs" />
       </div>
-      <div class="flex flex-col gap-2">
-        <label class="font-semibold">Duration (Days)</label>
-        <input pInputText type="number" [(ngModel)]="newRxInput.durationDays" name="durationDays" />
+
+      <div class="grid grid-cols-2 gap-3">
+        <div class="space-y-1">
+          <label class="font-medium text-foreground block">Dosage</label>
+          <input hlmInput [(ngModel)]="newRxInput.dosage" name="dosage" class="w-full h-8 text-xs" />
+        </div>
+        <div class="space-y-1">
+          <label class="font-medium text-foreground block">Route</label>
+          <select hlmInput [(ngModel)]="newRxInput.route" name="route" class="w-full h-8 text-xs">
+            <option *ngFor="let opt of routeOptions" [value]="opt.value">{{ opt.label }}</option>
+          </select>
+        </div>
       </div>
-    </div>
-    
-    <div class="flex justify-end gap-2 mt-4">
-      <p-button label="Cancel" severity="secondary" (onClick)="showRxModal.set(false)"></p-button>
-      <p-button label="Verify & Issue eRx" severity="success" type="submit"></p-button>
-    </div>
-  </form>
-</p-dialog>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div class="space-y-1">
+          <label class="font-medium text-foreground block">Frequency</label>
+          <input hlmInput [(ngModel)]="newRxInput.frequency" name="frequency" class="w-full h-8 text-xs" />
+        </div>
+        <div class="space-y-1">
+          <label class="font-medium text-foreground block">Duration (Days)</label>
+          <input hlmInput type="number" [(ngModel)]="newRxInput.durationDays" name="durationDays" class="w-full h-8 text-xs" />
+        </div>
+      </div>
+
+      <hlm-dialog-footer class="mt-4 flex justify-end gap-2">
+        <button hlmBtn type="button" variant="ghost" size="sm" (click)="showRxModal.set(false)">Cancel</button>
+        <button hlmBtn type="submit" variant="default" size="sm">Verify & Issue eRx</button>
+      </hlm-dialog-footer>
+    </form>
+  </hlm-dialog-content>
+</hlm-dialog>
 
 <!-- Encounter Modal -->
-<p-dialog header="Log Clinical Visit Encounter" [modal]="true" [(visible)]="showEncounterModal" [style]="{width: '40rem'}">
-  <form (ngSubmit)="saveEncounter()" class="flex flex-col gap-4 mt-2">
-    <div class="grid grid-cols-2 gap-4">
-      <div class="flex flex-col gap-2">
-        <label class="font-semibold">Encounter Type</label>
-        <p-select [options]="encounterTypeOptions" [(ngModel)]="newEncounterInput.encounterType" name="encounterType" appendTo="body"></p-select>
+<hlm-dialog *ngIf="showEncounterModal()" (closed)="showEncounterModal.set(false)">
+  <hlm-dialog-content class="sm:max-w-[480px]">
+    <hlm-dialog-header>
+      <h3 hlmDialogTitle class="text-base font-semibold">Log Clinical Encounter Visit</h3>
+    </hlm-dialog-header>
+
+    <form (ngSubmit)="saveEncounter()" class="space-y-4 my-2 text-xs">
+      <div class="grid grid-cols-2 gap-3">
+        <div class="space-y-1">
+          <label class="font-medium text-foreground block">Encounter Type</label>
+          <select hlmInput [(ngModel)]="newEncounterInput.encounterType" name="encounterType" class="w-full h-8 text-xs">
+            <option *ngFor="let opt of encounterTypeOptions" [value]="opt.value">{{ opt.label }}</option>
+          </select>
+        </div>
+        <div class="space-y-1">
+          <label class="font-medium text-foreground block">Status</label>
+          <select hlmInput [(ngModel)]="newEncounterInput.status" name="status" class="w-full h-8 text-xs">
+            <option *ngFor="let opt of statusOptions" [value]="opt.value">{{ opt.label }}</option>
+          </select>
+        </div>
       </div>
-      <div class="flex flex-col gap-2">
-        <label class="font-semibold">Status</label>
-        <p-select [options]="statusOptions" [(ngModel)]="newEncounterInput.status" name="status" appendTo="body"></p-select>
+
+      <div class="space-y-1">
+        <label class="font-medium text-foreground block">Chief Complaint *</label>
+        <input hlmInput [(ngModel)]="newEncounterInput.chiefComplaint" name="chiefComplaint" required class="w-full h-8 text-xs" />
       </div>
-    </div>
-    
-    <div class="flex flex-col gap-2">
-      <label class="font-semibold">Chief Complaint *</label>
-      <input pInputText [(ngModel)]="newEncounterInput.chiefComplaint" name="chiefComplaint" required />
-    </div>
-    
-    <div class="flex flex-col gap-2">
-      <label class="font-semibold">Clinical Notes</label>
-      <textarea pTextarea [(ngModel)]="newEncounterInput.clinicalNotes" name="clinicalNotes" rows="4"></textarea>
-    </div>
-    
-    <div class="flex justify-end gap-2 mt-4">
-      <p-button label="Cancel" severity="secondary" (onClick)="showEncounterModal.set(false)"></p-button>
-      <p-button label="Save Encounter" type="submit"></p-button>
-    </div>
-  </form>
-</p-dialog>
+
+      <div class="space-y-1">
+        <label class="font-medium text-foreground block">Clinical Notes</label>
+        <textarea hlmTextarea [(ngModel)]="newEncounterInput.clinicalNotes" name="clinicalNotes" rows="4" class="w-full text-xs"></textarea>
+      </div>
+
+      <hlm-dialog-footer class="mt-4 flex justify-end gap-2">
+        <button hlmBtn type="button" variant="ghost" size="sm" (click)="showEncounterModal.set(false)">Cancel</button>
+        <button hlmBtn type="submit" variant="default" size="sm">Save Encounter</button>
+      </hlm-dialog-footer>
+    </form>
+  </hlm-dialog-content>
+</hlm-dialog>
 
 <!-- Vitals Modal -->
-<p-dialog header="Record Bedside Vitals" [modal]="true" [(visible)]="showVitalsModal" [style]="{width: '35rem'}">
-  <form (ngSubmit)="saveVitals()" class="flex flex-col gap-4 mt-2">
-    <div class="flex flex-col gap-2">
-      <label class="font-semibold">Blood Pressure (mmHg)</label>
-      <input pInputText [(ngModel)]="newVitalsInput.bloodPressure" name="bloodPressure" placeholder="120/80" />
-    </div>
-    
-    <div class="grid grid-cols-3 gap-4">
-      <div class="flex flex-col gap-2">
-        <label class="font-semibold">Heart Rate</label>
-        <input pInputText type="number" [(ngModel)]="newVitalsInput.heartRate" name="heartRate" />
+<hlm-dialog *ngIf="showVitalsModal()" (closed)="showVitalsModal.set(false)">
+  <hlm-dialog-content class="sm:max-w-[450px]">
+    <hlm-dialog-header>
+      <h3 hlmDialogTitle class="text-base font-semibold">Record Bedside Vitals</h3>
+    </hlm-dialog-header>
+
+    <form (ngSubmit)="saveVitals()" class="space-y-4 my-2 text-xs">
+      <div class="space-y-1">
+        <label class="font-medium text-foreground block">Blood Pressure (mmHg)</label>
+        <input hlmInput [(ngModel)]="newVitalsInput.bloodPressure" name="bloodPressure" placeholder="120/80" class="w-full h-8 text-xs" />
       </div>
-      <div class="flex flex-col gap-2">
-        <label class="font-semibold">Temp (°C)</label>
-        <input pInputText type="number" step="0.1" [(ngModel)]="newVitalsInput.temperature" name="temperature" />
+
+      <div class="grid grid-cols-3 gap-3">
+        <div class="space-y-1">
+          <label class="font-medium text-foreground block">Heart Rate</label>
+          <input hlmInput type="number" [(ngModel)]="newVitalsInput.heartRate" name="heartRate" class="w-full h-8 text-xs" />
+        </div>
+        <div class="space-y-1">
+          <label class="font-medium text-foreground block">Temp (°C)</label>
+          <input hlmInput type="number" step="0.1" [(ngModel)]="newVitalsInput.temperature" name="temperature" class="w-full h-8 text-xs" />
+        </div>
+        <div class="space-y-1">
+          <label class="font-medium text-foreground block">SpO2 (%)</label>
+          <input hlmInput type="number" [(ngModel)]="newVitalsInput.oxygenSaturation" name="oxygenSaturation" class="w-full h-8 text-xs" />
+        </div>
       </div>
-      <div class="flex flex-col gap-2">
-        <label class="font-semibold">SpO2 (%)</label>
-        <input pInputText type="number" [(ngModel)]="newVitalsInput.oxygenSaturation" name="oxygenSaturation" />
+
+      <div class="grid grid-cols-3 gap-3">
+        <div class="space-y-1">
+          <label class="font-medium text-foreground block">Height (cm)</label>
+          <input hlmInput type="number" [(ngModel)]="newVitalsInput.heightCm" name="heightCm" class="w-full h-8 text-xs" />
+        </div>
+        <div class="space-y-1">
+          <label class="font-medium text-foreground block">Weight (kg)</label>
+          <input hlmInput type="number" step="0.1" [(ngModel)]="newVitalsInput.weightKg" name="weightKg" class="w-full h-8 text-xs" />
+        </div>
+        <div class="space-y-1">
+          <label class="font-medium text-foreground block">Glucose (mg/dL)</label>
+          <input hlmInput type="number" [(ngModel)]="newVitalsInput.bloodGlucose" name="bloodGlucose" class="w-full h-8 text-xs" />
+        </div>
       </div>
-    </div>
-    
-    <div class="grid grid-cols-3 gap-4">
-      <div class="flex flex-col gap-2">
-        <label class="font-semibold">Height (cm)</label>
-        <input pInputText type="number" [(ngModel)]="newVitalsInput.heightCm" name="heightCm" />
-      </div>
-      <div class="flex flex-col gap-2">
-        <label class="font-semibold">Weight (kg)</label>
-        <input pInputText type="number" step="0.1" [(ngModel)]="newVitalsInput.weightKg" name="weightKg" />
-      </div>
-      <div class="flex flex-col gap-2">
-        <label class="font-semibold">Glucose (mg/dL)</label>
-        <input pInputText type="number" [(ngModel)]="newVitalsInput.bloodGlucose" name="bloodGlucose" />
-      </div>
-    </div>
-    
-    <div class="flex justify-end gap-2 mt-4">
-      <p-button label="Cancel" severity="secondary" (onClick)="showVitalsModal.set(false)"></p-button>
-      <p-button label="Save Vitals" severity="warn" type="submit"></p-button>
-    </div>
-  </form>
-</p-dialog>
+
+      <hlm-dialog-footer class="mt-4 flex justify-end gap-2">
+        <button hlmBtn type="button" variant="ghost" size="sm" (click)="showVitalsModal.set(false)">Cancel</button>
+        <button hlmBtn type="submit" variant="default" size="sm">Save Vitals</button>
+      </hlm-dialog-footer>
+    </form>
+  </hlm-dialog-content>
+</hlm-dialog>

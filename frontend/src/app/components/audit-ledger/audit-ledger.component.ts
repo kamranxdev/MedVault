@@ -5,16 +5,30 @@ import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { AuditLog } from '../../core/models/models';
 
-import { TableModule } from 'primeng/table';
-import { TagModule } from 'primeng/tag';
-import { ButtonModule } from 'primeng/button';
-import { CardModule } from 'primeng/card';
-import { InputTextModule } from 'primeng/inputtext';
+import { HlmCardImports } from '@spartan-ng/helm/card';
+import { HlmTableImports } from '@spartan-ng/helm/table';
+import { HlmBadgeImports } from '@spartan-ng/helm/badge';
+import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { HlmInputImports } from '@spartan-ng/helm/input';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideShieldCheck, lucideDownload, lucideSearch, lucideLoader2 } from '@ng-icons/lucide';
 
 @Component({
   selector: 'app-audit-ledger',
   standalone: true,
-  imports: [CommonModule, FormsModule, TableModule, TagModule, ButtonModule, CardModule, InputTextModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    HlmCardImports,
+    HlmTableImports,
+    HlmBadgeImports,
+    HlmButtonImports,
+    HlmInputImports,
+    NgIcon
+  ],
+  providers: [
+    provideIcons({ lucideShieldCheck, lucideDownload, lucideSearch, lucideLoader2 })
+  ],
   templateUrl: './audit-ledger.component.html',
   styleUrl: './audit-ledger.component.css'
 })
@@ -53,19 +67,6 @@ export class AuditLedgerComponent implements OnInit {
 
   getActionCount(action: string): number {
     return this.auditLogs().filter(l => l.action === action).length;
-  }
-
-  getActionBadge(action: string): string {
-    switch (action) {
-      case 'CREATE': return 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
-      case 'READ': return 'bg-blue-500/20 text-blue-400 border border-blue-500/30';
-      case 'UPDATE': return 'bg-amber-500/20 text-amber-400 border border-amber-500/30';
-      case 'DELETE': return 'bg-rose-500/20 text-rose-400 border border-rose-500/30';
-      case 'LOGIN': return 'bg-purple-500/20 text-purple-400 border border-purple-500/30';
-      case 'SEED': return 'bg-slate-500/20 text-slate-400 border border-slate-500/30';
-      case 'ERX_ALERT': return 'bg-rose-500/20 text-rose-400 border border-rose-500/30';
-      default: return 'bg-slate-500/20 text-slate-300 border border-slate-500/30';
-    }
   }
 
   exportAuditLogJSON(): void {

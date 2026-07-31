@@ -1,142 +1,142 @@
-<div class="flex flex-col gap-6">
-  <!-- Enterprise Header -->
-  <p-card>
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-      <div>
-        <h1 class="text-2xl font-bold flex items-center gap-3">
-          <i class="ri-file-text-line text-indigo-500"></i>
-          {{ isPatient() ? 'My SOAP Clinical Notes & Progress History' : 'SOAP Progress Notes & EHR Clinical Documentation' }}
+<div class="space-y-6">
+  <!-- Header -->
+  <div class="p-6 rounded-xl border border-border bg-card flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-2.5">
+        <ng-icon name="lucideFileText" size="20" class="text-foreground" />
+        <h1 class="text-xl font-semibold tracking-tight text-foreground">
+          {{ isPatient() ? 'My SOAP Clinical Notes & Progress History' : 'SOAP Progress Notes & Clinical Records' }}
         </h1>
-        <p class="text-sm text-gray-500 mt-1">
-          Subjective complaints, Objective vitals/exam findings, Assessment, and Plan of Care documentation.
-        </p>
       </div>
-
-      <div class="flex items-center gap-3">
-        <p-select 
-          *ngIf="!isPatient()"
-          [ngModel]="selectedPatientId" 
-          (ngModelChange)="onPatientChange($event)"
-          [options]="patientContext.patientList()"
-          optionLabel="fullName"
-          optionValue="id"
-          placeholder="Select Patient Profile..."
-          class="w-full md:w-72">
-          <ng-template let-p pTemplate="item">
-            {{ p.fullName }} (MRN: {{ p.patientCode }})
-          </ng-template>
-          <ng-template let-p pTemplate="selectedItem">
-            <div *ngIf="p">{{ p.fullName }} (MRN: {{ p.patientCode }})</div>
-            <div *ngIf="!p">Select Patient Profile...</div>
-          </ng-template>
-        </p-select>
-
-        <p-button 
-          *ngIf="authService.hasRole('ROLE_DOCTOR')" 
-          (onClick)="showModal.set(true)" 
-          [disabled]="selectedPatientId === 0"
-          icon="ri-add-line"
-          label="Document SOAP Progress Note">
-        </p-button>
-      </div>
+      <p class="text-xs text-muted-foreground mt-0.5">
+        Subjective complaints, Objective exam findings, Assessment, and Plan of Care documentation.
+      </p>
     </div>
-  </p-card>
 
-  <!-- Empty State -->
-  <p-card *ngIf="selectedPatientId === 0">
-    <div class="text-center py-8 text-gray-500">
-      Select a patient from the dropdown above to view clinical progress notes.
+    <div class="flex items-center gap-3">
+      <select
+        *ngIf="!isPatient()"
+        hlmInput
+        [ngModel]="selectedPatientId"
+        (ngModelChange)="onPatientChange($event)"
+        class="w-64 h-9 text-xs">
+        <option [value]="0">Select Patient Profile...</option>
+        <option *ngFor="let p of patientContext.patientList()" [value]="p.id">
+          {{ p.fullName }} (MRN: {{ p.patientCode }})
+        </option>
+      </select>
+
+      <button
+        *ngIf="authService.hasRole('ROLE_DOCTOR')"
+        hlmBtn
+        variant="default"
+        size="sm"
+        (click)="showModal.set(true)"
+        [disabled]="selectedPatientId === 0"
+        class="gap-1.5">
+        <ng-icon name="lucidePlus" size="15" />
+        <span>Document Note</span>
+      </button>
     </div>
-  </p-card>
+  </div>
 
-  <!-- Records Table -->
-  <p-card *ngIf="selectedPatientId > 0">
-    <p-table [value]="records()" dataKey="id" [paginator]="true" [rows]="10" responsiveLayout="scroll" [rowHover]="true">
-      <ng-template pTemplate="header">
-        <tr>
-          <th style="width: 3rem"></th>
-          <th pSortableColumn="diagnosis">Diagnosis / Impression <p-sorticon field="diagnosis"></p-sorticon></th>
-          <th pSortableColumn="doctor.fullName">Doctor <p-sorticon field="doctor.fullName"></p-sorticon></th>
-          <th pSortableColumn="createdAt">Date <p-sorticon field="createdAt"></p-sorticon></th>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="body" let-rec let-expanded="expanded">
-        <tr>
-          <td>
-            <p-button type="button" pRowToggler [text]="true" [rounded]="true" [plain]="true" [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"></p-button>
-          </td>
-          <td>
-            <div class="font-bold">{{ rec.diagnosis }}</div>
-            <p-tag *ngIf="rec.icdCode" value="ICD-10: {{ rec.icdCode }}" severity="info"></p-tag>
-          </td>
-          <td>{{ rec.doctor?.fullName || 'Dr. Mahtab Khan' }}</td>
-          <td>{{ rec.createdAt | date:'medium' }}</td>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="rowexpansion" let-rec>
-        <tr>
-          <td colspan="4">
-            <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 rounded">
-              <div class="flex flex-col gap-2">
-                <span class="font-bold text-indigo-500 uppercase text-xs tracking-wider">Subjective Symptoms</span>
-                <p class="text-sm text-gray-700">{{ rec.symptoms || 'None reported' }}</p>
-              </div>
-              <div class="flex flex-col gap-2">
-                <span class="font-bold text-emerald-500 uppercase text-xs tracking-wider">Assessment & Plan</span>
-                <p class="text-sm text-gray-700">{{ rec.treatmentPlan || 'Routine follow-up' }}</p>
-              </div>
-              <div class="col-span-1 md:col-span-2 flex flex-col gap-2 mt-2 pt-2 border-t border-gray-200" *ngIf="rec.notes">
-                <span class="font-bold uppercase text-xs tracking-wider text-gray-600">Clinical Impressions:</span>
-                <p class="text-sm text-gray-700">{{ rec.notes }}</p>
-              </div>
-            </div>
-          </td>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="empty">
-        <tr>
-          <td colspan="4" class="text-center py-6 text-gray-500">No documented progress notes on file for this patient.</td>
-        </tr>
-      </ng-template>
-    </p-table>
-  </p-card>
+  <div *ngIf="selectedPatientId === 0" class="p-4 rounded-lg bg-muted/40 border border-border text-muted-foreground text-xs flex items-center gap-2">
+    <ng-icon name="lucideAlertCircle" size="16" class="shrink-0" />
+    <span>Select a patient profile above to inspect clinical progress notes.</span>
+  </div>
 
-  <!-- Add Record PrimeNG Dialog -->
-  <p-dialog 
-    header="Document SOAP Clinical Progress Note" 
-    [(visible)]="showModal" 
-    [modal]="true" 
-    [style]="{ width: '40rem', maxWidth: '90vw' }">
-    <form (ngSubmit)="saveRecord()" class="flex flex-col gap-4 mt-4">
-      <div class="flex flex-col gap-2">
-        <label class="font-semibold text-sm">Primary Diagnosis / Chief Impression <span class="text-red-500">*</span></label>
-        <input pInputText type="text" [(ngModel)]="newRecord.diagnosis" name="diagnosis" placeholder="e.g. Type 2 Diabetes Management & Assessment" required class="w-full" />
-      </div>
+  <div *ngIf="selectedPatientId > 0" class="space-y-4">
+    <div *ngIf="records().length === 0" class="p-4 rounded-lg bg-muted/30 border border-border text-muted-foreground text-xs">
+      No documented progress notes on file for this patient.
+    </div>
 
-      <div class="flex flex-col gap-2">
-        <label class="font-semibold text-sm">ICD-10 Code</label>
-        <input pInputText type="text" [(ngModel)]="newRecord.icdCode" name="icdCode" placeholder="e.g. E11.9" class="w-full font-mono" />
-      </div>
+    <div *ngIf="records().length > 0" class="border border-border rounded-xl bg-card overflow-hidden">
+      <table hlmTable class="w-full text-xs">
+        <thead hlmTableHeader>
+          <tr hlmTableRow class="bg-muted/40">
+            <th hlmTableHead class="w-10"></th>
+            <th hlmTableHead>Diagnosis / Impression</th>
+            <th hlmTableHead>Physician</th>
+            <th hlmTableHead>Documented Date</th>
+          </tr>
+        </thead>
+        <tbody hlmTableBody>
+          <ng-container *ngFor="let rec of records()">
+            <tr hlmTableRow>
+              <td hlmTableCell>
+                <button hlmBtn variant="ghost" size="sm" class="size-6 p-0" (click)="toggleExpand(rec.id)">
+                  <ng-icon [name]="isExpanded(rec.id) ? 'lucideChevronDown' : 'lucideChevronRight'" size="14" />
+                </button>
+              </td>
+              <td hlmTableCell>
+                <div class="font-semibold text-foreground text-xs">{{ rec.diagnosis }}</div>
+                <span hlmBadge variant="outline" *ngIf="rec.icdCode" class="font-mono text-[10px] mt-0.5">ICD-10: {{ rec.icdCode }}</span>
+              </td>
+              <td hlmTableCell class="text-muted-foreground">{{ rec.doctor?.fullName || 'Physician' }}</td>
+              <td hlmTableCell class="text-muted-foreground font-mono">{{ rec.createdAt | date:'medium' }}</td>
+            </tr>
+            <tr hlmTableRow *ngIf="isExpanded(rec.id)" class="bg-muted/20">
+              <td hlmTableCell colspan="4" class="p-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border border-border rounded-lg bg-card">
+                  <div class="space-y-1 text-xs">
+                    <span class="font-semibold text-foreground uppercase tracking-wide text-[10px]">Subjective Symptoms</span>
+                    <p class="text-muted-foreground leading-relaxed">{{ rec.symptoms || 'None reported' }}</p>
+                  </div>
+                  <div class="space-y-1 text-xs">
+                    <span class="font-semibold text-foreground uppercase tracking-wide text-[10px]">Assessment & Plan</span>
+                    <p class="text-muted-foreground leading-relaxed">{{ rec.treatmentPlan || 'Routine follow-up' }}</p>
+                  </div>
+                  <div class="col-span-1 md:col-span-2 space-y-1 text-xs pt-2 border-t border-border" *ngIf="rec.notes">
+                    <span class="font-semibold text-foreground uppercase tracking-wide text-[10px]">Clinical Impressions:</span>
+                    <p class="text-muted-foreground leading-relaxed">{{ rec.notes }}</p>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+    </div>
+  </div>
 
-      <div class="flex flex-col gap-2">
-        <label class="font-semibold text-sm">Subjective Symptoms</label>
-        <textarea pTextarea [(ngModel)]="newRecord.symptoms" name="symptoms" rows="3" placeholder="Patient reports mild fatigue..." class="w-full"></textarea>
-      </div>
+  <!-- Add Record Dialog -->
+  <hlm-dialog *ngIf="showModal()" (closed)="showModal.set(false)">
+    <hlm-dialog-content class="sm:max-w-[450px]">
+      <hlm-dialog-header>
+        <h3 hlmDialogTitle class="text-base font-semibold">Document SOAP Clinical Progress Note</h3>
+      </hlm-dialog-header>
 
-      <div class="flex flex-col gap-2">
-        <label class="font-semibold text-sm">Assessment & Plan of Care</label>
-        <textarea pTextarea [(ngModel)]="newRecord.treatmentPlan" name="treatmentPlan" rows="3" placeholder="Continue Metformin 500mg daily..." class="w-full"></textarea>
-      </div>
+      <form (ngSubmit)="saveRecord()" class="space-y-4 my-2 text-xs">
+        <div class="space-y-1">
+          <label class="font-medium text-foreground block">Primary Diagnosis / Impression *</label>
+          <input hlmInput type="text" [(ngModel)]="newRecord.diagnosis" name="diagnosis" placeholder="Type 2 Diabetes Assessment" required class="w-full h-8 text-xs" />
+        </div>
 
-      <div class="flex flex-col gap-2">
-        <label class="font-semibold text-sm">Clinical Impressions / Notes</label>
-        <textarea pTextarea [(ngModel)]="newRecord.notes" name="notes" rows="3" placeholder="Good dietary discipline noted..." class="w-full"></textarea>
-      </div>
+        <div class="space-y-1">
+          <label class="font-medium text-foreground block">ICD-10 Code</label>
+          <input hlmInput type="text" [(ngModel)]="newRecord.icdCode" name="icdCode" placeholder="E11.9" class="w-full h-8 text-xs font-mono" />
+        </div>
 
-      <div class="flex justify-end gap-3 mt-4 pt-4 border-t border-gray-100">
-        <p-button type="button" label="Cancel" severity="secondary" [text]="true" (onClick)="showModal.set(false)"></p-button>
-        <p-button type="submit" label="Sign & Save Note" icon="ri-save-line" [disabled]="!newRecord.diagnosis"></p-button>
-      </div>
-    </form>
-  </p-dialog>
+        <div class="space-y-1">
+          <label class="font-medium text-foreground block">Subjective Symptoms</label>
+          <textarea hlmTextarea [(ngModel)]="newRecord.symptoms" name="symptoms" rows="3" placeholder="Patient reports..." class="w-full text-xs"></textarea>
+        </div>
+
+        <div class="space-y-1">
+          <label class="font-medium text-foreground block">Assessment & Plan of Care</label>
+          <textarea hlmTextarea [(ngModel)]="newRecord.treatmentPlan" name="treatmentPlan" rows="3" placeholder="Continue Metformin..." class="w-full text-xs"></textarea>
+        </div>
+
+        <div class="space-y-1">
+          <label class="font-medium text-foreground block">Clinical Notes</label>
+          <textarea hlmTextarea [(ngModel)]="newRecord.notes" name="notes" rows="2" placeholder="Clinical impressions..." class="w-full text-xs"></textarea>
+        </div>
+
+        <hlm-dialog-footer class="mt-4 flex justify-end gap-2">
+          <button hlmBtn type="button" variant="ghost" size="sm" (click)="showModal.set(false)">Cancel</button>
+          <button hlmBtn type="submit" variant="default" size="sm" [disabled]="!newRecord.diagnosis">Sign & Save Note</button>
+        </hlm-dialog-footer>
+      </form>
+    </hlm-dialog-content>
+  </hlm-dialog>
 </div>

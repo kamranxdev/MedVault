@@ -1,130 +1,121 @@
-<div class="flex flex-col gap-6">
-  <!-- Header Card -->
-  <p-card>
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-      <div>
-        <div class="flex items-center gap-3">
-          <i class="ri-hospital-line text-2xl text-blue-500"></i>
-          <h1 class="text-2xl font-bold">
-            {{ isPatient() ? 'My Visit & Consultation History' : 'Patient Encounters, Intake & Hospital Visits' }}
-          </h1>
-        </div>
-        <p class="text-gray-500 mt-1">
-          Inpatient, Outpatient, Emergency (ED), and Telehealth clinical consultation log registry.
-        </p>
+<div class="space-y-6">
+  <!-- Header -->
+  <div class="p-6 rounded-xl border border-border bg-card flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-2.5">
+        <ng-icon name="lucideHospital" size="20" class="text-foreground" />
+        <h1 class="text-xl font-semibold tracking-tight text-foreground">
+          {{ isPatient() ? 'My Visit & Consultation History' : 'Encounters & Hospital Visits' }}
+        </h1>
       </div>
-
-      <div class="flex items-center gap-3">
-        <p-select 
-          *ngIf="!isPatient()"
-          [options]="patientOptions"
-          [(ngModel)]="selectedPatientId" 
-          (ngModelChange)="onPatientChange($event)"
-          optionLabel="label"
-          optionValue="value">
-        </p-select>
-
-        <p-button 
-          *ngIf="authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE'])" 
-          (onClick)="showModal.set(true)" 
-          [disabled]="selectedPatientId === 0"
-          icon="ri-add-line"
-          label="Log Encounter / Intake">
-        </p-button>
-      </div>
+      <p class="text-xs text-muted-foreground mt-0.5">
+        Inpatient, Outpatient, Emergency (ED), and Telehealth clinical consultation logs.
+      </p>
     </div>
-  </p-card>
 
-  <!-- Encounters Table -->
-  <p-card *ngIf="selectedPatientId > 0">
-    <p-table 
-      [value]="encounters()" 
-      [paginator]="true" 
-      [rows]="10" 
-      [rowsPerPageOptions]="[5, 10, 20]"
-      sortMode="multiple"
-      responsiveLayout="scroll">
-      
-      <ng-template pTemplate="header">
-        <tr>
-          <th pSortableColumn="encounterDate">Date <p-sorticon field="encounterDate"></p-sorticon></th>
-          <th pSortableColumn="encounterType">Type <p-sorticon field="encounterType"></p-sorticon></th>
-          <th pSortableColumn="chiefComplaint">Chief Complaint <p-sorticon field="chiefComplaint"></p-sorticon></th>
-          <th>Clinical Notes</th>
-          <th>Discharge Summary</th>
-          <th pSortableColumn="attendingProvider.fullName">Provider <p-sorticon field="attendingProvider.fullName"></p-sorticon></th>
-          <th pSortableColumn="status">Status <p-sorticon field="status"></p-sorticon></th>
-        </tr>
-      </ng-template>
+    <div class="flex items-center gap-3">
+      <select
+        *ngIf="!isPatient()"
+        hlmInput
+        [ngModel]="selectedPatientId"
+        (ngModelChange)="onPatientChange($event)"
+        class="w-64 h-9 text-xs">
+        <option *ngFor="let opt of patientOptions" [value]="opt.value">{{ opt.label }}</option>
+      </select>
 
-      <ng-template pTemplate="body" let-enc>
-        <tr>
-          <td>{{ enc.encounterDate | date:'medium' }}</td>
-          <td>
-            <p-tag [value]="enc.encounterType" [severity]="getSeverity(enc.encounterType)"></p-tag>
-          </td>
-          <td class="font-bold">{{ enc.chiefComplaint }}</td>
-          <td>{{ enc.clinicalNotes || 'No notes documented' }}</td>
-          <td>{{ enc.dischargeSummary || 'Pending discharge' }}</td>
-          <td>{{ enc.attendingProvider?.fullName || 'Dr. Mahtab Khan' }}</td>
-          <td>
-            <p-tag [value]="enc.status" severity="success"></p-tag>
-          </td>
-        </tr>
-      </ng-template>
+      <button
+        *ngIf="authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE'])"
+        hlmBtn
+        variant="default"
+        size="sm"
+        (click)="showModal.set(true)"
+        [disabled]="selectedPatientId === 0"
+        class="gap-1.5">
+        <ng-icon name="lucidePlus" size="15" />
+        <span>Log Encounter</span>
+      </button>
+    </div>
+  </div>
 
-      <ng-template pTemplate="emptymessage">
-        <tr>
-          <td colspan="7" class="text-center p-4">
-            <p-message severity="info" text="No visit encounters logged for this patient."></p-message>
-          </td>
-        </tr>
-      </ng-template>
-    </p-table>
-  </p-card>
+  <div *ngIf="selectedPatientId === 0" class="p-4 rounded-lg bg-muted/40 border border-border text-muted-foreground text-xs flex items-center gap-2">
+    <ng-icon name="lucideAlertCircle" size="16" class="shrink-0" />
+    <span>Select a patient profile above to inspect encounter logs and visit history.</span>
+  </div>
 
-  <div *ngIf="selectedPatientId === 0">
-    <p-message severity="info" class="w-full">Select a patient from the dropdown above to view visit history.</p-message>
+  <div *ngIf="selectedPatientId > 0" class="space-y-4">
+    <div *ngIf="encounters().length === 0" class="p-4 rounded-lg bg-muted/30 border border-border text-muted-foreground text-xs">
+      No visit encounters logged for this patient.
+    </div>
+
+    <div *ngIf="encounters().length > 0" class="border border-border rounded-xl bg-card overflow-hidden">
+      <table hlmTable class="w-full text-xs">
+        <thead hlmTableHeader>
+          <tr hlmTableRow class="bg-muted/40">
+            <th hlmTableHead>Date & Time</th>
+            <th hlmTableHead>Type</th>
+            <th hlmTableHead>Chief Complaint</th>
+            <th hlmTableHead>Clinical Notes</th>
+            <th hlmTableHead>Discharge Summary</th>
+            <th hlmTableHead>Attending Provider</th>
+            <th hlmTableHead>Status</th>
+          </tr>
+        </thead>
+        <tbody hlmTableBody>
+          <tr hlmTableRow *ngFor="let enc of encounters()">
+            <td hlmTableCell class="font-mono text-muted-foreground">{{ enc.encounterDate | date:'medium' }}</td>
+            <td hlmTableCell>
+              <span hlmBadge [variant]="enc.encounterType === 'EMERGENCY' ? 'destructive' : 'secondary'" class="text-[10px]">
+                {{ enc.encounterType }}
+              </span>
+            </td>
+            <td hlmTableCell class="font-semibold text-foreground">{{ enc.chiefComplaint }}</td>
+            <td hlmTableCell class="text-muted-foreground">{{ enc.clinicalNotes || 'No notes documented' }}</td>
+            <td hlmTableCell class="text-muted-foreground">{{ enc.dischargeSummary || 'Pending discharge' }}</td>
+            <td hlmTableCell class="text-muted-foreground">{{ enc.attendingProvider?.fullName || 'Physician' }}</td>
+            <td hlmTableCell>
+              <span hlmBadge variant="outline" class="text-[10px]">{{ enc.status }}</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <!-- Add Encounter Modal -->
-  <p-dialog 
-    [(visible)]="showModal" 
-    header="Log Clinical Visit Encounter" 
-    [modal]="true" 
-    [style]="{ width: '32rem' }">
-    <form (ngSubmit)="saveEncounter()" class="flex flex-col gap-4 mt-2">
-      <div class="flex flex-col gap-2">
-        <label class="font-semibold">Encounter Type *</label>
-        <p-select 
-          [(ngModel)]="newEncounter.encounterType" 
-          name="encounterType" 
-          [options]="encounterTypeOptions"
-          optionLabel="label"
-          optionValue="value"
-          styleClass="w-full">
-        </p-select>
-      </div>
+  <hlm-dialog *ngIf="showModal()" (closed)="showModal.set(false)">
+    <hlm-dialog-content class="sm:max-w-[450px]">
+      <hlm-dialog-header>
+        <h3 hlmDialogTitle class="text-base font-semibold">Log Clinical Visit Encounter</h3>
+      </hlm-dialog-header>
 
-      <div class="flex flex-col gap-2">
-        <label class="font-semibold">Chief Complaint *</label>
-        <input pInputText type="text" [(ngModel)]="newEncounter.chiefComplaint" name="chiefComplaint" placeholder="e.g. Acute morning headache and hypertension" required class="w-full" />
-      </div>
+      <form (ngSubmit)="saveEncounter()" class="space-y-4 my-2 text-xs">
+        <div class="space-y-1">
+          <label class="font-medium text-foreground block">Encounter Type *</label>
+          <select hlmInput [(ngModel)]="newEncounter.encounterType" name="encounterType" class="w-full h-8 text-xs">
+            <option *ngFor="let opt of encounterTypeOptions" [value]="opt.value">{{ opt.label }}</option>
+          </select>
+        </div>
 
-      <div class="flex flex-col gap-2">
-        <label class="font-semibold">Clinical Notes</label>
-        <textarea pTextarea [(ngModel)]="newEncounter.clinicalNotes" name="clinicalNotes" rows="3" placeholder="Evaluated patient in triage..." class="w-full"></textarea>
-      </div>
+        <div class="space-y-1">
+          <label class="font-medium text-foreground block">Chief Complaint *</label>
+          <input hlmInput type="text" [(ngModel)]="newEncounter.chiefComplaint" name="chiefComplaint" placeholder="e.g. Acute morning headache and hypertension" required class="w-full h-8 text-xs" />
+        </div>
 
-      <div class="flex flex-col gap-2">
-        <label class="font-semibold">Discharge Summary</label>
-        <textarea pTextarea [(ngModel)]="newEncounter.dischargeSummary" name="dischargeSummary" rows="2" placeholder="Discharged with home BP tracking..." class="w-full"></textarea>
-      </div>
+        <div class="space-y-1">
+          <label class="font-medium text-foreground block">Clinical Notes</label>
+          <textarea hlmTextarea [(ngModel)]="newEncounter.clinicalNotes" name="clinicalNotes" rows="3" placeholder="Evaluated patient in triage..." class="w-full text-xs"></textarea>
+        </div>
 
-      <div class="flex justify-end gap-3 pt-4">
-        <p-button type="button" label="Cancel" severity="secondary" (onClick)="showModal.set(false)"></p-button>
-        <p-button type="submit" label="Log Encounter" [disabled]="!newEncounter.chiefComplaint"></p-button>
-      </div>
-    </form>
-  </p-dialog>
+        <div class="space-y-1">
+          <label class="font-medium text-foreground block">Discharge Summary</label>
+          <textarea hlmTextarea [(ngModel)]="newEncounter.dischargeSummary" name="dischargeSummary" rows="2" placeholder="Discharged with home tracking..." class="w-full text-xs"></textarea>
+        </div>
+
+        <hlm-dialog-footer class="mt-4 flex justify-end gap-2">
+          <button hlmBtn type="button" variant="ghost" size="sm" (click)="showModal.set(false)">Cancel</button>
+          <button hlmBtn type="submit" variant="default" size="sm" [disabled]="!newEncounter.chiefComplaint">Log Encounter</button>
+        </hlm-dialog-footer>
+      </form>
+    </hlm-dialog-content>
+  </hlm-dialog>
 </div>

@@ -7,16 +7,16 @@ import { PatientContextService } from '../../core/services/patient-context.servi
 import { HasRoleDirective, HasAnyRoleDirective } from '../../core/directives/has-role.directive';
 import { Patient, Prescription, SafetyCheckResult } from '../../core/models/models';
 
-import { TableModule } from 'primeng/table';
-import { DialogModule } from 'primeng/dialog';
-import { ButtonModule } from 'primeng/button';
-import { TagModule } from 'primeng/tag';
-import { CardModule } from 'primeng/card';
-import { InputTextModule } from 'primeng/inputtext';
-import { SelectModule } from 'primeng/select';
-import { DatePickerModule } from 'primeng/datepicker';
-import { TextareaModule } from 'primeng/textarea';
-import { MessageModule } from 'primeng/message';
+import { HlmCardImports } from '@spartan-ng/helm/card';
+import { HlmTableImports } from '@spartan-ng/helm/table';
+import { HlmBadgeImports } from '@spartan-ng/helm/badge';
+import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { HlmDialogImports } from '@spartan-ng/helm/dialog';
+import { HlmInputImports } from '@spartan-ng/helm/input';
+import { HlmSelectImports } from '@spartan-ng/helm/select';
+import { HlmTextareaImports } from '@spartan-ng/helm/textarea';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucidePlus, lucidePill, lucideAlertCircle } from '@ng-icons/lucide';
 
 @Component({
   selector: 'app-prescriptions',
@@ -24,18 +24,20 @@ import { MessageModule } from 'primeng/message';
   imports: [
     CommonModule,
     FormsModule,
-    TableModule,
-    DialogModule,
-    ButtonModule,
-    TagModule,
-    CardModule,
-    InputTextModule,
-    SelectModule,
-    DatePickerModule,
-    TextareaModule,
-    MessageModule,
+    HlmCardImports,
+    HlmTableImports,
+    HlmBadgeImports,
+    HlmButtonImports,
+    HlmDialogImports,
+    HlmInputImports,
+    HlmSelectImports,
+    HlmTextareaImports,
     HasRoleDirective,
-    HasAnyRoleDirective
+    HasAnyRoleDirective,
+    NgIcon
+  ],
+  providers: [
+    provideIcons({ lucidePlus, lucidePill, lucideAlertCircle })
   ],
   templateUrl: './prescriptions.component.html',
   styleUrl: './prescriptions.component.css'

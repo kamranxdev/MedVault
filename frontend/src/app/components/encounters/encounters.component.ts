@@ -7,35 +7,37 @@ import { PatientContextService } from '../../core/services/patient-context.servi
 import { HasRoleDirective, HasAnyRoleDirective } from '../../core/directives/has-role.directive';
 import { Encounter, Patient } from '../../core/models/models';
 
-import { TableModule } from 'primeng/table';
-import { DialogModule } from 'primeng/dialog';
-import { ButtonModule } from 'primeng/button';
-import { InputTextModule } from 'primeng/inputtext';
-import { SelectModule } from 'primeng/select';
-import { TextareaModule } from 'primeng/textarea';
-import { CardModule } from 'primeng/card';
-import { TagModule } from 'primeng/tag';
-import { MessageModule } from 'primeng/message';
-import { DatePickerModule } from 'primeng/datepicker';
+import { HlmCardImports } from '@spartan-ng/helm/card';
+import { HlmTableImports } from '@spartan-ng/helm/table';
+import { HlmBadgeImports } from '@spartan-ng/helm/badge';
+import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { HlmDialogImports } from '@spartan-ng/helm/dialog';
+import { HlmInputImports } from '@spartan-ng/helm/input';
+import { HlmSelectImports } from '@spartan-ng/helm/select';
+import { HlmTextareaImports } from '@spartan-ng/helm/textarea';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucidePlus, lucideHospital, lucideAlertCircle } from '@ng-icons/lucide';
 
 @Component({
   selector: 'app-encounters',
   standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
-    TableModule, 
-    DialogModule, 
-    ButtonModule, 
-    InputTextModule,
-    SelectModule,
-    TextareaModule,
-    CardModule,
-    TagModule,
-    MessageModule,
-    DatePickerModule,
+    CommonModule,
+    FormsModule,
+    HlmCardImports,
+    HlmTableImports,
+    HlmBadgeImports,
+    HlmButtonImports,
+    HlmDialogImports,
+    HlmInputImports,
+    HlmSelectImports,
+    HlmTextareaImports,
     HasRoleDirective,
-    HasAnyRoleDirective
+    HasAnyRoleDirective,
+    NgIcon
+  ],
+  providers: [
+    provideIcons({ lucidePlus, lucideHospital, lucideAlertCircle })
   ],
   templateUrl: './encounters.component.html',
   styleUrl: './encounters.component.css'
@@ -61,7 +63,7 @@ export class EncountersComponent implements OnInit {
   ];
 
   constructor(
-    private apiService: ApiService, 
+    private apiService: ApiService,
     public authService: AuthService,
     public patientContext: PatientContextService
   ) {
@@ -138,23 +140,5 @@ export class EncountersComponent implements OnInit {
         this.loadEncounters(this.selectedPatientId);
       }
     });
-  }
-
-  getEncounterTypeBadge(type: string): string {
-    switch (type) {
-      case 'EMERGENCY': return 'bg-rose-500/20 text-rose-300 border border-rose-500/30';
-      case 'INPATIENT': return 'bg-purple-500/20 text-purple-300 border border-purple-500/30';
-      case 'TELEHEALTH': return 'bg-amber-500/20 text-amber-300 border border-amber-500/30';
-      default: return 'bg-blue-500/20 text-blue-300 border border-blue-500/30';
-    }
-  }
-
-  getSeverity(type: string): "success" | "secondary" | "info" | "warn" | "danger" | "contrast" {
-    switch (type) {
-      case 'EMERGENCY': return 'danger';
-      case 'INPATIENT': return 'warn';
-      case 'TELEHEALTH': return 'info';
-      default: return 'success';
-    }
   }
 }

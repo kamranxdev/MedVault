@@ -7,14 +7,16 @@ import { PatientContextService } from '../../core/services/patient-context.servi
 import { HasRoleDirective, HasAnyRoleDirective } from '../../core/directives/has-role.directive';
 import { MedicalRecord, Patient } from '../../core/models/models';
 
-import { TableModule } from 'primeng/table';
-import { DialogModule } from 'primeng/dialog';
-import { ButtonModule } from 'primeng/button';
-import { InputTextModule } from 'primeng/inputtext';
-import { CardModule } from 'primeng/card';
-import { TagModule } from 'primeng/tag';
-import { SelectModule } from 'primeng/select';
-import { TextareaModule } from 'primeng/textarea';
+import { HlmCardImports } from '@spartan-ng/helm/card';
+import { HlmTableImports } from '@spartan-ng/helm/table';
+import { HlmBadgeImports } from '@spartan-ng/helm/badge';
+import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { HlmDialogImports } from '@spartan-ng/helm/dialog';
+import { HlmInputImports } from '@spartan-ng/helm/input';
+import { HlmSelectImports } from '@spartan-ng/helm/select';
+import { HlmTextareaImports } from '@spartan-ng/helm/textarea';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucidePlus, lucideFileText, lucideAlertCircle, lucideChevronDown, lucideChevronRight } from '@ng-icons/lucide';
 
 @Component({
   selector: 'app-records',
@@ -22,22 +24,27 @@ import { TextareaModule } from 'primeng/textarea';
   imports: [
     CommonModule,
     FormsModule,
-    TableModule,
-    DialogModule,
-    ButtonModule,
-    InputTextModule,
-    CardModule,
-    TagModule,
-    SelectModule,
-    TextareaModule,
+    HlmCardImports,
+    HlmTableImports,
+    HlmBadgeImports,
+    HlmButtonImports,
+    HlmDialogImports,
+    HlmInputImports,
+    HlmSelectImports,
+    HlmTextareaImports,
     HasRoleDirective,
-    HasAnyRoleDirective
+    HasAnyRoleDirective,
+    NgIcon
+  ],
+  providers: [
+    provideIcons({ lucidePlus, lucideFileText, lucideAlertCircle, lucideChevronDown, lucideChevronRight })
   ],
   templateUrl: './records.component.html',
   styleUrl: './records.component.css'
 })
 export class RecordsComponent implements OnInit {
   records = signal<MedicalRecord[]>([]);
+  expandedRecordIds = signal<Set<number>>(new Set());
   selectedPatientId = 0;
   showModal = signal(false);
 
@@ -61,6 +68,19 @@ export class RecordsComponent implements OnInit {
         this.loadRecords(active.id);
       }
     });
+  }
+
+  toggleExpand(id: number | undefined): void {
+    if (id === undefined) return;
+    const next = new Set(this.expandedRecordIds());
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    this.expandedRecordIds.set(next);
+  }
+
+  isExpanded(id: number | undefined): boolean {
+    if (id === undefined) return false;
+    return this.expandedRecordIds().has(id);
   }
 
   isPatient(): boolean {

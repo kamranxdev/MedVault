@@ -7,21 +7,38 @@ import { PatientContextService } from '../../core/services/patient-context.servi
 import { HasRoleDirective, HasAnyRoleDirective } from '../../core/directives/has-role.directive';
 import { Diagnosis, Patient } from '../../core/models/models';
 
-import { TableModule } from 'primeng/table';
-import { DialogModule } from 'primeng/dialog';
-import { ButtonModule } from 'primeng/button';
-import { TagModule } from 'primeng/tag';
-import { CardModule } from 'primeng/card';
-import { MessageModule } from 'primeng/message';
-import { InputTextModule } from 'primeng/inputtext';
-import { SelectModule } from 'primeng/select';
-import { DatePickerModule } from 'primeng/datepicker';
-import { TextareaModule } from 'primeng/textarea';
+import { HlmCardImports } from '@spartan-ng/helm/card';
+import { HlmTableImports } from '@spartan-ng/helm/table';
+import { HlmBadgeImports } from '@spartan-ng/helm/badge';
+import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { HlmDialogImports } from '@spartan-ng/helm/dialog';
+import { HlmInputImports } from '@spartan-ng/helm/input';
+import { HlmSelectImports } from '@spartan-ng/helm/select';
+import { HlmTextareaImports } from '@spartan-ng/helm/textarea';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucidePlus, lucideListChecks, lucideLoader2, lucideAlertCircle } from '@ng-icons/lucide';
 
 @Component({
   selector: 'app-diagnoses',
   standalone: true,
-  imports: [CommonModule, FormsModule, TableModule, DialogModule, ButtonModule, TagModule, CardModule, MessageModule, InputTextModule, SelectModule, DatePickerModule, TextareaModule, HasRoleDirective, HasAnyRoleDirective],
+  imports: [
+    CommonModule,
+    FormsModule,
+    HlmCardImports,
+    HlmTableImports,
+    HlmBadgeImports,
+    HlmButtonImports,
+    HlmDialogImports,
+    HlmInputImports,
+    HlmSelectImports,
+    HlmTextareaImports,
+    HasRoleDirective,
+    HasAnyRoleDirective,
+    NgIcon
+  ],
+  providers: [
+    provideIcons({ lucidePlus, lucideListChecks, lucideLoader2, lucideAlertCircle })
+  ],
   templateUrl: './diagnoses.component.html',
   styleUrl: './diagnoses.component.css'
 })
@@ -40,8 +57,10 @@ export class DiagnosesComponent implements OnInit {
     notes: ''
   };
 
+  statusOptions = ['CHRONIC', 'ACTIVE', 'REMISSION', 'RESOLVED'];
+
   constructor(
-    private apiService: ApiService, 
+    private apiService: ApiService,
     public authService: AuthService,
     public patientContext: PatientContextService
   ) {
@@ -108,15 +127,5 @@ export class DiagnosesComponent implements OnInit {
       this.newDx = { conditionName: '', icdCode: '', snomedCode: '', onsetDate: '2026-01-01', status: 'ACTIVE', notes: '' };
       this.loadDiagnoses();
     });
-  }
-
-  getStatusBadge(status: string): string {
-    switch (status) {
-      case 'CHRONIC': return 'bg-amber-500/20 text-amber-500 border border-amber-500/30';
-      case 'ACTIVE': return 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
-      case 'REMISSION': return 'bg-slate-500/20 text-slate-300 border border-slate-500/30';
-      case 'RESOLVED': return 'bg-blue-500/20 text-blue-400 border border-blue-500/30';
-      default: return 'bg-slate-800 text-slate-400';
-    }
   }
 }

@@ -3,19 +3,27 @@ import { CommonModule } from '@angular/common';
 import { ApiService } from '../../core/services/api.service';
 import { User, AuditLog } from '../../core/models/models';
 
-import { TableModule } from 'primeng/table';
-import { TagModule } from 'primeng/tag';
-import { ButtonModule } from 'primeng/button';
-import { CardModule } from 'primeng/card';
-import { DialogModule } from 'primeng/dialog';
-import { MessageModule } from 'primeng/message';
-import { InputTextModule } from 'primeng/inputtext';
-import { SelectModule } from 'primeng/select';
+import { HlmCardImports } from '@spartan-ng/helm/card';
+import { HlmTableImports } from '@spartan-ng/helm/table';
+import { HlmBadgeImports } from '@spartan-ng/helm/badge';
+import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideSettings, lucideUserCheck, lucideShieldCheck, lucideUsers } from '@ng-icons/lucide';
 
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [CommonModule, TableModule, TagModule, ButtonModule, CardModule, DialogModule, MessageModule, InputTextModule, SelectModule],
+  imports: [
+    CommonModule,
+    HlmCardImports,
+    HlmTableImports,
+    HlmBadgeImports,
+    HlmButtonImports,
+    NgIcon
+  ],
+  providers: [
+    provideIcons({ lucideSettings, lucideUserCheck, lucideShieldCheck, lucideUsers })
+  ],
   templateUrl: './admin.component.html',
   styleUrl: './admin.component.css'
 })
@@ -32,13 +40,5 @@ export class AdminComponent implements OnInit {
 
   getRoleCount(role: string): number {
     return this.users().filter(u => u.roles.includes(role)).length;
-  }
-
-  getRoleBadge(role: string): string {
-    if (role.includes('ADMIN')) return 'bg-rose-500/20 text-rose-400 border border-rose-500/30';
-    if (role.includes('DOCTOR')) return 'bg-blue-500/20 text-blue-400 border border-blue-500/30';
-    if (role.includes('NURSE')) return 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
-    if (role.includes('AUDITOR')) return 'bg-amber-500/20 text-amber-400 border border-amber-500/30';
-    return 'bg-purple-500/20 text-purple-400 border border-purple-500/30';
   }
 }
