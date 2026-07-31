@@ -1,33 +1,39 @@
 <div class="space-y-6">
   <!-- Header -->
-  <div class="p-6 rounded-xl border border-border bg-card flex flex-col md:flex-row md:items-center justify-between gap-4">
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-border">
     <div>
-      <h1 class="text-xl font-semibold tracking-tight text-foreground">
-        {{ isPatient() ? 'My Consultations & Appointments' : 'Provider Consultation Schedule' }}
-      </h1>
+      <div class="flex items-center gap-2.5">
+        <ng-icon name="lucideCalendarClock" size="20" class="text-foreground" />
+        <h1 class="text-xl font-semibold tracking-tight text-foreground">
+          {{ isPatient() ? 'My Appointments & Consultations' : 'Provider Consultation Schedule' }}
+        </h1>
+      </div>
       <p class="text-xs text-muted-foreground mt-0.5">
-        Manage patient appointment slots, clinical consultation requests, and visit statuses.
+        {{ isPatient() ? 'Book and manage your clinical consultations with attending physicians.' : 'Real-time outpatient consultation booking and scheduling dashboard.' }}
       </p>
     </div>
 
-    <button
-      hlmBtn
-      variant="default"
-      size="sm"
-      (click)="openScheduleModal()"
-      class="gap-1.5">
-      <ng-icon name="lucidePlus" size="15" />
-      <span>Book Consultation</span>
-    </button>
+    <div class="flex items-center gap-3">
+      <button
+        hlmBtn
+        variant="default"
+        size="sm"
+        (click)="openScheduleModal()"
+        class="gap-1.5">
+        <ng-icon name="lucidePlus" size="15" />
+        <span>Book Appointment</span>
+      </button>
+    </div>
   </div>
 
+  <!-- Appointments Table -->
   <div class="space-y-4">
-    <div *ngIf="loading()" class="flex justify-center p-8 text-muted-foreground">
-      <ng-icon name="lucideLoader2" size="24" class="animate-spin" />
+    <div *ngIf="loading()" class="p-8 text-center text-xs text-muted-foreground flex items-center justify-center gap-2">
+      <ng-icon name="lucideLoader2" size="16" class="animate-spin" /> Loading schedule...
     </div>
 
     <div *ngIf="!loading() && appointments().length === 0" class="p-4 rounded-lg bg-muted/30 border border-border text-muted-foreground text-xs">
-      No upcoming or past consultation appointments found.
+      No appointments scheduled.
     </div>
 
     <div *ngIf="!loading() && appointments().length > 0" class="border border-border rounded-xl bg-card overflow-hidden">
@@ -36,27 +42,27 @@
           <tr hlmTableRow class="bg-muted/40">
             <th hlmTableHead>Date & Time</th>
             <th hlmTableHead>Patient</th>
-            <th hlmTableHead>Physician</th>
-            <th hlmTableHead>Reason</th>
+            <th hlmTableHead>Attending Doctor</th>
+            <th hlmTableHead>Reason for Visit</th>
             <th hlmTableHead>Status</th>
             <th hlmTableHead *ngIf="!isPatient()">Actions</th>
           </tr>
         </thead>
         <tbody hlmTableBody>
           <tr hlmTableRow *ngFor="let apt of appointments()">
-            <td hlmTableCell class="font-mono text-muted-foreground">{{ apt.appointmentDate | date:'short' }}</td>
+            <td hlmTableCell class="font-mono text-muted-foreground">{{ apt.appointmentDate | date:'medium' }}</td>
             <td hlmTableCell class="font-semibold text-foreground">{{ apt.patient?.fullName || 'Patient' }}</td>
             <td hlmTableCell class="text-muted-foreground">{{ apt.doctor?.fullName || 'Physician' }}</td>
-            <td hlmTableCell class="text-muted-foreground">{{ apt.reason }}</td>
+            <td hlmTableCell class="text-foreground">{{ apt.reason }}</td>
             <td hlmTableCell>
-              <span hlmBadge [variant]="apt.status === 'CANCELLED' ? 'destructive' : (apt.status === 'CONFIRMED' ? 'default' : 'secondary')" class="text-[10px]">
+              <span hlmBadge [variant]="apt.status === 'CONFIRMED' ? 'default' : (apt.status === 'CANCELLED' ? 'destructive' : 'secondary')" class="text-[10px]">
                 {{ apt.status }}
               </span>
             </td>
             <td hlmTableCell *ngIf="!isPatient()">
-              <div class="flex gap-1.5">
-                <button *ngIf="apt.status === 'SCHEDULED'" hlmBtn variant="ghost" size="sm" class="h-6 text-[10px] px-2" (click)="updateStatus(apt.id, 'CONFIRMED')">Confirm</button>
-                <button *ngIf="apt.status !== 'CANCELLED' && apt.status !== 'COMPLETED'" hlmBtn variant="ghost" size="sm" class="h-6 text-[10px] px-2 text-destructive" (click)="updateStatus(apt.id, 'CANCELLED')">Cancel</button>
+              <div class="flex items-center gap-1.5" *ngIf="apt.status === 'SCHEDULED'">
+                <button hlmBtn variant="outline" size="sm" class="h-7 text-[11px] px-2" (click)="updateStatus(apt.id, 'CONFIRMED')">Confirm</button>
+                <button hlmBtn variant="destructive" size="sm" class="h-7 text-[11px] px-2" (click)="updateStatus(apt.id, 'CANCELLED')">Cancel</button>
               </div>
             </td>
           </tr>
@@ -65,28 +71,26 @@
     </div>
   </div>
 
+  <!-- Book Appointment Modal -->
   <hlm-dialog *ngIf="showModal()" (closed)="showModal.set(false)">
-    <hlm-dialog-content class="sm:max-w-[440px]">
+    <hlm-dialog-content class="sm:max-w-[450px]">
       <hlm-dialog-header>
-        <h3 hlmDialogTitle class="text-base font-semibold">Book Consultation Slot</h3>
+        <h3 hlmDialogTitle class="text-base font-semibold">Book Clinical Consultation</h3>
       </hlm-dialog-header>
 
       <form (ngSubmit)="saveAppointment()" class="space-y-4 my-2 text-xs">
-        <div *ngIf="!isPatient()" class="space-y-1">
-          <label class="font-medium text-foreground block">Patient *</label>
+        <div class="space-y-1" *ngIf="!isPatient()">
+          <label class="font-medium text-foreground block">Patient Profile *</label>
           <select hlmInput [(ngModel)]="newApt.patientId" name="patientId" class="w-full h-8 text-xs">
-            <option *ngFor="let p of patientContext.patientList()" [value]="p.id">
-              {{ p.fullName }} (MRN: {{ p.patientCode }})
-            </option>
+            <option [value]="0">Select Patient...</option>
+            <option *ngFor="let p of patientContext.patientList()" [value]="p.id">{{ p.fullName }} (MRN: {{ p.patientCode }})</option>
           </select>
         </div>
 
         <div class="space-y-1">
-          <label class="font-medium text-foreground block">Physician / Doctor *</label>
+          <label class="font-medium text-foreground block">Attending Doctor *</label>
           <select hlmInput [(ngModel)]="newApt.doctorId" name="doctorId" class="w-full h-8 text-xs">
-            <option *ngFor="let d of doctors()" [value]="d.id">
-              {{ d.fullName }} ({{ d.username }})
-            </option>
+            <option *ngFor="let doc of doctors()" [value]="doc.id">{{ doc.fullName }} ({{ doc.specialization || 'General' }})</option>
           </select>
         </div>
 
@@ -97,17 +101,17 @@
 
         <div class="space-y-1">
           <label class="font-medium text-foreground block">Reason for Visit *</label>
-          <input hlmInput [(ngModel)]="newApt.reason" name="reason" placeholder="e.g. Routine Follow-up, Annual Physical..." required class="w-full h-8 text-xs" />
+          <input hlmInput type="text" [(ngModel)]="newApt.reason" name="reason" placeholder="Routine checkup, Follow-up consultation..." required class="w-full h-8 text-xs" />
         </div>
 
         <div class="space-y-1">
-          <label class="font-medium text-foreground block">Additional Notes</label>
-          <textarea hlmTextarea [(ngModel)]="newApt.notes" name="notes" rows="2" class="w-full text-xs"></textarea>
+          <label class="font-medium text-foreground block">Clinical Notes</label>
+          <textarea hlmTextarea [(ngModel)]="newApt.notes" name="notes" rows="2" placeholder="Additional notes..." class="w-full text-xs"></textarea>
         </div>
 
         <hlm-dialog-footer class="mt-4 flex justify-end gap-2">
-          <button hlmBtn variant="ghost" size="sm" type="button" (click)="showModal.set(false)">Cancel</button>
-          <button hlmBtn variant="default" size="sm" type="submit">Schedule Appointment</button>
+          <button hlmBtn type="button" variant="ghost" size="sm" (click)="showModal.set(false)">Cancel</button>
+          <button hlmBtn type="submit" variant="default" size="sm" [disabled]="!newApt.reason || !newApt.appointmentDate">Book Appointment</button>
         </hlm-dialog-footer>
       </form>
     </hlm-dialog-content>

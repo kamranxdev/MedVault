@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { PatientContextService } from '../../core/services/patient-context.service';
-import { HasRoleDirective, HasAnyRoleDirective } from '../../core/directives/has-role.directive';
 import { Allergy, Patient } from '../../core/models/models';
 
 import { HlmCardImports } from '@spartan-ng/helm/card';
@@ -32,8 +31,6 @@ import { lucidePlus, lucideLoader2, lucideAlertCircle, lucideTriangleAlert } fro
     HlmInputImports,
     HlmSelectImports,
     HlmTextareaImports,
-    HasRoleDirective,
-    HasAnyRoleDirective,
     NgIcon
   ],
   providers: [
@@ -44,37 +41,30 @@ import { lucidePlus, lucideLoader2, lucideAlertCircle, lucideTriangleAlert } fro
 })
 export class AllergiesComponent implements OnInit {
   allergies = signal<Allergy[]>([]);
-  selectedPatientId: number | null = null;
+  selectedPatientId = 0;
   loading = signal<boolean>(false);
-  showModal = false;
+  showModal = signal(false);
 
-  newAlg: Partial<Allergy> = {
+  newAllergy = {
     allergenName: '',
-    allergenCode: '',
     category: 'DRUG',
     severity: 'SEVERE',
     reactionDescription: '',
     status: 'ACTIVE'
   };
 
-  categoryOptions = [
+  categories = [
     { label: 'Drug / Medication', value: 'DRUG' },
     { label: 'Food Allergy', value: 'FOOD' },
     { label: 'Environmental', value: 'ENVIRONMENTAL' },
     { label: 'Other Allergen', value: 'OTHER' }
   ];
 
-  severityOptions = [
+  severities = [
     { label: 'Mild', value: 'MILD' },
     { label: 'Moderate', value: 'MODERATE' },
     { label: 'Severe', value: 'SEVERE' },
     { label: 'Life Threatening', value: 'LIFE_THREATENING' }
-  ];
-
-  statusOptions = [
-    { label: 'Active', value: 'ACTIVE' },
-    { label: 'Inactive', value: 'INACTIVE' },
-    { label: 'Resolved', value: 'RESOLVED' }
   ];
 
   constructor(
@@ -93,6 +83,10 @@ export class AllergiesComponent implements OnInit {
 
   isPatient(): boolean {
     return this.authService.hasRole('ROLE_PATIENT');
+  }
+
+  canAddAllergy(): boolean {
+    return this.authService.hasAnyRole(['ROLE_DOCTOR', 'ROLE_NURSE']);
   }
 
   ngOnInit(): void {
@@ -117,7 +111,7 @@ export class AllergiesComponent implements OnInit {
 
   onPatientChange(patientId: number): void {
     this.selectedPatientId = Number(patientId);
-    if (this.selectedPatientId) {
+    if (this.selectedPatientId > 0) {
       this.patientContext.selectPatientById(this.selectedPatientId);
       this.loadAllergies();
     } else {
@@ -126,7 +120,7 @@ export class AllergiesComponent implements OnInit {
   }
 
   loadAllergies(): void {
-    if (!this.selectedPatientId) return;
+    if (this.selectedPatientId === 0) return;
     this.loading.set(true);
     this.apiService.getAllergiesByPatient(Number(this.selectedPatientId)).subscribe({
       next: (res) => {
@@ -138,11 +132,17 @@ export class AllergiesComponent implements OnInit {
   }
 
   saveAllergy(): void {
-    if (!this.selectedPatientId) return;
-    this.newAlg.patient = { id: Number(this.selectedPatientId) } as Patient;
-    this.apiService.createAllergy(this.newAlg).subscribe(() => {
-      this.showModal = false;
-      this.newAlg = { allergenName: '', allergenCode: '', category: 'DRUG', severity: 'SEVERE', reactionDescription: '', status: 'ACTIVE' };
+    if (this.selectedPatientId === 0 || !this.newAllergy.allergenName) return;
+    this.apiService.createAllergy({
+      patient: { id: Number(this.selectedPatientId) } as Patient,
+      allergenName: this.newAllergy.allergenName,
+      category: this.newAllergy.category,
+      severity: this.newAllergy.severity,
+      reactionDescription: this.newAllergy.reactionDescription,
+      status: this.newAllergy.status
+    }).subscribe(() => {
+      this.showModal.set(false);
+      this.newAllergy = { allergenName: '', category: 'DRUG', severity: 'SEVERE', reactionDescription: '', status: 'ACTIVE' };
       this.loadAllergies();
     });
   }

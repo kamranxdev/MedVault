@@ -34,6 +34,7 @@ import { lucideShieldCheck, lucideDownload, lucideSearch, lucideLoader2 } from '
 })
 export class AuditLedgerComponent implements OnInit {
   auditLogs = signal<AuditLog[]>([]);
+  filteredLogs = signal<AuditLog[]>([]);
   loading = signal<boolean>(false);
   searchQuery = '';
 
@@ -48,54 +49,35 @@ export class AuditLedgerComponent implements OnInit {
 
   loadLogs(): void {
     this.loading.set(true);
-    this.apiService.getAuditLogs(this.searchQuery).subscribe({
+    this.apiService.getAuditLogs().subscribe({
       next: (logs) => {
         this.auditLogs.set(logs);
+        this.filterLogs();
         this.loading.set(false);
       },
       error: () => this.loading.set(false)
     });
   }
 
-  onSearchChange(): void {
-    this.loadLogs();
+  filterLogs(): void {
+    if (!this.searchQuery) {
+      this.filteredLogs.set(this.auditLogs());
+    } else {
+      const q = this.searchQuery.toLowerCase();
+      this.filteredLogs.set(this.auditLogs().filter(l =>
+        l.username?.toLowerCase().includes(q) ||
+        l.action?.toLowerCase().includes(q) ||
+        l.details?.toLowerCase().includes(q) ||
+        l.entityName?.toLowerCase().includes(q)
+      ));
+    }
   }
 
-  getAlertCount(): number {
-    return this.auditLogs().filter(l => l.action === 'ERX_ALERT').length;
-  }
-
-  getActionCount(action: string): number {
-    return this.auditLogs().filter(l => l.action === action).length;
-  }
-
-  exportAuditLogJSON(): void {
+  exportAuditLedger(): void {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.auditLogs(), null, 2));
     const downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute("href", dataStr);
     downloadAnchor.setAttribute("download", `MedVault_Audit_Report_${new Date().toISOString().split('T')[0]}.json`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
-  }
-
-  exportAuditLogCSV(): void {
-    const headers = ["ID", "Timestamp", "Actor", "Role", "Action", "Entity", "ResourceID", "Details"];
-    const rows = this.auditLogs().map(l => [
-      l.id,
-      `"${l.timestamp}"`,
-      `"${l.username}"`,
-      `"${l.userRole}"`,
-      `"${l.action}"`,
-      `"${l.entityName}"`,
-      `"${l.resourceId || ''}"`,
-      `"${(l.details || '').replace(/"/g, '""')}"`
-    ]);
-
-    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute("href", encodeURI(csvContent));
-    downloadAnchor.setAttribute("download", `MedVault_Audit_Ledger_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();

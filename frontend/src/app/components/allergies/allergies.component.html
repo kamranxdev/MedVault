@@ -1,12 +1,15 @@
 <div class="space-y-6">
   <!-- Header -->
-  <div class="p-6 rounded-xl border border-border bg-card flex flex-col md:flex-row md:items-center justify-between gap-4">
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-border">
     <div>
-      <h1 class="text-xl font-semibold tracking-tight text-foreground">
-        {{ isPatient() ? 'My Allergies & Risk Profile' : 'Allergies & Adverse Drug Reactions (ADRs)' }}
-      </h1>
+      <div class="flex items-center gap-2.5">
+        <ng-icon name="lucideTriangleAlert" size="20" class="text-destructive" />
+        <h1 class="text-xl font-semibold tracking-tight text-foreground">
+          {{ isPatient() ? 'My Allergy Profile & Sensitivities' : 'Coded Allergies & ADR Risk Register' }}
+        </h1>
+      </div>
       <p class="text-xs text-muted-foreground mt-0.5">
-        RxNorm & SNOMED CT coded adverse drug reactions, severity ratings, and safety alerts.
+        {{ isPatient() ? 'View your documented drug, food, and environmental allergies.' : 'Coded adverse reaction records cross-checked during eRx order entry.' }}
       </p>
     </div>
 
@@ -17,19 +20,19 @@
         [ngModel]="selectedPatientId"
         (ngModelChange)="onPatientChange($event)"
         class="w-64 h-9 text-xs">
-        <option [ngValue]="null">Select Patient Profile...</option>
+        <option [value]="0">Select Patient Profile...</option>
         <option *ngFor="let p of patientContext.patientList()" [value]="p.id">
           {{ p.fullName }} (MRN: {{ p.patientCode }})
         </option>
       </select>
 
       <button
-        *ngIf="authService.hasAnyRole(['ROLE_DOCTOR', 'ROLE_NURSE'])"
+        *ngIf="canAddAllergy()"
         hlmBtn
         variant="destructive"
         size="sm"
-        (click)="showModal = true"
-        [disabled]="!selectedPatientId"
+        (click)="showModal.set(true)"
+        [disabled]="selectedPatientId === 0"
         class="gap-1.5">
         <ng-icon name="lucidePlus" size="15" />
         <span>Document Allergy</span>
@@ -37,111 +40,84 @@
     </div>
   </div>
 
-  <div *ngIf="!selectedPatientId" class="p-4 rounded-lg bg-muted/40 border border-border text-muted-foreground text-xs flex items-center gap-2">
+  <div *ngIf="selectedPatientId === 0" class="p-4 rounded-lg bg-muted/40 border border-border text-muted-foreground text-xs flex items-center gap-2">
     <ng-icon name="lucideAlertCircle" size="16" class="shrink-0" />
-    <span>Select a patient profile above to inspect documented coded allergy records.</span>
+    <span>Select a patient profile above to inspect documented allergies and sensitivities.</span>
   </div>
 
-  <div *ngIf="selectedPatientId" class="space-y-4">
-    <div *ngIf="loading()" class="flex justify-center p-8 text-muted-foreground">
-      <ng-icon name="lucideLoader2" size="24" class="animate-spin" />
+  <div *ngIf="selectedPatientId > 0" class="space-y-4">
+    <div *ngIf="allergies().length === 0" class="p-4 rounded-lg bg-muted/30 border border-border text-muted-foreground text-xs">
+      No allergies documented for this patient profile.
     </div>
 
-    <div *ngIf="!loading() && allergies().length === 0" class="p-4 rounded-lg bg-muted/30 border border-border text-muted-foreground text-xs">
-      No documented allergies or adverse reactions on file for this patient.
-    </div>
-
-    <div *ngIf="!loading() && allergies().length > 0" class="border border-border rounded-xl bg-card overflow-hidden">
+    <div *ngIf="allergies().length > 0" class="border border-border rounded-xl bg-card overflow-hidden">
       <table hlmTable class="w-full text-xs">
         <thead hlmTableHeader>
           <tr hlmTableRow class="bg-muted/40">
-            <th hlmTableHead>Allergen</th>
+            <th hlmTableHead>Allergen Name</th>
             <th hlmTableHead>Category</th>
             <th hlmTableHead>Severity</th>
-            <th hlmTableHead>Reaction</th>
+            <th hlmTableHead>Reaction Description</th>
             <th hlmTableHead>Status</th>
-            <th hlmTableHead>Recorded Date</th>
           </tr>
         </thead>
         <tbody hlmTableBody>
-          <tr hlmTableRow *ngFor="let alg of allergies()">
+          <tr hlmTableRow *ngFor="let a of allergies()">
+            <td hlmTableCell class="font-semibold text-foreground">{{ a.allergenName }}</td>
+            <td hlmTableCell class="text-muted-foreground">{{ a.category }}</td>
             <td hlmTableCell>
-              <div class="font-semibold text-foreground">{{ alg.allergenName }}</div>
-              <div class="text-[11px] text-muted-foreground font-mono" *ngIf="alg.allergenCode">{{ alg.allergenCode }}</div>
-            </td>
-            <td hlmTableCell>
-              <span hlmBadge variant="outline" class="text-[10px]">
-                {{ alg.category }}
+              <span hlmBadge [variant]="a.severity === 'SEVERE' || a.severity === 'LIFE_THREATENING' ? 'destructive' : 'secondary'" class="text-[10px]">
+                {{ a.severity }}
               </span>
             </td>
+            <td hlmTableCell class="text-muted-foreground">{{ a.reactionDescription }}</td>
             <td hlmTableCell>
-              <span hlmBadge [variant]="alg.severity === 'SEVERE' || alg.severity === 'LIFE_THREATENING' ? 'destructive' : 'secondary'" class="text-[10px]">
-                {{ alg.severity }}
-              </span>
+              <span hlmBadge variant="outline" class="text-[10px]">{{ a.status }}</span>
             </td>
-            <td hlmTableCell class="text-muted-foreground">{{ alg.reactionDescription || 'No reaction description provided' }}</td>
-            <td hlmTableCell>
-              <span hlmBadge variant="outline" class="text-[10px]">
-                {{ alg.status }}
-              </span>
-            </td>
-            <td hlmTableCell class="text-muted-foreground font-mono">{{ alg.recordedAt | date:'mediumDate' }}</td>
           </tr>
         </tbody>
       </table>
     </div>
   </div>
 
-  <hlm-dialog *ngIf="showModal" (closed)="showModal = false">
+  <!-- Document Allergy Modal -->
+  <hlm-dialog *ngIf="showModal()" (closed)="showModal.set(false)">
     <hlm-dialog-content class="sm:max-w-[420px]">
       <hlm-dialog-header>
         <h3 hlmDialogTitle class="text-base font-semibold">Document Coded Allergy</h3>
       </hlm-dialog-header>
 
-      <div class="space-y-4 my-2 text-xs">
+      <form (ngSubmit)="saveAllergy()" class="space-y-4 my-2 text-xs">
         <div class="space-y-1">
           <label class="font-medium text-foreground block">Allergen Name *</label>
-          <input hlmInput [(ngModel)]="newAlg.allergenName" placeholder="e.g. Penicillin, Latex, Aspirin..." class="w-full h-8 text-xs" />
+          <input hlmInput [(ngModel)]="newAllergy.allergenName" name="allergenName" placeholder="e.g. Penicillin, Peanuts..." required class="w-full h-8 text-xs" />
         </div>
 
         <div class="grid grid-cols-2 gap-3">
-          <div class="space-y-1">
-            <label class="font-medium text-foreground block">RxNorm / SNOMED Code</label>
-            <input hlmInput [(ngModel)]="newAlg.allergenCode" placeholder="RxNorm-70618" class="w-full h-8 text-xs font-mono" />
-          </div>
           <div class="space-y-1">
             <label class="font-medium text-foreground block">Category</label>
-            <select hlmInput [(ngModel)]="newAlg.category" class="w-full h-8 text-xs">
-              <option *ngFor="let opt of categoryOptions" [value]="opt.value">{{ opt.label }}</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <div class="space-y-1">
-            <label class="font-medium text-foreground block">Severity Level</label>
-            <select hlmInput [(ngModel)]="newAlg.severity" class="w-full h-8 text-xs">
-              <option *ngFor="let opt of severityOptions" [value]="opt.value">{{ opt.label }}</option>
+            <select hlmInput [(ngModel)]="newAllergy.category" name="category" class="w-full h-8 text-xs">
+              <option *ngFor="let cat of categories" [value]="cat.value">{{ cat.label }}</option>
             </select>
           </div>
           <div class="space-y-1">
-            <label class="font-medium text-foreground block">Status</label>
-            <select hlmInput [(ngModel)]="newAlg.status" class="w-full h-8 text-xs">
-              <option *ngFor="let opt of statusOptions" [value]="opt.value">{{ opt.label }}</option>
+            <label class="font-medium text-foreground block">Severity</label>
+            <select hlmInput [(ngModel)]="newAllergy.severity" name="severity" class="w-full h-8 text-xs">
+              <option *ngFor="let sev of severities" [value]="sev.value">{{ sev.label }}</option>
             </select>
           </div>
         </div>
 
         <div class="space-y-1">
-          <label class="font-medium text-foreground block">Adverse Reaction Description</label>
-          <textarea hlmTextarea [(ngModel)]="newAlg.reactionDescription" rows="3" placeholder="Describe reaction symptoms (anaphylaxis, hives, rash, etc.)..." class="w-full text-xs"></textarea>
+          <label class="font-medium text-foreground block">Reaction Description</label>
+          <textarea hlmTextarea [(ngModel)]="newAllergy.reactionDescription" name="reactionDescription" rows="3" placeholder="Anaphylaxis, hives..." class="w-full text-xs"></textarea>
         </div>
-      </div>
 
-      <hlm-dialog-footer class="mt-4 flex justify-end gap-2">
-        <button hlmBtn variant="ghost" size="sm" (click)="showModal = false">Cancel</button>
-        <button hlmBtn variant="destructive" size="sm" (click)="saveAllergy()">Save Allergy Record</button>
-      </hlm-dialog-footer>
+        <hlm-dialog-footer class="mt-4 flex justify-end gap-2">
+          <button hlmBtn type="button" variant="ghost" size="sm" (click)="showModal.set(false)">Cancel</button>
+          <button hlmBtn type="submit" variant="destructive" size="sm" [disabled]="!newAllergy.allergenName">Save Allergy</button>
+        </hlm-dialog-footer>
+      </form>
     </hlm-dialog-content>
   </hlm-dialog>
 </div>

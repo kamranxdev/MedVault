@@ -3,36 +3,34 @@
   <!-- PATIENT PERSONA DASHBOARD -->
   <div *hasRole="'ROLE_PATIENT'" class="space-y-6">
     <!-- Header Banner -->
-    <div class="p-6 rounded-xl border border-border bg-card space-y-4">
-      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div class="flex items-center gap-4">
-          <div class="size-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-            <ng-icon name="lucideUserRound" size="24" />
-          </div>
-          <div class="space-y-1">
-            <div class="flex items-center gap-2">
-              <h1 class="text-xl font-semibold tracking-tight text-foreground">Welcome, {{ patient()?.fullName || currentUser?.fullName }}</h1>
-              <span hlmBadge variant="outline" class="text-[10px]">Patient Portal</span>
-            </div>
-            <p class="text-xs text-muted-foreground flex items-center gap-2">
-              <span>Medical Record Number (MRN):</span>
-              <span hlmBadge variant="secondary" class="font-mono text-[11px]">
-                {{ patient()?.patientCode || 'N/A' }}
-              </span>
-            </p>
-          </div>
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-2 border-b border-border">
+      <div class="flex items-center gap-4">
+        <div class="size-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+          <ng-icon name="lucideUserRound" size="24" />
         </div>
+        <div class="space-y-1">
+          <div class="flex items-center gap-2">
+            <h1 class="text-xl font-semibold tracking-tight text-foreground">Welcome, {{ patient()?.fullName || currentUser?.fullName }}</h1>
+            <span hlmBadge variant="outline" class="text-[10px]">Patient Portal</span>
+          </div>
+          <p class="text-xs text-muted-foreground flex items-center gap-2">
+            <span>Medical Record Number (MRN):</span>
+            <span hlmBadge variant="secondary" class="font-mono text-[11px]">
+              {{ patient()?.patientCode || 'N/A' }}
+            </span>
+          </p>
+        </div>
+      </div>
 
-        <div class="flex items-center gap-3">
-          <div class="text-right hidden sm:block">
-            <span class="text-[11px] text-muted-foreground block">Coverage Provider</span>
-            <span class="text-xs font-medium text-foreground block">{{ patient()?.insuranceProvider || 'Self-Pay' }}</span>
-          </div>
-          <a routerLink="/appointments" hlmBtn variant="default" size="sm" class="gap-2">
-            <ng-icon name="lucideCalendarClock" size="15" />
-            <span>Book Consultation</span>
-          </a>
+      <div class="flex items-center gap-3">
+        <div class="text-right hidden sm:block">
+          <span class="text-[11px] text-muted-foreground block">Coverage Provider</span>
+          <span class="text-xs font-medium text-foreground block">{{ patient()?.insuranceProvider || 'Self-Pay' }}</span>
         </div>
+        <a routerLink="/appointments" hlmBtn variant="default" size="sm" class="gap-2">
+          <ng-icon name="lucideCalendarClock" size="15" />
+          <span>Book Consultation</span>
+        </a>
       </div>
     </div>
 
@@ -151,7 +149,7 @@
   <!-- CLINICIAN / DOCTOR / NURSE / ADMIN DASHBOARD -->
   <div *hasAnyRole="['ROLE_DOCTOR', 'ROLE_NURSE', 'ROLE_ADMIN', 'ROLE_AUDITOR']" class="space-y-6">
     <!-- Clinician Header -->
-    <div class="p-6 rounded-xl border border-border bg-card flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-2 border-b border-border">
       <div class="flex items-center gap-4">
         <div class="size-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
           <ng-icon name="lucideHospital" size="24" />
@@ -166,7 +164,7 @@
       </div>
 
       <div class="flex items-center gap-4">
-        <div class="p-2.5 rounded-lg border border-border bg-muted/30 text-center min-w-[110px]">
+        <div class="p-2.5 rounded-lg border border-border bg-card text-center min-w-[110px]">
           <span class="text-xl font-semibold text-foreground block leading-none">{{ patientCount() }}</span>
           <span class="text-[10px] text-muted-foreground font-medium uppercase tracking-wide mt-0.5 block">MPI Census</span>
         </div>
