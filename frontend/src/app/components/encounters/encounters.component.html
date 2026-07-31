@@ -1,0 +1,130 @@
+<div class="flex flex-col gap-6">
+  <!-- Header Card -->
+  <p-card>
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-3">
+          <i class="ri-hospital-line text-2xl text-blue-500"></i>
+          <h1 class="text-2xl font-bold">
+            {{ isPatient() ? 'My Visit & Consultation History' : 'Patient Encounters, Intake & Hospital Visits' }}
+          </h1>
+        </div>
+        <p class="text-gray-500 mt-1">
+          Inpatient, Outpatient, Emergency (ED), and Telehealth clinical consultation log registry.
+        </p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <p-select 
+          *ngIf="!isPatient()"
+          [options]="patientOptions"
+          [(ngModel)]="selectedPatientId" 
+          (ngModelChange)="onPatientChange($event)"
+          optionLabel="label"
+          optionValue="value">
+        </p-select>
+
+        <p-button 
+          *ngIf="authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE'])" 
+          (onClick)="showModal.set(true)" 
+          [disabled]="selectedPatientId === 0"
+          icon="ri-add-line"
+          label="Log Encounter / Intake">
+        </p-button>
+      </div>
+    </div>
+  </p-card>
+
+  <!-- Encounters Table -->
+  <p-card *ngIf="selectedPatientId > 0">
+    <p-table 
+      [value]="encounters()" 
+      [paginator]="true" 
+      [rows]="10" 
+      [rowsPerPageOptions]="[5, 10, 20]"
+      sortMode="multiple"
+      responsiveLayout="scroll">
+      
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="encounterDate">Date <p-sorticon field="encounterDate"></p-sorticon></th>
+          <th pSortableColumn="encounterType">Type <p-sorticon field="encounterType"></p-sorticon></th>
+          <th pSortableColumn="chiefComplaint">Chief Complaint <p-sorticon field="chiefComplaint"></p-sorticon></th>
+          <th>Clinical Notes</th>
+          <th>Discharge Summary</th>
+          <th pSortableColumn="attendingProvider.fullName">Provider <p-sorticon field="attendingProvider.fullName"></p-sorticon></th>
+          <th pSortableColumn="status">Status <p-sorticon field="status"></p-sorticon></th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-enc>
+        <tr>
+          <td>{{ enc.encounterDate | date:'medium' }}</td>
+          <td>
+            <p-tag [value]="enc.encounterType" [severity]="getSeverity(enc.encounterType)"></p-tag>
+          </td>
+          <td class="font-bold">{{ enc.chiefComplaint }}</td>
+          <td>{{ enc.clinicalNotes || 'No notes documented' }}</td>
+          <td>{{ enc.dischargeSummary || 'Pending discharge' }}</td>
+          <td>{{ enc.attendingProvider?.fullName || 'Dr. Mahtab Khan' }}</td>
+          <td>
+            <p-tag [value]="enc.status" severity="success"></p-tag>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="7" class="text-center p-4">
+            <p-message severity="info" text="No visit encounters logged for this patient."></p-message>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+
+  <div *ngIf="selectedPatientId === 0">
+    <p-message severity="info" class="w-full">Select a patient from the dropdown above to view visit history.</p-message>
+  </div>
+
+  <!-- Add Encounter Modal -->
+  <p-dialog 
+    [(visible)]="showModal" 
+    header="Log Clinical Visit Encounter" 
+    [modal]="true" 
+    [style]="{ width: '32rem' }">
+    <form (ngSubmit)="saveEncounter()" class="flex flex-col gap-4 mt-2">
+      <div class="flex flex-col gap-2">
+        <label class="font-semibold">Encounter Type *</label>
+        <p-select 
+          [(ngModel)]="newEncounter.encounterType" 
+          name="encounterType" 
+          [options]="encounterTypeOptions"
+          optionLabel="label"
+          optionValue="value"
+          styleClass="w-full">
+        </p-select>
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <label class="font-semibold">Chief Complaint *</label>
+        <input pInputText type="text" [(ngModel)]="newEncounter.chiefComplaint" name="chiefComplaint" placeholder="e.g. Acute morning headache and hypertension" required class="w-full" />
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <label class="font-semibold">Clinical Notes</label>
+        <textarea pTextarea [(ngModel)]="newEncounter.clinicalNotes" name="clinicalNotes" rows="3" placeholder="Evaluated patient in triage..." class="w-full"></textarea>
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <label class="font-semibold">Discharge Summary</label>
+        <textarea pTextarea [(ngModel)]="newEncounter.dischargeSummary" name="dischargeSummary" rows="2" placeholder="Discharged with home BP tracking..." class="w-full"></textarea>
+      </div>
+
+      <div class="flex justify-end gap-3 pt-4">
+        <p-button type="button" label="Cancel" severity="secondary" (onClick)="showModal.set(false)"></p-button>
+        <p-button type="submit" label="Log Encounter" [disabled]="!newEncounter.chiefComplaint"></p-button>
+      </div>
+    </form>
+  </p-dialog>
+</div>

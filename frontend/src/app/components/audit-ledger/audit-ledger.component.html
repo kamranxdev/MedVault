@@ -1,0 +1,101 @@
+<div class="flex flex-col gap-6 p-6">
+  <!-- Enterprise Header -->
+  <p-card styleClass="shadow-xl">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-3">
+          <i class="ri-shield-check-line text-2xl text-emerald-500"></i>
+          <h1 class="text-2xl font-bold tracking-tight">HIPAA WORM Compliance Audit Vault</h1>
+        </div>
+        <p class="text-sm text-slate-500 mt-1">
+          Immutable Write-Once-Read-Many (WORM) ledger capturing clinical access events, role assertions, and eRx safety alerts.
+        </p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <p-button icon="ri-download-line" label="JSON" severity="secondary" (onClick)="exportAuditLogJSON()"></p-button>
+        <p-button icon="ri-download-line" label="CSV Report" severity="help" (onClick)="exportAuditLogCSV()"></p-button>
+      </div>
+    </div>
+  </p-card>
+
+  <!-- Compliance Metrics Overview -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <p-card styleClass="shadow-md h-full">
+      <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Total WORM Audit Logs</p>
+      <p class="text-2xl font-black mt-1">{{ auditLogs().length }}</p>
+    </p-card>
+    <p-card styleClass="shadow-md h-full">
+      <p class="text-xs font-bold uppercase tracking-wider text-rose-500">Contraindication Alerts</p>
+      <p class="text-2xl font-black text-rose-500 mt-1">{{ getAlertCount() }}</p>
+    </p-card>
+    <p-card styleClass="shadow-md h-full">
+      <p class="text-xs font-bold uppercase tracking-wider text-indigo-500">Resource Reads</p>
+      <p class="text-2xl font-black text-indigo-500 mt-1">{{ getActionCount('READ') }}</p>
+    </p-card>
+    <p-card styleClass="shadow-md h-full">
+      <p class="text-xs font-bold uppercase tracking-wider text-emerald-500">Data Mutations</p>
+      <p class="text-2xl font-black text-emerald-500 mt-1">{{ getActionCount('CREATE') + getActionCount('UPDATE') }}</p>
+    </p-card>
+  </div>
+
+  <!-- Search & Filters -->
+  <p-card styleClass="shadow-md">
+    <div class="flex items-center gap-3 w-full">
+      <i class="ri-search-line text-slate-400"></i>
+      <input 
+        pInputText
+        [(ngModel)]="searchQuery" 
+        (input)="onSearchChange()" 
+        placeholder="Filter by Actor Username, Role (ROLE_DOCTOR), Action (CREATE, READ, ERX_ALERT), Entity Name, or Resource ID..." 
+        class="w-full" />
+    </div>
+  </p-card>
+
+  <!-- Audit Ledger PrimeNG Table -->
+  <p-card styleClass="shadow-xl">
+    <p-table 
+      [value]="auditLogs()" 
+      [paginator]="true" 
+      [rows]="10" 
+      [rowsPerPageOptions]="[10, 25, 50]"
+      [loading]="loading()"
+      responsiveLayout="scroll"
+      [globalFilterFields]="['username', 'userRole', 'action', 'entityName', 'resourceId']"
+      styleClass="p-datatable-striped">
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="timestamp">Timestamp (UTC) <p-sorticon field="timestamp"></p-sorticon></th>
+          <th pSortableColumn="username">Actor Username <p-sorticon field="username"></p-sorticon></th>
+          <th pSortableColumn="userRole">Role Assertion <p-sorticon field="userRole"></p-sorticon></th>
+          <th pSortableColumn="action">Action <p-sorticon field="action"></p-sorticon></th>
+          <th pSortableColumn="entityName">Entity Target <p-sorticon field="entityName"></p-sorticon></th>
+          <th>Resource ID</th>
+          <th>Audit Details</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-log>
+        <tr>
+          <td class="font-mono text-sm">{{ log.timestamp | date:'MMM d, y, h:mm:ss a' }}</td>
+          <td class="font-bold">{{ log.username }}</td>
+          <td>
+            <p-tag [value]="log.userRole" severity="info"></p-tag>
+          </td>
+          <td>
+            <p-tag [value]="log.action" [class]="getActionBadge(log.action) + ' font-mono'"></p-tag>
+          </td>
+          <td class="font-mono text-sm">{{ log.entityName }}</td>
+          <td class="font-mono text-sm">{{ log.resourceId || 'N/A' }}</td>
+          <td class="text-sm">{{ log.details }}</td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="7" class="text-center py-8 text-slate-500">
+            No audit records found matching your query.
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+</div>

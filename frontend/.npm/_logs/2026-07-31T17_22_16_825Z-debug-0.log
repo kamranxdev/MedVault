@@ -6,8 +6,8 @@
 5 silly config load:file:/home/kamran/.nvm/versions/node/v22.17.0/etc/npmrc
 6 verbose title npm exec ng build
 7 verbose argv "exec" "--" "ng" "build"
-8 verbose logfile logs-max:10 dir:/mnt/workspace/MedVault/frontend/.npm/_logs/2026-07-30T19_36_59_923Z-
-9 verbose logfile /mnt/workspace/MedVault/frontend/.npm/_logs/2026-07-30T19_36_59_923Z-debug-0.log
+8 verbose logfile logs-max:10 dir:/mnt/workspace/MedVault/frontend/.npm/_logs/2026-07-31T17_22_16_825Z-
+9 verbose logfile /mnt/workspace/MedVault/frontend/.npm/_logs/2026-07-31T17_22_16_825Z-debug-0.log
 10 silly logfile start cleaning logs, removing 1 files
 11 silly logfile done cleaning log files
 12 verbose cwd /mnt/workspace/MedVault/frontend

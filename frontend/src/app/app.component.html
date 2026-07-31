@@ -1,0 +1,415 @@
+<div class="app-layout" *ngIf="authService.currentUser(); else unauth">
+  <!-- Role-Tailored Sidebar Navigation -->
+  <aside class="sidebar glass-strong">
+    <div>
+      <div class="brand">
+        <i class="ri-heart-pulse-fill brand-icon"></i>
+        <span class="brand-text">MedVault <span class="text-xs font-normal text-indigo-400 block tracking-normal">Enterprise EHR</span></span>
+      </div>
+
+      <!-- PHYSICIAN / DOCTOR SIDEBAR MENU -->
+      <nav class="nav-menu stagger-1" *ngIf="isDoctor()">
+        <div class="nav-section-label text-emerald-400 font-extrabold">Physician Desk Workspace</div>
+        
+        <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
+          <i class="ri-dashboard-3-line nav-icon"></i>
+          <span>Clinician Dashboard</span>
+        </a>
+        <a routerLink="/patients" routerLinkActive="active" class="nav-item">
+          <i class="ri-user-heart-line nav-icon"></i>
+          <span>Patient Charts (MPI)</span>
+        </a>
+        <a routerLink="/records" routerLinkActive="active" class="nav-item">
+          <i class="ri-file-text-line nav-icon"></i>
+          <span>SOAP Progress Notes</span>
+        </a>
+        <a routerLink="/encounters" routerLinkActive="active" class="nav-item">
+          <i class="ri-hospital-line nav-icon"></i>
+          <span>Visits & Consultations</span>
+        </a>
+        <a routerLink="/prescriptions" routerLinkActive="active" class="nav-item">
+          <i class="ri-capsule-line nav-icon"></i>
+          <span>Pharmacy & eRx Orders</span>
+        </a>
+        <a routerLink="/diagnoses" routerLinkActive="active" class="nav-item">
+          <i class="ri-list-check-2 nav-icon"></i>
+          <span>Problem List (ICD-10)</span>
+        </a>
+        <a routerLink="/allergies" routerLinkActive="active" class="nav-item">
+          <i class="ri-alarm-warning-line nav-icon"></i>
+          <span>Allergies & Risk Register</span>
+        </a>
+        <a routerLink="/vitals" routerLinkActive="active" class="nav-item">
+          <i class="ri-pulse-line nav-icon"></i>
+          <span>Bedside Vitals</span>
+        </a>
+        <a routerLink="/appointments" routerLinkActive="active" class="nav-item">
+          <i class="ri-calendar-schedule-line nav-icon"></i>
+          <span>Consultation Schedule</span>
+        </a>
+      </nav>
+
+      <!-- CLINICAL NURSE SIDEBAR MENU -->
+      <nav class="nav-menu stagger-2" *ngIf="isNurse()">
+        <div class="nav-section-label text-amber-400 font-extrabold">Nurse Station Workspace</div>
+
+        <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
+          <i class="ri-dashboard-3-line nav-icon"></i>
+          <span>Nursing Station</span>
+        </a>
+        <a routerLink="/patients" routerLinkActive="active" class="nav-item">
+          <i class="ri-user-heart-line nav-icon"></i>
+          <span>Patient Care Charts</span>
+        </a>
+        <a routerLink="/vitals" routerLinkActive="active" class="nav-item">
+          <i class="ri-pulse-line nav-icon"></i>
+          <span>Bedside Vitals Flowsheet</span>
+        </a>
+        <a routerLink="/allergies" routerLinkActive="active" class="nav-item">
+          <i class="ri-alarm-warning-line nav-icon"></i>
+          <span>Coded Allergies & ADRs</span>
+        </a>
+        <a routerLink="/prescriptions" routerLinkActive="active" class="nav-item">
+          <i class="ri-capsule-line nav-icon"></i>
+          <span>Medication Orders (MAR)</span>
+        </a>
+        <a routerLink="/encounters" routerLinkActive="active" class="nav-item">
+          <i class="ri-hospital-line nav-icon"></i>
+          <span>Patient Intake & Visits</span>
+        </a>
+        <a routerLink="/appointments" routerLinkActive="active" class="nav-item">
+          <i class="ri-calendar-schedule-line nav-icon"></i>
+          <span>Unit Ward Schedule</span>
+        </a>
+      </nav>
+
+      <!-- ADMIN / RECEPTIONIST SIDEBAR MENU -->
+      <nav class="nav-menu stagger-3" *ngIf="isAdmin()">
+        <div class="nav-section-label text-blue-400 font-extrabold">Hospital Admin & Intake</div>
+
+        <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
+          <i class="ri-dashboard-3-line nav-icon"></i>
+          <span>Command Center</span>
+        </a>
+        <a routerLink="/patients" routerLinkActive="active" class="nav-item">
+          <i class="ri-user-heart-line nav-icon"></i>
+          <span>Master Patient Index (MPI)</span>
+        </a>
+        <a routerLink="/encounters" routerLinkActive="active" class="nav-item">
+          <i class="ri-hospital-line nav-icon"></i>
+          <span>Intake Visits & Admissions</span>
+        </a>
+        <a routerLink="/appointments" routerLinkActive="active" class="nav-item">
+          <i class="ri-calendar-schedule-line nav-icon"></i>
+          <span>Appointment Scheduling</span>
+        </a>
+        
+        <div class="nav-section-label text-slate-400 font-bold">System Administration</div>
+        <a routerLink="/admin" routerLinkActive="active" class="nav-item admin-item">
+          <i class="ri-settings-3-line nav-icon"></i>
+          <span>User RBAC Management</span>
+        </a>
+        <a routerLink="/audit-ledger" routerLinkActive="active" class="nav-item audit-item">
+          <i class="ri-shield-check-line nav-icon"></i>
+          <span>HIPAA Compliance Vault</span>
+        </a>
+      </nav>
+
+      <!-- COMPLIANCE AUDITOR SIDEBAR MENU -->
+      <nav class="nav-menu stagger-4" *ngIf="isAuditor()">
+        <div class="nav-section-label text-purple-400 font-extrabold">Audit & Forensics Vault</div>
+
+        <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
+          <i class="ri-dashboard-3-line nav-icon"></i>
+          <span>Compliance Overview</span>
+        </a>
+        <a routerLink="/audit-ledger" routerLinkActive="active" class="nav-item audit-item">
+          <i class="ri-shield-check-line nav-icon"></i>
+          <span>HIPAA WORM Audit Vault</span>
+        </a>
+        <a routerLink="/patients" routerLinkActive="active" class="nav-item">
+          <i class="ri-user-heart-line nav-icon"></i>
+          <span>Patient Access Audit Logs</span>
+        </a>
+      </nav>
+
+      <!-- PATIENT SIDEBAR MENU -->
+      <nav class="nav-menu stagger-5" *ngIf="isPatient()">
+        <div class="nav-section-label text-teal-400 font-extrabold">My Personal Health Record</div>
+
+        <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
+          <i class="ri-dashboard-3-line nav-icon"></i>
+          <span>My Health Summary</span>
+        </a>
+        <a routerLink="/patients" routerLinkActive="active" class="nav-item">
+          <i class="ri-user-heart-line nav-icon"></i>
+          <span>My Patient Chart</span>
+        </a>
+        <a routerLink="/prescriptions" routerLinkActive="active" class="nav-item">
+          <i class="ri-capsule-line nav-icon"></i>
+          <span>My Prescriptions</span>
+        </a>
+        <a routerLink="/vitals" routerLinkActive="active" class="nav-item">
+          <i class="ri-pulse-line nav-icon"></i>
+          <span>My Vitals Trends</span>
+        </a>
+        <a routerLink="/allergies" routerLinkActive="active" class="nav-item">
+          <i class="ri-alarm-warning-line nav-icon"></i>
+          <span>My Allergies</span>
+        </a>
+        <a routerLink="/diagnoses" routerLinkActive="active" class="nav-item">
+          <i class="ri-list-check-2 nav-icon"></i>
+          <span>My Problem List</span>
+        </a>
+        <a routerLink="/records" routerLinkActive="active" class="nav-item">
+          <i class="ri-file-text-line nav-icon"></i>
+          <span>My Progress Notes</span>
+        </a>
+        <a routerLink="/encounters" routerLinkActive="active" class="nav-item">
+          <i class="ri-hospital-line nav-icon"></i>
+          <span>My Visit History</span>
+        </a>
+        <a routerLink="/appointments" routerLinkActive="active" class="nav-item">
+          <i class="ri-calendar-schedule-line nav-icon"></i>
+          <span>My Appointments</span>
+        </a>
+      </nav>
+    </div>
+
+    <!-- Sidebar User Footer -->
+    <div class="sidebar-user glass">
+      <div class="user-avatar">{{ authService.currentUser()?.fullName?.charAt(0) }}</div>
+      <div class="user-meta">
+        <span class="u-name">{{ authService.currentUser()?.fullName }}</span>
+        <span class="u-role">{{ primaryRole() }}</span>
+      </div>
+      <button (click)="logout()" title="Logout" class="logout-btn">
+        <i class="ri-logout-box-r-line"></i>
+      </button>
+    </div>
+  </aside>
+
+  <!-- PrimeNG Mobile/Responsive Navigation Drawer -->
+  <p-drawer [(visible)]="mobileSidebarVisible" header="MedVault EHR Navigation" [modal]="true" [style]="{ width: '280px' }">
+    <div class="space-y-6 pt-2">
+      <!-- PHYSICIAN / DOCTOR SIDEBAR MENU -->
+      <nav class="nav-menu" *ngIf="isDoctor()">
+        <div class="nav-section-label text-emerald-400 font-extrabold">Physician Desk Workspace</div>
+        
+        <a routerLink="/dashboard" (click)="mobileSidebarVisible.set(false)" routerLinkActive="active" class="nav-item">
+          <i class="ri-dashboard-3-line nav-icon"></i>
+          <span>Clinician Dashboard</span>
+        </a>
+        <a routerLink="/patients" (click)="mobileSidebarVisible.set(false)" routerLinkActive="active" class="nav-item">
+          <i class="ri-user-heart-line nav-icon"></i>
+          <span>Patient Charts (MPI)</span>
+        </a>
+        <a routerLink="/records" (click)="mobileSidebarVisible.set(false)" routerLinkActive="active" class="nav-item">
+          <i class="ri-file-text-line nav-icon"></i>
+          <span>SOAP Progress Notes</span>
+        </a>
+        <a routerLink="/encounters" (click)="mobileSidebarVisible.set(false)" routerLinkActive="active" class="nav-item">
+          <i class="ri-hospital-line nav-icon"></i>
+          <span>Visits & Consultations</span>
+        </a>
+        <a routerLink="/prescriptions" (click)="mobileSidebarVisible.set(false)" routerLinkActive="active" class="nav-item">
+          <i class="ri-capsule-line nav-icon"></i>
+          <span>Pharmacy & eRx Orders</span>
+        </a>
+        <a routerLink="/diagnoses" (click)="mobileSidebarVisible.set(false)" routerLinkActive="active" class="nav-item">
+          <i class="ri-list-check-2 nav-icon"></i>
+          <span>Problem List (ICD-10)</span>
+        </a>
+        <a routerLink="/allergies" (click)="mobileSidebarVisible.set(false)" routerLinkActive="active" class="nav-item">
+          <i class="ri-alarm-warning-line nav-icon"></i>
+          <span>Allergies & Risk Register</span>
+        </a>
+        <a routerLink="/vitals" (click)="mobileSidebarVisible.set(false)" routerLinkActive="active" class="nav-item">
+          <i class="ri-pulse-line nav-icon"></i>
+          <span>Bedside Vitals</span>
+        </a>
+        <a routerLink="/appointments" (click)="mobileSidebarVisible.set(false)" routerLinkActive="active" class="nav-item">
+          <i class="ri-calendar-schedule-line nav-icon"></i>
+          <span>Consultation Schedule</span>
+        </a>
+      </nav>
+
+      <!-- CLINICAL NURSE SIDEBAR MENU -->
+      <nav class="nav-menu" *ngIf="isNurse()">
+        <div class="nav-section-label text-amber-400 font-extrabold">Nurse Station Workspace</div>
+
+        <a routerLink="/dashboard" (click)="mobileSidebarVisible.set(false)" routerLinkActive="active" class="nav-item">
+          <i class="ri-dashboard-3-line nav-icon"></i>
+          <span>Nursing Station</span>
+        </a>
+        <a routerLink="/patients" (click)="mobileSidebarVisible.set(false)" routerLinkActive="active" class="nav-item">
+          <i class="ri-user-heart-line nav-icon"></i>
+          <span>Patient Care Charts</span>
+        </a>
+        <a routerLink="/vitals" (click)="mobileSidebarVisible.set(false)" routerLinkActive="active" class="nav-item">
+          <i class="ri-pulse-line nav-icon"></i>
+          <span>Bedside Vitals Flowsheet</span>
+        </a>
+        <a routerLink="/allergies" (click)="mobileSidebarVisible.set(false)" routerLinkActive="active" class="nav-item">
+          <i class="ri-alarm-warning-line nav-icon"></i>
+          <span>Coded Allergies & ADRs</span>
+        </a>
+        <a routerLink="/prescriptions" (click)="mobileSidebarVisible.set(false)" routerLinkActive="active" class="nav-item">
+          <i class="ri-capsule-line nav-icon"></i>
+          <span>Medication Orders (MAR)</span>
+        </a>
+        <a routerLink="/encounters" (click)="mobileSidebarVisible.set(false)" routerLinkActive="active" class="nav-item">
+          <i class="ri-hospital-line nav-icon"></i>
+          <span>Patient Intake & Visits</span>
+        </a>
+        <a routerLink="/appointments" (click)="mobileSidebarVisible.set(false)" routerLinkActive="active" class="nav-item">
+          <i class="ri-calendar-schedule-line nav-icon"></i>
+          <span>Unit Ward Schedule</span>
+        </a>
+      </nav>
+
+      <!-- ADMIN / RECEPTIONIST SIDEBAR MENU -->
+      <nav class="nav-menu" *ngIf="isAdmin()">
+        <div class="nav-section-label text-blue-400 font-extrabold">Hospital Admin & Intake</div>
+
+        <a routerLink="/dashboard" (click)="mobileSidebarVisible.set(false)" routerLinkActive="active" class="nav-item">
+          <i class="ri-dashboard-3-line nav-icon"></i>
+          <span>Command Center</span>
+        </a>
+        <a routerLink="/patients" (click)="mobileSidebarVisible.set(false)" routerLinkActive="active" class="nav-item">
+          <i class="ri-user-heart-line nav-icon"></i>
+          <span>Master Patient Index (MPI)</span>
+        </a>
+        <a routerLink="/encounters" (click)="mobileSidebarVisible.set(false)" routerLinkActive="active" class="nav-item">
+          <i class="ri-hospital-line nav-icon"></i>
+          <span>Intake Visits & Admissions</span>
+        </a>
+        <a routerLink="/appointments" (click)="mobileSidebarVisible.set(false)" routerLinkActive="active" class="nav-item">
+          <i class="ri-calendar-schedule-line nav-icon"></i>
+          <span>Appointment Scheduling</span>
+        </a>
+        
+        <div class="nav-section-label text-slate-400 font-bold">System Administration</div>
+        <a routerLink="/admin" (click)="mobileSidebarVisible.set(false)" routerLinkActive="active" class="nav-item admin-item">
+          <i class="ri-settings-3-line nav-icon"></i>
+          <span>User RBAC Management</span>
+        </a>
+        <a routerLink="/audit-ledger" (click)="mobileSidebarVisible.set(false)" routerLinkActive="active" class="nav-item audit-item">
+          <i class="ri-shield-check-line nav-icon"></i>
+          <span>HIPAA Compliance Vault</span>
+        </a>
+      </nav>
+
+      <!-- COMPLIANCE AUDITOR SIDEBAR MENU -->
+      <nav class="nav-menu" *ngIf="isAuditor()">
+        <div class="nav-section-label text-purple-400 font-extrabold">Audit & Forensics Vault</div>
+
+        <a routerLink="/dashboard" (click)="mobileSidebarVisible.set(false)" routerLinkActive="active" class="nav-item">
+          <i class="ri-dashboard-3-line nav-icon"></i>
+          <span>Compliance Overview</span>
+        </a>
+        <a routerLink="/audit-ledger" (click)="mobileSidebarVisible.set(false)" routerLinkActive="active" class="nav-item audit-item">
+          <i class="ri-shield-check-line nav-icon"></i>
+          <span>HIPAA WORM Audit Vault</span>
+        </a>
+        <a routerLink="/patients" (click)="mobileSidebarVisible.set(false)" routerLinkActive="active" class="nav-item">
+          <i class="ri-user-heart-line nav-icon"></i>
+          <span>Patient Access Audit Logs</span>
+        </a>
+      </nav>
+
+      <!-- PATIENT SIDEBAR MENU -->
+      <nav class="nav-menu" *ngIf="isPatient()">
+        <div class="nav-section-label text-teal-400 font-extrabold">My Personal Health Record</div>
+
+        <a routerLink="/dashboard" (click)="mobileSidebarVisible.set(false)" routerLinkActive="active" class="nav-item">
+          <i class="ri-dashboard-3-line nav-icon"></i>
+          <span>My Health Summary</span>
+        </a>
+        <a routerLink="/patients" (click)="mobileSidebarVisible.set(false)" routerLinkActive="active" class="nav-item">
+          <i class="ri-user-heart-line nav-icon"></i>
+          <span>My Patient Chart</span>
+        </a>
+        <a routerLink="/prescriptions" (click)="mobileSidebarVisible.set(false)" routerLinkActive="active" class="nav-item">
+          <i class="ri-capsule-line nav-icon"></i>
+          <span>My Prescriptions</span>
+        </a>
+        <a routerLink="/vitals" (click)="mobileSidebarVisible.set(false)" routerLinkActive="active" class="nav-item">
+          <i class="ri-pulse-line nav-icon"></i>
+          <span>My Vitals Trends</span>
+        </a>
+        <a routerLink="/allergies" (click)="mobileSidebarVisible.set(false)" routerLinkActive="active" class="nav-item">
+          <i class="ri-alarm-warning-line nav-icon"></i>
+          <span>My Allergies</span>
+        </a>
+        <a routerLink="/diagnoses" (click)="mobileSidebarVisible.set(false)" routerLinkActive="active" class="nav-item">
+          <i class="ri-list-check-2 nav-icon"></i>
+          <span>My Problem List</span>
+        </a>
+        <a routerLink="/records" (click)="mobileSidebarVisible.set(false)" routerLinkActive="active" class="nav-item">
+          <i class="ri-file-text-line nav-icon"></i>
+          <span>My Progress Notes</span>
+        </a>
+        <a routerLink="/encounters" (click)="mobileSidebarVisible.set(false)" routerLinkActive="active" class="nav-item">
+          <i class="ri-hospital-line nav-icon"></i>
+          <span>My Visit History</span>
+        </a>
+        <a routerLink="/appointments" (click)="mobileSidebarVisible.set(false)" routerLinkActive="active" class="nav-item">
+          <i class="ri-calendar-schedule-line nav-icon"></i>
+          <span>My Appointments</span>
+        </a>
+      </nav>
+    </div>
+  </p-drawer>
+
+  <!-- Main Content Area -->
+  <main class="main-content">
+    <!-- Top Bar Header -->
+    <header class="top-header glass-subtle animate-slide-up">
+      <div class="header-left flex items-center gap-3">
+        <button 
+          (click)="toggleMobileSidebar()" 
+          title="Toggle PrimeNG Sidebar Navigation" 
+          class="p-2 rounded-xl bg-indigo-600/20 text-indigo-300 hover:bg-indigo-600/40 border border-indigo-500/30 transition flex items-center justify-center">
+          <i class="pi pi-bars text-base"></i>
+        </button>
+
+        <span class="font-bold text-white text-sm tracking-wide">MedVault</span>
+
+        <!-- CLINICIAN PATIENT CONTEXT SELECTOR -->
+        <div *ngIf="!isPatient() && patientContext.activePatient()" class="flex items-center gap-2 bg-slate-800/90 px-3 py-1.5 rounded-xl border border-slate-700/80 text-xs shadow-inner">
+          <span class="text-slate-400 font-semibold">Active Chart:</span>
+          <select 
+            [ngModel]="patientContext.activePatient()?.id" 
+            (ngModelChange)="onPatientContextChange($event)"
+            class="bg-slate-900/50 text-indigo-300 font-bold border border-indigo-500/30 rounded-lg px-2 py-0.5 text-xs focus:ring-1 focus:ring-indigo-500 outline-none transition-all duration-200">
+            <option *ngFor="let p of patientContext.patientList()" [value]="p.id">
+              {{ p.fullName }} (MRN: {{ p.patientCode }})
+            </option>
+          </select>
+          <p-tag *ngIf="patientContext.activePatient()?.medicalAlerts" [value]="'Alert: ' + patientContext.activePatient()?.medicalAlerts" severity="danger" icon="pi pi-exclamation-triangle"></p-tag>
+        </div>
+
+        <!-- PATIENT SELF-SERVICE BANNER -->
+        <div *ngIf="isPatient() && patientContext.activePatient()" class="flex items-center gap-2 bg-teal-950/60 px-3 py-1.5 rounded-xl border border-teal-500/30 text-xs shadow-inner">
+          <span class="text-teal-300 font-bold">Personal Health Record:</span>
+          <span class="text-white font-extrabold">{{ patientContext.activePatient()?.fullName }}</span>
+          <p-tag [value]="'MRN: ' + patientContext.activePatient()?.patientCode" severity="info"></p-tag>
+        </div>
+      </div>
+
+      <div class="header-right flex items-center gap-4">
+        <p-tag [value]="primaryRole()" severity="warn" icon="pi pi-user-edit"></p-tag>
+        <span class="live-status text-xs"><span class="pulse-dot"></span> FHIR R4 Engine</span>
+      </div>
+    </header>
+
+    <div class="content-body animate-fade-in">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+</div>
+
+<ng-template #unauth>
+  <router-outlet></router-outlet>
+</ng-template>

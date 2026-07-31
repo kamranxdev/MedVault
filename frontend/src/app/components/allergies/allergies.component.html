@@ -1,0 +1,127 @@
+<div class="flex flex-col gap-6">
+  <p-card>
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold">
+          {{ isPatient() ? 'My Allergies' : 'Allergies & Adverse Drug Reactions' }}
+        </h1>
+        <p class="text-sm text-gray-500 mt-1">
+          RxNorm & SNOMED CT coded adverse drug reactions (ADRs), severity ratings, and real-time contraindications safety log.
+        </p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <p-select 
+          *ngIf="!isPatient()"
+          [options]="patientContext.patientList()" 
+          optionLabel="fullName"
+          optionValue="id"
+          [ngModel]="selectedPatientId" 
+          (ngModelChange)="onPatientChange($event)"
+          placeholder="Select Patient Profile...">
+          <ng-template let-p pTemplate="item">
+            {{ p.fullName }} (MRN: {{ p.patientCode }})
+          </ng-template>
+        </p-select>
+
+        <p-button 
+          *ngIf="authService.hasAnyRole(['ROLE_DOCTOR', 'ROLE_NURSE'])"
+          (onClick)="showModal = true"
+          [disabled]="!selectedPatientId"
+          icon="pi pi-plus"
+          label="Document Coded Allergy"
+          severity="danger">
+        </p-button>
+      </div>
+    </div>
+  </p-card>
+
+  <p-message *ngIf="!selectedPatientId" severity="info">Select a patient from the dropdown above to view documented coded allergy profiles.</p-message>
+
+  <div *ngIf="selectedPatientId" class="flex flex-col gap-4">
+    <div *ngIf="loading()" class="flex justify-center p-6">
+      <p-progressspinner></p-progressspinner>
+    </div>
+
+    <p-message *ngIf="!loading() && allergies().length === 0" severity="info">No documented allergies or adverse reactions on file.</p-message>
+
+    <p-card *ngIf="!loading() && allergies().length > 0">
+      <p-table [value]="allergies()" [paginator]="true" [rows]="10" responsiveLayout="scroll">
+        <ng-template pTemplate="header">
+          <tr>
+            <th pSortableColumn="allergenName">Allergen <p-sorticon field="allergenName"></p-sorticon></th>
+            <th pSortableColumn="category">Category <p-sorticon field="category"></p-sorticon></th>
+            <th pSortableColumn="severity">Severity <p-sorticon field="severity"></p-sorticon></th>
+            <th>Reaction</th>
+            <th pSortableColumn="status">Status <p-sorticon field="status"></p-sorticon></th>
+            <th pSortableColumn="recordedAt">Recorded <p-sorticon field="recordedAt"></p-sorticon></th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-alg>
+          <tr>
+            <td>
+              <div class="font-bold">{{ alg.allergenName }}</div>
+              <div class="text-sm text-gray-500" *ngIf="alg.allergenCode">{{ alg.allergenCode }}</div>
+            </td>
+            <td>
+              <p-tag [value]="alg.category" [severity]="getCategorySeverity(alg.category)"></p-tag>
+            </td>
+            <td>
+              <p-tag [value]="alg.severity" [severity]="getSeveritySeverity(alg.severity)"></p-tag>
+            </td>
+            <td>{{ alg.reactionDescription || 'No description provided' }}</td>
+            <td>
+              <p-tag [value]="alg.status" [severity]="getStatusSeverity(alg.status)"></p-tag>
+            </td>
+            <td>{{ alg.recordedAt | date:'mediumDate' }}</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </p-card>
+  </div>
+
+  <p-dialog 
+    [(visible)]="showModal" 
+    header="Document Coded Allergy" 
+    [modal]="true" 
+    [style]="{ width: '450px' }">
+    <div class="flex flex-col gap-4 mt-2">
+      <div class="flex flex-col gap-2">
+        <label class="font-semibold">Allergen Name *</label>
+        <input pInputText [(ngModel)]="newAlg.allergenName" placeholder="e.g. Penicillin, Ibuprofen, Latex..." />
+      </div>
+
+      <div class="flex flex-col md:flex-row gap-4">
+        <div class="flex flex-col gap-2 flex-1">
+          <label class="font-semibold">RxNorm / SNOMED Code</label>
+          <input pInputText [(ngModel)]="newAlg.allergenCode" placeholder="e.g. RxNorm-70618" />
+        </div>
+        <div class="flex flex-col gap-2 flex-1">
+          <label class="font-semibold">Category</label>
+          <p-select [(ngModel)]="newAlg.category" [options]="categoryOptions" optionLabel="label" optionValue="value" class="w-full"></p-select>
+        </div>
+      </div>
+
+      <div class="flex flex-col md:flex-row gap-4">
+        <div class="flex flex-col gap-2 flex-1">
+          <label class="font-semibold">Severity Level</label>
+          <p-select [(ngModel)]="newAlg.severity" [options]="severityOptions" optionLabel="label" optionValue="value" class="w-full"></p-select>
+        </div>
+        <div class="flex flex-col gap-2 flex-1">
+          <label class="font-semibold">Status</label>
+          <p-select [(ngModel)]="newAlg.status" [options]="statusOptions" optionLabel="label" optionValue="value" class="w-full"></p-select>
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <label class="font-semibold">Adverse Reaction Description</label>
+        <textarea pTextarea [(ngModel)]="newAlg.reactionDescription" rows="3" placeholder="e.g. Anaphylaxis, acute hives, rash, wheezing..." class="w-full"></textarea>
+      </div>
+
+      <div class="flex justify-end gap-2 mt-4">
+        <p-button label="Cancel" severity="secondary" (onClick)="showModal = false"></p-button>
+        <p-button label="Save Allergy" severity="danger" (onClick)="saveAllergy()"></p-button>
+      </div>
+    </div>
+  </p-dialog>
+</div>

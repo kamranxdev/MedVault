@@ -6,163 +6,24 @@ import { AuthService } from '../../core/services/auth.service';
 import { PatientContextService } from '../../core/services/patient-context.service';
 import { Appointment, Patient, User } from '../../core/models/models';
 
+import { TableModule } from 'primeng/table';
+import { DialogModule } from 'primeng/dialog';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { TagModule } from 'primeng/tag';
+import { CardModule } from 'primeng/card';
+import { ToolbarModule } from 'primeng/toolbar';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { SelectModule } from 'primeng/select';
+import { DatePickerModule } from 'primeng/datepicker';
+import { TextareaModule } from 'primeng/textarea';
+
 @Component({
   selector: 'app-appointments',
   standalone: true,
-  imports: [CommonModule, FormsModule],
-  template: `
-    <div class="space-y-6">
-      <!-- Enterprise Header -->
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900 p-6 rounded-3xl border border-slate-800 shadow-xl">
-        <div>
-          <div class="flex items-center gap-3">
-            <i class="ri-calendar-schedule-line text-2xl text-teal-500"></i>
-            <h1 class="text-2xl font-bold text-white tracking-tight">
-              {{ isPatient() ? 'My Appointments' : 'Consultation Schedule & Appointments' }}
-            </h1>
-          </div>
-          <p class="text-xs text-slate-400 mt-1">
-            {{ isPatient() ? 'Manage your upcoming physician consultations or request a new appointment slot.' : 'Provider consultation slots, patient visit dispatches, and appointment status tracking.' }}
-          </p>
-        </div>
-
-        <div class="flex items-center gap-3">
-          <button 
-            *ngIf="authService.hasAnyRole(['ROLE_DOCTOR', 'ROLE_ADMIN', 'ROLE_PATIENT'])"
-            (click)="openScheduleModal()" 
-            class="px-4 py-2.5 bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs rounded-xl transition shadow-md flex items-center gap-2">
-            <i class="ri-add-line"></i> {{ isPatient() ? 'Request Consultation' : 'Schedule Appointment' }}
-          </button>
-        </div>
-      </div>
-
-      <!-- Main Appointments List -->
-      <div class="space-y-4">
-        <div *ngIf="loading()" class="text-center py-12">
-          <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-teal-500 border-t-transparent"></div>
-          <p class="text-slate-400 text-xs mt-2">Loading consultation schedule...</p>
-        </div>
-
-        <div *ngIf="!loading() && appointments().length === 0" class="text-center py-12 bg-slate-900 rounded-3xl border border-slate-800">
-          <p class="text-slate-400 text-xs">No upcoming or past scheduled appointments found.</p>
-        </div>
-
-        <!-- Appointment Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" *ngIf="!loading()">
-          <div *ngFor="let apt of appointments()" class="bg-slate-900 rounded-3xl border border-slate-800 p-6 shadow-xl space-y-4 relative overflow-hidden">
-            <div class="flex items-start justify-between border-b border-slate-800 pb-3">
-              <div>
-                <span class="text-3xs font-extrabold text-teal-400 uppercase tracking-wider flex items-center gap-1 mb-1">
-                  <i class="ri-calendar-line"></i> {{ apt.appointmentDate | date:'fullDate' }} &bull; {{ apt.appointmentDate | date:'shortTime' }}
-                </span>
-                <h3 class="text-base font-bold text-white">{{ apt.reason }}</h3>
-              </div>
-
-              <span [class]="getStatusBadge(apt.status)" class="px-3 py-1 rounded-full text-3xs font-extrabold uppercase tracking-wider">
-                {{ apt.status }}
-              </span>
-            </div>
-
-            <div class="grid grid-cols-2 gap-2 text-xs">
-              <div>
-                <span class="text-3xs font-bold text-slate-400 uppercase tracking-wider block">Patient</span>
-                <p class="font-bold text-white mt-0.5">{{ apt.patient.fullName }} ({{ apt.patient.patientCode }})</p>
-              </div>
-
-              <div>
-                <span class="text-3xs font-bold text-slate-400 uppercase tracking-wider block">Physician</span>
-                <p class="font-bold text-indigo-400 mt-0.5">{{ apt.doctor.fullName || 'Dr. Mahtab Khan' }}</p>
-              </div>
-            </div>
-
-            <div *ngIf="apt.notes" class="p-3 bg-slate-800/60 rounded-2xl text-slate-300 text-xs border border-slate-800">
-              <span class="font-bold text-white">Notes:</span> {{ apt.notes }}
-            </div>
-
-            <!-- Status Action Bar for Staff -->
-            <div *ngIf="!isPatient() && authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE'])" class="flex justify-end gap-2 pt-2 border-t border-slate-800 text-xs">
-              <button 
-                *ngIf="apt.status === 'SCHEDULED' && apt.id" 
-                (click)="updateStatus(apt.id!, 'CONFIRMED')" 
-                class="px-3 py-1 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white rounded-lg text-3xs font-bold transition">
-                Confirm
-              </button>
-              <button 
-                *ngIf="(apt.status === 'SCHEDULED' || apt.status === 'CONFIRMED') && apt.id" 
-                (click)="updateStatus(apt.id!, 'COMPLETED')" 
-                class="px-3 py-1 bg-slate-600/20 hover:bg-slate-600 text-slate-300 hover:text-white rounded-lg text-3xs font-bold transition">
-                Complete
-              </button>
-              <button 
-                *ngIf="apt.status !== 'CANCELLED' && apt.status !== 'COMPLETED' && apt.id" 
-                (click)="updateStatus(apt.id!, 'CANCELLED')" 
-                class="px-3 py-1 bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white rounded-lg text-3xs font-bold transition">
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Schedule Modal -->
-      <div *ngIf="showModal()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-        <div class="bg-slate-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-800 space-y-4">
-          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-            <h3 class="text-lg font-bold text-teal-400">
-              {{ isPatient() ? 'Request Physician Consultation' : 'Schedule Patient Appointment' }}
-            </h3>
-            <button (click)="showModal.set(false)" class="text-slate-400 text-xl font-bold">&times;</button>
-          </div>
-
-          <form (ngSubmit)="saveAppointment()" class="space-y-3 text-xs">
-            <!-- Select Patient (Staff Only) -->
-            <div *ngIf="!isPatient()">
-              <label class="block font-semibold text-slate-400 mb-1">Patient *</label>
-              <select [(ngModel)]="newApt.patientId" name="patientId" required class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white">
-                <option [value]="0">Select Patient Profile...</option>
-                <option *ngFor="let p of patientContext.patientList()" [value]="p.id">
-                  {{ p.fullName }} (MRN: {{ p.patientCode }})
-                </option>
-              </select>
-            </div>
-
-            <!-- Select Doctor -->
-            <div>
-              <label class="block font-semibold text-slate-400 mb-1">Attending Physician / Specialist *</label>
-              <select [(ngModel)]="newApt.doctorId" name="doctorId" required class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white">
-                <option [value]="0">Select Physician...</option>
-                <option *ngFor="let d of doctors()" [value]="d.id">
-                  {{ d.fullName }} ({{ d.specialization || d.department || 'Staff Physician' }})
-                </option>
-              </select>
-            </div>
-
-            <div>
-              <label class="block font-semibold text-slate-400 mb-1">Appointment Date & Time *</label>
-              <input type="datetime-local" [(ngModel)]="newApt.appointmentDate" name="appointmentDate" required class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white" />
-            </div>
-
-            <div>
-              <label class="block font-semibold text-slate-400 mb-1">Reason for Visit / Chief Complaint *</label>
-              <input type="text" [(ngModel)]="newApt.reason" name="reason" placeholder="e.g. Routine 3-Month Diabetes & Cardiology Checkup" required class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white" />
-            </div>
-
-            <div>
-              <label class="block font-semibold text-slate-400 mb-1">Additional Notes</label>
-              <textarea [(ngModel)]="newApt.notes" name="notes" rows="2" placeholder="Patient prefers morning slot..." class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white"></textarea>
-            </div>
-
-            <div class="flex justify-end gap-3 pt-2">
-              <button type="button" (click)="showModal.set(false)" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl">Cancel</button>
-              <button type="submit" class="px-5 py-2 bg-teal-600 hover:bg-teal-500 text-white font-bold rounded-xl">
-                Confirm Appointment
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  `
+  imports: [CommonModule, FormsModule, TableModule, DialogModule, ButtonModule, InputTextModule, TagModule, CardModule, ToolbarModule, ProgressSpinnerModule, SelectModule, DatePickerModule, TextareaModule],
+  templateUrl: './appointments.component.html',
+  styleUrl: './appointments.component.css'
 })
 export class AppointmentsComponent implements OnInit {
   appointments = signal<Appointment[]>([]);

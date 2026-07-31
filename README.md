@@ -35,6 +35,11 @@ The system seeds pre-configured user accounts for patients, physicians, nurses, 
 | **Hospital Admin** | `admin` | `admin123` | **Dr. Vikramaditya Gupta** (Admin) | MPI Registration, RBAC Management, Synthetic Data Generation |
 | **Compliance Auditor**| `auditor` | `auditor123` | **Inspector Suresh Menon** (Auditor) | Read-Only WORM Audit Vault, HIPAA Forensic Exporter |
 
+> [!NOTE]
+> **Manual Login Instructions:**
+> - To sign into MedVault, navigate to `/login` and enter any of the pre-configured **Username** and **Password** pairs above directly into the sign-in form.
+> - All default passwords follow the simple convention: `patient123` for patients, `doctor123` for physicians, `nurse123` for nurses, `admin123` for administrators, and `auditor123` for compliance auditors.
+
 ---
 
 ## 🏗️ Technology Stack
@@ -67,6 +72,18 @@ cd backend
 ./mvnw spring-boot:run
 ```
 *The REST API and FHIR services will start at `http://localhost:8080`.*
+
+### 🛠️ On-Demand CLI Data Seeding
+`DataSeeder` is disabled by default during standard Spring Boot startup so it does not reset your database. To populate default roles, users, patients, encounters, and vitals on-demand via the CLI tool:
+
+```bash
+cd backend
+./seed.sh
+```
+*Alternatively:*
+```bash
+./mvnw spring-boot:run -Dspring-boot.run.arguments="--medvault.seed.enabled=true"
+```
 
 ### 2. Running the Frontend Application
 ```bash

@@ -1,0 +1,178 @@
+<div class="flex flex-col gap-4">
+  <p-card>
+    <ng-template pTemplate="header">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 border-b border-surface-200 dark:border-surface-700">
+        <div>
+          <h1 class="text-2xl font-bold flex items-center gap-3 m-0">
+            <i class="pi pi-briefcase text-emerald-500"></i>
+            {{ isPatient() ? 'My Active Prescriptions & Refills' : 'Pharmacy & Electronic Prescriptions (eRx)' }}
+          </h1>
+          <p class="text-sm text-surface-500 dark:text-surface-400 mt-1 mb-0">
+            {{ isPatient() ? 'View your prescribed medications, dosage details, refills, and prescribing doctor instructions.' : 'Order entry with real-time Smart Safety contraindication alerts cross-checking patient allergy profiles.' }}
+          </p>
+        </div>
+        <div class="flex flex-wrap items-center gap-3">
+          <p-select 
+            *ngIf="!isPatient()"
+            [ngModel]="selectedPatientId" 
+            (ngModelChange)="onPatientChange($event)"
+            [options]="patientContext.patientList()"
+            optionLabel="fullName"
+            optionValue="id"
+            placeholder="Select Patient Profile..."
+            styleClass="w-full md:w-64">
+            <ng-template pTemplate="selectedItem" let-selectedOption>
+              <div *ngIf="selectedOption">
+                {{ selectedOption.fullName }} (MRN: {{ selectedOption.patientCode }})
+              </div>
+            </ng-template>
+            <ng-template pTemplate="item" let-patient>
+              <div>{{ patient.fullName }} (MRN: {{ patient.patientCode }})</div>
+            </ng-template>
+          </p-select>
+          
+          <p-button 
+            *ngIf="authService.hasRole('ROLE_DOCTOR')" 
+            (onClick)="showModal.set(true)" 
+            [disabled]="selectedPatientId === 0"
+            icon="pi pi-plus"
+            label="Issue eRx Order"
+            severity="success">
+          </p-button>
+        </div>
+      </div>
+    </ng-template>
+
+    <div class="p-4">
+      <p-message *ngIf="selectedPatientId === 0" severity="info">Select a patient from the dropdown above to view electronic prescription history.</p-message>
+      
+      <p-table 
+        *ngIf="selectedPatientId > 0"
+        [value]="prescriptions()" 
+        [paginator]="true" 
+        [rows]="10"
+        [rowHover]="true"
+        styleClass="p-datatable-sm p-datatable-striped">
+        <ng-template pTemplate="header">
+          <tr>
+            <th pSortableColumn="medicationName">Medication <p-sorticon field="medicationName"></p-sorticon></th>
+            <th pSortableColumn="dosage">Dosage <p-sorticon field="dosage"></p-sorticon></th>
+            <th pSortableColumn="route">Route <p-sorticon field="route"></p-sorticon></th>
+            <th pSortableColumn="frequency">Frequency <p-sorticon field="frequency"></p-sorticon></th>
+            <th pSortableColumn="refills">Refills <p-sorticon field="refills"></p-sorticon></th>
+            <th pSortableColumn="status">Status <p-sorticon field="status"></p-sorticon></th>
+            <th>Doctor</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-rx>
+          <tr>
+            <td>
+              <div class="font-bold text-emerald-600 dark:text-emerald-400">{{ rx.medicationName }}</div>
+              <div *ngIf="rx.rxNormCode" class="text-xs text-surface-500 font-mono mt-1">RxNorm: {{ rx.rxNormCode }}</div>
+              <div *ngIf="rx.instructions" class="text-xs text-surface-600 dark:text-surface-300 mt-1 italic border-l-2 border-surface-300 pl-2">{{ rx.instructions }}</div>
+            </td>
+            <td><p-tag [value]="rx.dosage" severity="info"></p-tag></td>
+            <td>{{ rx.route || 'Oral' }}</td>
+            <td>{{ rx.frequency }} ({{ rx.durationDays }} days)</td>
+            <td>{{ rx.refills || 0 }}</td>
+            <td>
+              <p-tag [value]="rx.status" [severity]="rx.status === 'ACTIVE' ? 'success' : 'secondary'"></p-tag>
+            </td>
+            <td>{{ rx.doctor?.fullName || 'Dr. Mahtab Khan' }}</td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="7" class="text-center p-6 text-surface-500">No active or past electronic prescriptions logged on file.</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </p-card>
+
+  <!-- Prescribe PrimeNG Dialog (Doctor Only) -->
+  <p-dialog 
+    [(visible)]="showModal" 
+    header="Issue Electronic Prescription (eRx)" 
+    [modal]="true" 
+    [style]="{ width: '500px', maxWidth: '95vw' }">
+    <form (ngSubmit)="handlePrescriptionSubmit()" class="flex flex-col gap-4 mt-2">
+      <div class="flex flex-col gap-2">
+        <label for="medicationName" class="font-semibold text-sm">Medication Name *</label>
+        <input pInputText id="medicationName" [(ngModel)]="newRx.medicationName" name="medicationName" placeholder="e.g. Amoxicillin, Lisinopril..." required class="w-full" />
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-4">
+        <div class="flex flex-col gap-2 flex-1">
+          <label for="dosage" class="font-semibold text-sm">Dosage *</label>
+          <input pInputText id="dosage" [(ngModel)]="newRx.dosage" name="dosage" placeholder="500 mg" required class="w-full" />
+        </div>
+        <div class="flex flex-col gap-2 flex-1">
+          <label for="route" class="font-semibold text-sm">Route</label>
+          <p-select 
+            id="route" 
+            [(ngModel)]="newRx.route" 
+            name="route" 
+            [options]="routes" 
+            optionLabel="label" 
+            optionValue="value" 
+            styleClass="w-full">
+          </p-select>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-4">
+        <div class="flex flex-col gap-2 flex-1">
+          <label for="frequency" class="font-semibold text-sm">Frequency *</label>
+          <input pInputText id="frequency" [(ngModel)]="newRx.frequency" name="frequency" placeholder="Twice daily" required class="w-full" />
+        </div>
+        <div class="flex flex-col gap-2 flex-1">
+          <label for="durationDays" class="font-semibold text-sm">Duration (Days)</label>
+          <input pInputText type="number" id="durationDays" [(ngModel)]="newRx.durationDays" name="durationDays" placeholder="30" class="w-full" />
+        </div>
+        <div class="flex flex-col gap-2 flex-1">
+          <label for="refills" class="font-semibold text-sm">Refills</label>
+          <input pInputText type="number" id="refills" [(ngModel)]="newRx.refills" name="refills" placeholder="2" class="w-full" />
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <label for="instructions" class="font-semibold text-sm">Patient Instructions</label>
+        <textarea pTextarea id="instructions" [(ngModel)]="newRx.instructions" name="instructions" rows="3" placeholder="Take after meals with water..." class="w-full resize-y"></textarea>
+      </div>
+
+      <div class="flex justify-end gap-3 mt-4 pt-4 border-t border-surface-200 dark:border-surface-700">
+        <p-button type="button" label="Cancel" severity="secondary" (onClick)="showModal.set(false)"></p-button>
+        <p-button type="submit" label="Authorize eRx Order" severity="success"></p-button>
+      </div>
+    </form>
+  </p-dialog>
+
+  <!-- Smart Allergy Safety Engine Contraindication Alert Dialog -->
+  <p-dialog 
+    [(visible)]="showSafetyModal" 
+    header="CONTRAINDICATION SAFETY WARNING" 
+    [modal]="true" 
+    [style]="{ width: '450px', maxWidth: '95vw' }">
+    <div class="flex flex-col gap-4 mt-2">
+      <p-message severity="error" styleClass="w-full m-0">
+        <ng-template pTemplate>
+          <div class="flex flex-col gap-2">
+            <div><strong>Conflicting Active Allergen:</strong> {{ safetyAlert()?.conflictingAllergen || 'Known Drug Allergy' }}</div>
+            <div><strong>Severity Rating:</strong> <span class="uppercase font-bold">{{ safetyAlert()?.severity }}</span></div>
+            <div class="text-sm">{{ safetyAlert()?.message }}</div>
+          </div>
+        </ng-template>
+      </p-message>
+      
+      <p class="text-sm text-surface-600 dark:text-surface-400 m-0">
+        Issuing this prescription poses high clinical risk for adverse reactions. Proceeding will log a high-priority <code class="bg-surface-200 dark:bg-surface-700 px-1 py-0.5 rounded text-red-600 dark:text-red-400 font-mono text-xs">ERX_ALERT</code> in the WORM Compliance Ledger.
+      </p>
+
+      <div class="flex justify-end gap-3 mt-2">
+        <p-button label="Cancel Prescription" severity="secondary" (onClick)="closeSafetyModal()"></p-button>
+        <p-button label="Authorize Override (Log Audit)" severity="danger" (onClick)="forceSavePrescription()"></p-button>
+      </div>
+    </div>
+  </p-dialog>
+</div>

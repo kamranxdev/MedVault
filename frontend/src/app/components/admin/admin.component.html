@@ -1,0 +1,88 @@
+<div class="flex flex-col gap-6">
+  <p-card class="shadow-xl">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-3">
+          <i class="ri-settings-3-line text-2xl text-blue-500"></i>
+          <h1 class="text-2xl font-bold tracking-tight">System Administration & RBAC</h1>
+        </div>
+        <p class="text-xs text-slate-400 mt-1">
+          User Account Directory & Security Audit Trail (ROLE_ADMIN Only)
+        </p>
+      </div>
+    </div>
+  </p-card>
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
+    <p-card class="shadow-xl">
+      <p class="text-3xs font-extrabold text-slate-400 uppercase tracking-wider">Total Users</p>
+      <p class="text-2xl font-black mt-1">{{ users().length }}</p>
+    </p-card>
+    <p-card class="shadow-xl">
+      <p class="text-3xs font-extrabold text-blue-400 uppercase tracking-wider">Doctors</p>
+      <p class="text-2xl font-black text-blue-400 mt-1">{{ getRoleCount('ROLE_DOCTOR') }}</p>
+    </p-card>
+    <p-card class="shadow-xl">
+      <p class="text-3xs font-extrabold text-emerald-400 uppercase tracking-wider">Nurses</p>
+      <p class="text-2xl font-black text-emerald-400 mt-1">{{ getRoleCount('ROLE_NURSE') }}</p>
+    </p-card>
+    <p-card class="shadow-xl">
+      <p class="text-3xs font-extrabold text-purple-400 uppercase tracking-wider">Patients</p>
+      <p class="text-2xl font-black text-purple-400 mt-1">{{ getRoleCount('ROLE_PATIENT') }}</p>
+    </p-card>
+    <p-card class="shadow-xl">
+      <p class="text-3xs font-extrabold text-rose-400 uppercase tracking-wider">Admins</p>
+      <p class="text-2xl font-black text-rose-400 mt-1">{{ getRoleCount('ROLE_ADMIN') }}</p>
+    </p-card>
+    <p-card class="shadow-xl">
+      <p class="text-3xs font-extrabold text-amber-400 uppercase tracking-wider">Auditors</p>
+      <p class="text-2xl font-black text-amber-400 mt-1">{{ getRoleCount('ROLE_AUDITOR') }}</p>
+    </p-card>
+  </div>
+
+  <!-- User Accounts PrimeNG Table -->
+  <p-card class="shadow-xl">
+    <ng-template pTemplate="header">
+      <div class="p-6 pb-0">
+        <h3 class="text-lg font-bold flex items-center gap-2">
+          <i class="ri-user-settings-line text-blue-400"></i> User Account Directory
+        </h3>
+      </div>
+    </ng-template>
+    
+    <p-table 
+      [value]="users()" 
+      [paginator]="true" 
+      [rows]="10"
+      responsiveLayout="scroll">
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="id">ID <p-sorticon field="id"></p-sorticon></th>
+          <th pSortableColumn="username">Username <p-sorticon field="username"></p-sorticon></th>
+          <th pSortableColumn="fullName">Full Name <p-sorticon field="fullName"></p-sorticon></th>
+          <th>Email</th>
+          <th>Specialization / Dept</th>
+          <th>Assigned Roles</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-u>
+        <tr>
+          <td class="font-mono text-slate-400">#{{ u.id }}</td>
+          <td class="font-bold font-mono">{{ u.username }}</td>
+          <td>{{ u.fullName }}</td>
+          <td class="text-slate-300">{{ u.email }}</td>
+          <td class="text-slate-300">{{ u.specialization || u.department || 'N/A' }}</td>
+          <td>
+            <div class="flex gap-1 flex-wrap">
+              <p-tag *ngFor="let r of u.roles" 
+                [value]="r.replace('ROLE_', '')" 
+                [class]="getRoleBadge(r) + ' px-2 py-0.5 rounded text-3xs font-extrabold uppercase tracking-wider font-mono'">
+              </p-tag>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+</div>

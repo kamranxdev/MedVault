@@ -1,0 +1,628 @@
+<div class="flex flex-col gap-6">
+  <p-toolbar *ngIf="!authService.hasRole('ROLE_PATIENT')">
+    <ng-template #start>
+      <div class="flex flex-col">
+        <h1 class="text-2xl font-bold m-0">Master Patient Index</h1>
+        <span class="text-gray-500 text-sm">FHIR R4 Compliant Enterprise Health Record</span>
+      </div>
+    </ng-template>
+    
+    <ng-template #end>
+      <div class="flex gap-4 items-center">
+        <input 
+          pInputText 
+          type="text" 
+          [(ngModel)]="searchQuery" 
+          (input)="executeMpiSearch()" 
+          placeholder="Search MPI..." 
+          class="w-64" />
+          
+        <p-button 
+          *ngIf="authService.hasRole('ROLE_ADMIN')" 
+          label="Intake New Patient" 
+          icon="pi pi-user-plus" 
+          (onClick)="showIntakeModal.set(true)" />
+      </div>
+    </ng-template>
+  </p-toolbar>
+
+  <div *ngIf="!authService.hasRole('ROLE_PATIENT')" class="flex overflow-x-auto gap-4 pb-2">
+    <div 
+      *ngFor="let p of filteredPatients()" 
+      (click)="selectPatient(p)"
+      class="flex items-center gap-3 p-3 rounded-lg border cursor-pointer min-w-56 hover:bg-gray-100"
+      [class.bg-blue-50]="selectedPatient()?.id === p.id"
+      [class.border-blue-500]="selectedPatient()?.id === p.id">
+      
+      <div class="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100 text-blue-600 font-bold">
+        {{ p.fullName.charAt(0) }}
+      </div>
+      
+      <div class="flex flex-col">
+        <span class="font-bold text-sm">{{ p.fullName }}</span>
+        <span class="text-xs text-gray-500">{{ p.patientCode }} • {{ p.bloodType }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="selectedPatient() as p; else noPatientSelected" class="flex flex-col gap-6">
+    <p-card>
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div class="flex items-center gap-4">
+          <div class="flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 text-2xl font-bold">
+            {{ p.fullName.charAt(0) }}
+          </div>
+          <div class="flex flex-col gap-1">
+            <div class="flex items-center gap-2">
+              <h2 class="text-2xl font-bold m-0">{{ p.fullName }}</h2>
+              <p-tag severity="danger" [value]="p.bloodType"></p-tag>
+              <p-tag severity="info" [value]="p.patientCode"></p-tag>
+            </div>
+            <span class="text-gray-500 text-sm">
+              DOB: <strong>{{ p.dateOfBirth }}</strong> • Gender: <strong>{{ p.gender }}</strong> • SSN: <strong>{{ p.ssn || 'XXX-XX-XXXX' }}</strong>
+            </span>
+          </div>
+        </div>
+        
+        <div class="flex gap-4">
+          <div class="flex flex-col p-3 border rounded-lg bg-gray-50">
+            <span class="text-xs text-gray-500 uppercase font-semibold">Insurance Provider</span>
+            <span class="font-bold">{{ p.insuranceProvider || 'Self-Pay' }}</span>
+          </div>
+          <div class="flex flex-col p-3 border rounded-lg bg-gray-50">
+            <span class="text-xs text-gray-500 uppercase font-semibold">Policy Number</span>
+            <span class="font-bold">{{ p.insurancePolicyNumber || 'POL-N/A' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-4 p-4 rounded-lg bg-red-50 border border-red-200 flex justify-between items-center">
+        <div class="flex flex-col gap-1">
+          <span class="font-bold text-red-600 uppercase text-sm">Critical Allergy Safety Banner</span>
+          <span class="text-sm text-red-800" *ngIf="patientAllergies().length > 0">
+            Active Allergies: <strong *ngFor="let a of patientAllergies()" class="mr-2 underline">{{ a.allergenName }} ({{ a.severity }})</strong>
+          </span>
+          <span class="text-sm text-gray-500" *ngIf="patientAllergies().length === 0">
+            No active allergies documented.
+          </span>
+        </div>
+        
+        <p-button 
+          *ngIf="authService.hasAnyRole(['ROLE_DOCTOR', 'ROLE_NURSE'])"
+          severity="danger" 
+          size="small" 
+          label="Log Allergy" 
+          icon="pi pi-plus" 
+          (onClick)="showAllergyModal.set(true)" />
+      </div>
+    </p-card>
+
+    <p-card>
+      <p-tabs [value]="chartTab()" (valueChange)="setChartTab($event)">
+        <p-tablist>
+          <p-tab value="summary"><i class="pi pi-chart-bar mr-2"></i> Chart Summary</p-tab>
+          <p-tab value="encounters"><i class="pi pi-building mr-2"></i> Visits ({{ patientEncounters().length }})</p-tab>
+          <p-tab value="allergies"><i class="pi pi-exclamation-triangle mr-2"></i> Allergies ({{ patientAllergies().length }})</p-tab>
+          <p-tab value="diagnoses"><i class="pi pi-list mr-2"></i> Problem List ({{ patientDiagnoses().length }})</p-tab>
+          <p-tab value="rx"><i class="pi pi-receipt mr-2"></i> eRx Orders ({{ patientRx().length }})</p-tab>
+          <p-tab value="vitals"><i class="pi pi-heart-fill mr-2"></i> Vitals ({{ patientVitals().length }})</p-tab>
+        </p-tablist>
+        
+        <p-tabpanels>
+          <!-- TAB 1: CHART SUMMARY -->
+          <p-tabpanel value="summary">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              
+              <p-card header="Active Problem List">
+                <ng-template #title>
+                  <div class="flex justify-between items-center">
+                    <span class="font-bold text-lg">Active Problem List</span>
+                    <p-button *ngIf="authService.hasRole('ROLE_DOCTOR')" label="Add Problem" icon="pi pi-plus" size="small" text (onClick)="showDiagnosisModal.set(true)" />
+                  </div>
+                </ng-template>
+                <div class="flex flex-col gap-2">
+                  <div *ngFor="let d of patientDiagnoses()" class="flex justify-between items-center p-3 border rounded-lg">
+                    <div class="flex flex-col">
+                      <span class="font-bold">{{ d.conditionName }}</span>
+                      <span class="text-sm text-gray-500">{{ d.notes }}</span>
+                    </div>
+                    <p-tag [value]="d.icdCode"></p-tag>
+                  </div>
+                  <p-message *ngIf="patientDiagnoses().length === 0" severity="info">No active diagnoses logged.</p-message>
+                </div>
+              </p-card>
+
+              <p-card header="Active eRx Prescriptions">
+                <ng-template #title>
+                  <div class="flex justify-between items-center">
+                    <span class="font-bold text-lg">Active eRx Prescriptions</span>
+                    <p-button *ngIf="authService.hasRole('ROLE_DOCTOR')" label="Order eRx" icon="pi pi-plus" size="small" text severity="success" (onClick)="showRxModal.set(true)" />
+                  </div>
+                </ng-template>
+                <div class="flex flex-col gap-2">
+                  <div *ngFor="let rx of patientRx()" class="flex justify-between items-center p-3 border rounded-lg">
+                    <div class="flex flex-col">
+                      <span class="font-bold text-green-600">{{ rx.medicationName }}</span>
+                      <span class="text-sm text-gray-500">{{ rx.dosage }} • {{ rx.frequency }} ({{ rx.route }})</span>
+                    </div>
+                    <p-tag severity="success" [value]="rx.status"></p-tag>
+                  </div>
+                  <p-message *ngIf="patientRx().length === 0" severity="info">No active prescriptions.</p-message>
+                </div>
+              </p-card>
+
+              <p-card header="Bedside Vitals">
+                <ng-template #title>
+                  <div class="flex justify-between items-center">
+                    <span class="font-bold text-lg">Bedside Vitals</span>
+                    <p-button *ngIf="authService.hasAnyRole(['ROLE_NURSE', 'ROLE_DOCTOR'])" label="Log Vitals" icon="pi pi-plus" size="small" text severity="warn" (onClick)="showVitalsModal.set(true)" />
+                  </div>
+                </ng-template>
+                <div class="grid grid-cols-3 gap-4 text-center" *ngIf="patientVitals().length > 0">
+                  <div class="flex flex-col p-3 border rounded-lg bg-gray-50">
+                    <span class="text-xs text-gray-500 uppercase">Blood Pressure</span>
+                    <span class="font-bold text-lg text-red-500">{{ patientVitals()[0].bloodPressure }}</span>
+                    <span class="text-xs text-gray-500">mmHg</span>
+                  </div>
+                  <div class="flex flex-col p-3 border rounded-lg bg-gray-50">
+                    <span class="text-xs text-gray-500 uppercase">Heart Rate</span>
+                    <span class="font-bold text-lg text-green-500">{{ patientVitals()[0].heartRate }}</span>
+                    <span class="text-xs text-gray-500">bpm</span>
+                  </div>
+                  <div class="flex flex-col p-3 border rounded-lg bg-gray-50">
+                    <span class="text-xs text-gray-500 uppercase">BMI</span>
+                    <span class="font-bold text-lg text-yellow-500">{{ patientVitals()[0].bmi || '23.5' }}</span>
+                    <span class="text-xs text-gray-500">kg/m²</span>
+                  </div>
+                </div>
+                <p-message *ngIf="patientVitals().length === 0" severity="info">No vital signs recorded yet.</p-message>
+              </p-card>
+
+              <p-card header="Recent Visits">
+                <ng-template #title>
+                  <div class="flex justify-between items-center">
+                    <span class="font-bold text-lg">Recent Visits</span>
+                    <p-button *ngIf="authService.hasRole('ROLE_DOCTOR')" label="Log Encounter" icon="pi pi-plus" size="small" text (onClick)="showEncounterModal.set(true)" />
+                  </div>
+                </ng-template>
+                <div class="flex flex-col gap-2">
+                  <div *ngFor="let enc of patientEncounters().slice(0, 2)" class="flex flex-col p-3 border rounded-lg">
+                    <div class="flex justify-between items-center mb-1">
+                      <span class="font-bold">{{ enc.encounterType }} Visit</span>
+                      <span class="text-xs text-gray-500">{{ enc.encounterDate | date:'shortDate' }}</span>
+                    </div>
+                    <span class="text-sm">{{ enc.chiefComplaint }}</span>
+                  </div>
+                  <p-message *ngIf="patientEncounters().length === 0" severity="info">No visits recorded.</p-message>
+                </div>
+              </p-card>
+            </div>
+          </p-tabpanel>
+
+          <!-- TAB 2: VISITS & ENCOUNTERS -->
+          <p-tabpanel value="encounters">
+            <div class="flex flex-col gap-4">
+              <div class="flex justify-between items-center">
+                <h3 class="font-bold text-lg m-0">Encounter Timeline</h3>
+                <p-button *ngIf="authService.hasRole('ROLE_DOCTOR')" label="Log Encounter Visit" icon="pi pi-plus" size="small" (onClick)="showEncounterModal.set(true)" />
+              </div>
+              
+              <p-table [value]="patientEncounters()" [paginator]="true" [rows]="5" responsiveLayout="scroll">
+                <ng-template pTemplate="header">
+                  <tr>
+                    <th pSortableColumn="encounterDate">Date <p-sorticon field="encounterDate"></p-sorticon></th>
+                    <th pSortableColumn="encounterType">Type <p-sorticon field="encounterType"></p-sorticon></th>
+                    <th pSortableColumn="chiefComplaint">Complaint <p-sorticon field="chiefComplaint"></p-sorticon></th>
+                    <th>Clinical Notes</th>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-enc>
+                  <tr>
+                    <td>{{ enc.encounterDate | date:'short' }}</td>
+                    <td><p-tag [value]="enc.encounterType"></p-tag></td>
+                    <td class="font-bold">{{ enc.chiefComplaint }}</td>
+                    <td class="text-sm">
+                      <div>{{ enc.clinicalNotes }}</div>
+                      <div *ngIf="enc.dischargeSummary" class="mt-1 text-green-600 font-semibold">DC Summary: {{ enc.dischargeSummary }}</div>
+                    </td>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                  <tr>
+                    <td colspan="4" class="text-center p-4">No encounter records documented.</td>
+                  </tr>
+                </ng-template>
+              </p-table>
+            </div>
+          </p-tabpanel>
+
+          <!-- TAB 3: ALLERGIES -->
+          <p-tabpanel value="allergies">
+            <div class="flex flex-col gap-4">
+              <div class="flex justify-between items-center">
+                <h3 class="font-bold text-lg m-0">Coded Allergies</h3>
+                <p-button *ngIf="authService.hasAnyRole(['ROLE_DOCTOR', 'ROLE_NURSE'])" severity="danger" label="Add Allergy" icon="pi pi-plus" size="small" (onClick)="showAllergyModal.set(true)" />
+              </div>
+              
+              <p-table [value]="patientAllergies()" [paginator]="true" [rows]="5" responsiveLayout="scroll">
+                <ng-template pTemplate="header">
+                  <tr>
+                    <th pSortableColumn="allergenName">Allergen <p-sorticon field="allergenName"></p-sorticon></th>
+                    <th pSortableColumn="category">Category <p-sorticon field="category"></p-sorticon></th>
+                    <th pSortableColumn="severity">Severity <p-sorticon field="severity"></p-sorticon></th>
+                    <th>Reaction</th>
+                    <th pSortableColumn="status">Status <p-sorticon field="status"></p-sorticon></th>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-a>
+                  <tr>
+                    <td class="font-bold text-red-500">{{ a.allergenName }}</td>
+                    <td>{{ a.category }}</td>
+                    <td><p-tag severity="danger" [value]="a.severity"></p-tag></td>
+                    <td class="text-sm">{{ a.reactionDescription }}</td>
+                    <td><p-tag severity="info" [value]="a.status"></p-tag></td>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                  <tr>
+                    <td colspan="5" class="text-center p-4">No active allergies documented.</td>
+                  </tr>
+                </ng-template>
+              </p-table>
+            </div>
+          </p-tabpanel>
+
+          <!-- TAB 4: DIAGNOSES -->
+          <p-tabpanel value="diagnoses">
+            <div class="flex flex-col gap-4">
+              <div class="flex justify-between items-center">
+                <h3 class="font-bold text-lg m-0">Active Problem List</h3>
+                <p-button *ngIf="authService.hasRole('ROLE_DOCTOR')" label="Add Diagnosis" icon="pi pi-plus" size="small" (onClick)="showDiagnosisModal.set(true)" />
+              </div>
+              
+              <p-table [value]="patientDiagnoses()" [paginator]="true" [rows]="5" responsiveLayout="scroll">
+                <ng-template pTemplate="header">
+                  <tr>
+                    <th pSortableColumn="conditionName">Condition <p-sorticon field="conditionName"></p-sorticon></th>
+                    <th pSortableColumn="icdCode">ICD-10 <p-sorticon field="icdCode"></p-sorticon></th>
+                    <th pSortableColumn="onsetDate">Onset Date <p-sorticon field="onsetDate"></p-sorticon></th>
+                    <th>Notes</th>
+                    <th pSortableColumn="status">Status <p-sorticon field="status"></p-sorticon></th>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-d>
+                  <tr>
+                    <td class="font-bold">{{ d.conditionName }}</td>
+                    <td><p-tag [value]="d.icdCode"></p-tag></td>
+                    <td>{{ d.onsetDate | date:'mediumDate' }}</td>
+                    <td class="text-sm">{{ d.notes }}</td>
+                    <td><p-tag severity="info" [value]="d.status"></p-tag></td>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                  <tr>
+                    <td colspan="5" class="text-center p-4">No coded diagnoses recorded.</td>
+                  </tr>
+                </ng-template>
+              </p-table>
+            </div>
+          </p-tabpanel>
+
+          <!-- TAB 5: eRx -->
+          <p-tabpanel value="rx">
+            <div class="flex flex-col gap-4">
+              <div class="flex justify-between items-center">
+                <h3 class="font-bold text-lg m-0">Medication Orders</h3>
+                <p-button *ngIf="authService.hasRole('ROLE_DOCTOR')" severity="success" label="Issue eRx" icon="pi pi-plus" size="small" (onClick)="showRxModal.set(true)" />
+              </div>
+              
+              <p-table [value]="patientRx()" [paginator]="true" [rows]="5" responsiveLayout="scroll">
+                <ng-template pTemplate="header">
+                  <tr>
+                    <th pSortableColumn="medicationName">Medication <p-sorticon field="medicationName"></p-sorticon></th>
+                    <th>Dosage / Route</th>
+                    <th>Instructions</th>
+                    <th>Duration / Refills</th>
+                    <th pSortableColumn="status">Status <p-sorticon field="status"></p-sorticon></th>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-rx>
+                  <tr>
+                    <td class="font-bold text-green-600">{{ rx.medicationName }}</td>
+                    <td>{{ rx.dosage }} ({{ rx.route }})</td>
+                    <td>{{ rx.frequency }}</td>
+                    <td>{{ rx.durationDays }} days / {{ rx.refills }} refills</td>
+                    <td><p-tag severity="success" [value]="rx.status"></p-tag></td>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                  <tr>
+                    <td colspan="5" class="text-center p-4">No active medication orders.</td>
+                  </tr>
+                </ng-template>
+              </p-table>
+            </div>
+          </p-tabpanel>
+
+          <!-- TAB 6: VITALS -->
+          <p-tabpanel value="vitals">
+            <div class="flex flex-col gap-4">
+              <div class="flex justify-between items-center">
+                <h3 class="font-bold text-lg m-0">Vitals & Observations</h3>
+                <p-button *ngIf="authService.hasAnyRole(['ROLE_NURSE', 'ROLE_DOCTOR'])" severity="warn" label="Record Vitals" icon="pi pi-plus" size="small" (onClick)="showVitalsModal.set(true)" />
+              </div>
+              
+              <p-table [value]="patientVitals()" [paginator]="true" [rows]="5" responsiveLayout="scroll">
+                <ng-template pTemplate="header">
+                  <tr>
+                    <th pSortableColumn="recordedAt">Date <p-sorticon field="recordedAt"></p-sorticon></th>
+                    <th>BP</th>
+                    <th>HR</th>
+                    <th>Temp</th>
+                    <th>SpO2</th>
+                    <th>BMI</th>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-v>
+                  <tr>
+                    <td>{{ v.recordedAt | date:'short' }}</td>
+                    <td class="font-bold text-red-500">{{ v.bloodPressure }}</td>
+                    <td class="font-bold text-green-500">{{ v.heartRate }} bpm</td>
+                    <td>{{ v.temperature }} °C</td>
+                    <td>{{ v.oxygenSaturation }} %</td>
+                    <td><p-tag severity="warn" [value]="v.bmi || '23.5'"></p-tag></td>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                  <tr>
+                    <td colspan="6" class="text-center p-4">No vital signs recorded.</td>
+                  </tr>
+                </ng-template>
+              </p-table>
+            </div>
+          </p-tabpanel>
+        </p-tabpanels>
+      </p-tabs>
+    </p-card>
+  </div>
+
+  <ng-template #noPatientSelected>
+    <div class="flex flex-col items-center justify-center p-12 text-center border rounded-lg bg-gray-50 mt-4 gap-4">
+      <i class="pi pi-users text-6xl text-blue-300"></i>
+      <h3 class="text-xl font-bold m-0">Select a Patient Profile</h3>
+      <p class="text-gray-500 max-w-md">Choose a patient from the selection bar above or use the MPI search input to view full clinical chart details.</p>
+    </div>
+  </ng-template>
+</div>
+
+<!-- Modals -->
+
+<!-- Intake Modal -->
+<p-dialog header="Demographic Intake Registration" [modal]="true" [(visible)]="showIntakeModal" [style]="{width: '50rem'}">
+  <form (ngSubmit)="savePatient()" class="flex flex-col gap-4 mt-2">
+    <div class="grid grid-cols-2 gap-4">
+      <div class="flex flex-col gap-2">
+        <label class="font-semibold">Full Name *</label>
+        <input pInputText [(ngModel)]="newPatient.fullName" name="fullName" required />
+      </div>
+      <div class="flex flex-col gap-2">
+        <label class="font-semibold">SSN</label>
+        <input pInputText [(ngModel)]="newPatient.ssn" name="ssn" placeholder="XXX-XX-XXXX" />
+      </div>
+    </div>
+    
+    <div class="grid grid-cols-3 gap-4">
+      <div class="flex flex-col gap-2">
+        <label class="font-semibold">Date of Birth</label>
+        <p-datepicker [(ngModel)]="newPatient.dateOfBirth" name="dateOfBirth" dateFormat="yy-mm-dd" [showIcon]="true" appendTo="body"></p-datepicker>
+      </div>
+      <div class="flex flex-col gap-2">
+        <label class="font-semibold">Gender</label>
+        <p-select [options]="genderOptions" [(ngModel)]="newPatient.gender" name="gender" appendTo="body"></p-select>
+      </div>
+      <div class="flex flex-col gap-2">
+        <label class="font-semibold">Blood Type</label>
+        <p-select [options]="bloodTypeOptions" [(ngModel)]="newPatient.bloodType" name="bloodType" appendTo="body"></p-select>
+      </div>
+    </div>
+    
+    <div class="grid grid-cols-2 gap-4">
+      <div class="flex flex-col gap-2">
+        <label class="font-semibold">Insurance Provider</label>
+        <input pInputText [(ngModel)]="newPatient.insuranceProvider" name="insuranceProvider" />
+      </div>
+      <div class="flex flex-col gap-2">
+        <label class="font-semibold">Policy Number</label>
+        <input pInputText [(ngModel)]="newPatient.insurancePolicyNumber" name="insurancePolicyNumber" />
+      </div>
+    </div>
+    
+    <div class="flex justify-end gap-2 mt-4">
+      <p-button label="Cancel" severity="secondary" (onClick)="showIntakeModal.set(false)"></p-button>
+      <p-button label="Register Patient" type="submit"></p-button>
+    </div>
+  </form>
+</p-dialog>
+
+<!-- Allergy Modal -->
+<p-dialog header="Log Coded Allergy" [modal]="true" [(visible)]="showAllergyModal" [style]="{width: '30rem'}">
+  <form (ngSubmit)="saveAllergy()" class="flex flex-col gap-4 mt-2">
+    <div class="flex flex-col gap-2">
+      <label class="font-semibold">Allergen Name *</label>
+      <input pInputText [(ngModel)]="newAllergyInput.allergenName" name="allergenName" required placeholder="e.g. Penicillin" />
+    </div>
+    
+    <div class="grid grid-cols-2 gap-4">
+      <div class="flex flex-col gap-2">
+        <label class="font-semibold">Category</label>
+        <p-select [options]="allergyCategoryOptions" [(ngModel)]="newAllergyInput.category" name="category" appendTo="body"></p-select>
+      </div>
+      <div class="flex flex-col gap-2">
+        <label class="font-semibold">Severity</label>
+        <p-select [options]="severityOptions" [(ngModel)]="newAllergyInput.severity" name="severity" appendTo="body"></p-select>
+      </div>
+    </div>
+    
+    <div class="flex flex-col gap-2">
+      <label class="font-semibold">Reaction Description</label>
+      <textarea pTextarea [(ngModel)]="newAllergyInput.reactionDescription" name="reactionDescription" rows="3"></textarea>
+    </div>
+    
+    <div class="flex justify-end gap-2 mt-4">
+      <p-button label="Cancel" severity="secondary" (onClick)="showAllergyModal.set(false)"></p-button>
+      <p-button label="Save Allergy" severity="danger" type="submit"></p-button>
+    </div>
+  </form>
+</p-dialog>
+
+<!-- Diagnosis Modal -->
+<p-dialog header="Add Coded Problem" [modal]="true" [(visible)]="showDiagnosisModal" [style]="{width: '35rem'}">
+  <form (ngSubmit)="saveDiagnosis()" class="flex flex-col gap-4 mt-2">
+    <div class="flex flex-col gap-2">
+      <label class="font-semibold">Condition Name *</label>
+      <input pInputText [(ngModel)]="newDiagnosisInput.conditionName" name="conditionName" required />
+    </div>
+    
+    <div class="grid grid-cols-2 gap-4">
+      <div class="flex flex-col gap-2">
+        <label class="font-semibold">ICD-10 Code</label>
+        <input pInputText [(ngModel)]="newDiagnosisInput.icdCode" name="icdCode" />
+      </div>
+      <div class="flex flex-col gap-2">
+        <label class="font-semibold">Onset Date</label>
+        <p-datepicker [(ngModel)]="newDiagnosisInput.onsetDate" name="onsetDate" dateFormat="yy-mm-dd" appendTo="body"></p-datepicker>
+      </div>
+    </div>
+    
+    <div class="flex flex-col gap-2">
+      <label class="font-semibold">Notes</label>
+      <textarea pTextarea [(ngModel)]="newDiagnosisInput.notes" name="notes" rows="3"></textarea>
+    </div>
+    
+    <div class="flex justify-end gap-2 mt-4">
+      <p-button label="Cancel" severity="secondary" (onClick)="showDiagnosisModal.set(false)"></p-button>
+      <p-button label="Save Diagnosis" type="submit"></p-button>
+    </div>
+  </form>
+</p-dialog>
+
+<!-- Rx Modal -->
+<p-dialog header="Issue Electronic Prescription" [modal]="true" [(visible)]="showRxModal" [style]="{width: '40rem'}">
+  <div *ngIf="safetyAlert()" class="mb-4">
+    <p-message severity="error">{{ safetyAlert()?.message || 'Contraindication alert!' }}</p-message>
+    <div class="flex justify-end gap-2 mt-2">
+      <p-button label="Revise Order" severity="secondary" size="small" (onClick)="safetyAlert.set(null)"></p-button>
+      <p-button label="Authorize Override" severity="danger" size="small" (onClick)="confirmOverrideRx()"></p-button>
+    </div>
+  </div>
+
+  <form (ngSubmit)="performSafetyCheckAndSaveRx()" class="flex flex-col gap-4 mt-2">
+    <div class="flex flex-col gap-2">
+      <label class="font-semibold">Medication Name *</label>
+      <input pInputText [(ngModel)]="newRxInput.medicationName" name="medicationName" required />
+    </div>
+    
+    <div class="grid grid-cols-2 gap-4">
+      <div class="flex flex-col gap-2">
+        <label class="font-semibold">Dosage</label>
+        <input pInputText [(ngModel)]="newRxInput.dosage" name="dosage" />
+      </div>
+      <div class="flex flex-col gap-2">
+        <label class="font-semibold">Route</label>
+        <p-select [options]="routeOptions" [(ngModel)]="newRxInput.route" name="route" appendTo="body"></p-select>
+      </div>
+    </div>
+    
+    <div class="grid grid-cols-2 gap-4">
+      <div class="flex flex-col gap-2">
+        <label class="font-semibold">Frequency</label>
+        <input pInputText [(ngModel)]="newRxInput.frequency" name="frequency" />
+      </div>
+      <div class="flex flex-col gap-2">
+        <label class="font-semibold">Duration (Days)</label>
+        <input pInputText type="number" [(ngModel)]="newRxInput.durationDays" name="durationDays" />
+      </div>
+    </div>
+    
+    <div class="flex justify-end gap-2 mt-4">
+      <p-button label="Cancel" severity="secondary" (onClick)="showRxModal.set(false)"></p-button>
+      <p-button label="Verify & Issue eRx" severity="success" type="submit"></p-button>
+    </div>
+  </form>
+</p-dialog>
+
+<!-- Encounter Modal -->
+<p-dialog header="Log Clinical Visit Encounter" [modal]="true" [(visible)]="showEncounterModal" [style]="{width: '40rem'}">
+  <form (ngSubmit)="saveEncounter()" class="flex flex-col gap-4 mt-2">
+    <div class="grid grid-cols-2 gap-4">
+      <div class="flex flex-col gap-2">
+        <label class="font-semibold">Encounter Type</label>
+        <p-select [options]="encounterTypeOptions" [(ngModel)]="newEncounterInput.encounterType" name="encounterType" appendTo="body"></p-select>
+      </div>
+      <div class="flex flex-col gap-2">
+        <label class="font-semibold">Status</label>
+        <p-select [options]="statusOptions" [(ngModel)]="newEncounterInput.status" name="status" appendTo="body"></p-select>
+      </div>
+    </div>
+    
+    <div class="flex flex-col gap-2">
+      <label class="font-semibold">Chief Complaint *</label>
+      <input pInputText [(ngModel)]="newEncounterInput.chiefComplaint" name="chiefComplaint" required />
+    </div>
+    
+    <div class="flex flex-col gap-2">
+      <label class="font-semibold">Clinical Notes</label>
+      <textarea pTextarea [(ngModel)]="newEncounterInput.clinicalNotes" name="clinicalNotes" rows="4"></textarea>
+    </div>
+    
+    <div class="flex justify-end gap-2 mt-4">
+      <p-button label="Cancel" severity="secondary" (onClick)="showEncounterModal.set(false)"></p-button>
+      <p-button label="Save Encounter" type="submit"></p-button>
+    </div>
+  </form>
+</p-dialog>
+
+<!-- Vitals Modal -->
+<p-dialog header="Record Bedside Vitals" [modal]="true" [(visible)]="showVitalsModal" [style]="{width: '35rem'}">
+  <form (ngSubmit)="saveVitals()" class="flex flex-col gap-4 mt-2">
+    <div class="flex flex-col gap-2">
+      <label class="font-semibold">Blood Pressure (mmHg)</label>
+      <input pInputText [(ngModel)]="newVitalsInput.bloodPressure" name="bloodPressure" placeholder="120/80" />
+    </div>
+    
+    <div class="grid grid-cols-3 gap-4">
+      <div class="flex flex-col gap-2">
+        <label class="font-semibold">Heart Rate</label>
+        <input pInputText type="number" [(ngModel)]="newVitalsInput.heartRate" name="heartRate" />
+      </div>
+      <div class="flex flex-col gap-2">
+        <label class="font-semibold">Temp (°C)</label>
+        <input pInputText type="number" step="0.1" [(ngModel)]="newVitalsInput.temperature" name="temperature" />
+      </div>
+      <div class="flex flex-col gap-2">
+        <label class="font-semibold">SpO2 (%)</label>
+        <input pInputText type="number" [(ngModel)]="newVitalsInput.oxygenSaturation" name="oxygenSaturation" />
+      </div>
+    </div>
+    
+    <div class="grid grid-cols-3 gap-4">
+      <div class="flex flex-col gap-2">
+        <label class="font-semibold">Height (cm)</label>
+        <input pInputText type="number" [(ngModel)]="newVitalsInput.heightCm" name="heightCm" />
+      </div>
+      <div class="flex flex-col gap-2">
+        <label class="font-semibold">Weight (kg)</label>
+        <input pInputText type="number" step="0.1" [(ngModel)]="newVitalsInput.weightKg" name="weightKg" />
+      </div>
+      <div class="flex flex-col gap-2">
+        <label class="font-semibold">Glucose (mg/dL)</label>
+        <input pInputText type="number" [(ngModel)]="newVitalsInput.bloodGlucose" name="bloodGlucose" />
+      </div>
+    </div>
+    
+    <div class="flex justify-end gap-2 mt-4">
+      <p-button label="Cancel" severity="secondary" (onClick)="showVitalsModal.set(false)"></p-button>
+      <p-button label="Save Vitals" severity="warn" type="submit"></p-button>
+    </div>
+  </form>
+</p-dialog>

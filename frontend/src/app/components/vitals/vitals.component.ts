@@ -6,150 +6,20 @@ import { AuthService } from '../../core/services/auth.service';
 import { PatientContextService } from '../../core/services/patient-context.service';
 import { Patient, Vitals } from '../../core/models/models';
 
+import { TableModule } from 'primeng/table';
+import { DialogModule } from 'primeng/dialog';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { TagModule } from 'primeng/tag';
+import { SelectModule } from 'primeng/select';
+import { InputTextModule } from 'primeng/inputtext';
+
 @Component({
   selector: 'app-vitals',
   standalone: true,
-  imports: [CommonModule, FormsModule],
-  template: `
-    <div class="space-y-6">
-      <!-- Enterprise Header -->
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900 p-6 rounded-3xl border border-slate-800 shadow-xl">
-        <div>
-          <div class="flex items-center gap-3">
-            <i class="ri-pulse-line text-2xl text-amber-400"></i>
-            <h1 class="text-2xl font-bold text-white tracking-tight">
-              {{ isPatient() ? 'My Bedside Vitals History' : 'Longitudinal Bedside Vital Signs Flowsheet' }}
-            </h1>
-          </div>
-          <p class="text-xs text-slate-400 mt-1">
-            Time-series physiological metrics, Blood Pressure, Heart Rate, Temperature, Glucose, SpO2, and calculated BMI.
-          </p>
-        </div>
-
-        <div class="flex items-center gap-3">
-          <select 
-            *ngIf="!isPatient()"
-            [ngModel]="selectedPatientId" 
-            (ngModelChange)="onPatientChange($event)"
-            class="px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs font-semibold text-white focus:ring-2 focus:ring-amber-500">
-            <option [value]="0">Select Patient Profile...</option>
-            <option *ngFor="let p of patientContext.patientList()" [value]="p.id">
-              {{ p.fullName }} (MRN: {{ p.patientCode }})
-            </option>
-          </select>
-
-          <button 
-            *ngIf="canRecordVitals()" 
-            (click)="showModal.set(true)" 
-            [disabled]="selectedPatientId === 0"
-            class="px-4 py-2.5 bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white font-bold text-xs rounded-xl transition shadow-md flex items-center gap-2">
-            <span>+</span> Record Bedside Vitals
-          </button>
-        </div>
-      </div>
-
-      <!-- Main Content -->
-      <div *ngIf="selectedPatientId === 0" class="text-center py-16 bg-slate-900 rounded-3xl border border-slate-800 shadow-xl">
-        <p class="text-slate-400 text-xs">Select a patient from the dropdown above to view longitudinal physiological trends.</p>
-      </div>
-
-      <div *ngIf="selectedPatientId > 0" class="space-y-6">
-        <!-- Time Series Summary Cards -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4" *ngIf="latestVitals()">
-          <div class="bg-slate-900 p-5 rounded-3xl border border-slate-800 space-y-1 shadow-xl">
-            <span class="text-3xs font-extrabold text-slate-400 uppercase tracking-wider">Latest Blood Pressure</span>
-            <div class="text-2xl font-black text-rose-400">{{ latestVitals()?.bloodPressure }} <span class="text-xs font-normal text-slate-400">mmHg</span></div>
-          </div>
-          <div class="bg-slate-900 p-5 rounded-3xl border border-slate-800 space-y-1 shadow-xl">
-            <span class="text-3xs font-extrabold text-slate-400 uppercase tracking-wider">Heart Rate</span>
-            <div class="text-2xl font-black text-emerald-400">{{ latestVitals()?.heartRate }} <span class="text-xs font-normal text-slate-400">bpm</span></div>
-          </div>
-          <div class="bg-slate-900 p-5 rounded-3xl border border-slate-800 space-y-1 shadow-xl">
-            <span class="text-3xs font-extrabold text-slate-400 uppercase tracking-wider">Blood Glucose</span>
-            <div class="text-2xl font-black text-amber-400">{{ latestVitals()?.bloodGlucose || 'N/A' }} <span class="text-xs font-normal text-slate-400">mg/dL</span></div>
-          </div>
-          <div class="bg-slate-900 p-5 rounded-3xl border border-slate-800 space-y-1 shadow-xl">
-            <span class="text-3xs font-extrabold text-slate-400 uppercase tracking-wider">SpO2 Oxygen</span>
-            <div class="text-2xl font-black text-indigo-400">{{ latestVitals()?.oxygenSaturation }}%</div>
-          </div>
-        </div>
-
-        <!-- Vitals Table / History -->
-        <div class="bg-slate-900 rounded-3xl border border-slate-800 p-6 shadow-xl space-y-4">
-          <h3 class="font-bold text-white text-base">Longitudinal Bedside Readings</h3>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs text-slate-300">
-              <thead class="bg-slate-800/80 text-slate-400 font-bold uppercase tracking-wider text-3xs">
-                <tr>
-                  <th class="p-3 rounded-l-xl">Recorded At</th>
-                  <th class="p-3">BP (mmHg)</th>
-                  <th class="p-3">HR (bpm)</th>
-                  <th class="p-3">Temp (°C)</th>
-                  <th class="p-3">SpO2 (%)</th>
-                  <th class="p-3">Glucose</th>
-                  <th class="p-3 rounded-r-xl">Logged By</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-800">
-                <tr *ngFor="let v of vitalsList()" class="hover:bg-slate-800/40 transition">
-                  <td class="p-3 font-mono text-slate-400">{{ v.recordedAt | date:'medium' }}</td>
-                  <td class="p-3 font-bold text-rose-400">{{ v.bloodPressure }}</td>
-                  <td class="p-3 font-bold text-emerald-400">{{ v.heartRate }}</td>
-                  <td class="p-3">{{ v.temperature }}</td>
-                  <td class="p-3 font-bold text-indigo-400">{{ v.oxygenSaturation }}%</td>
-                  <td class="p-3 font-bold text-amber-400">{{ v.bloodGlucose || '-' }}</td>
-                  <td class="p-3 text-slate-400">{{ v.recordedBy?.fullName || 'Clinical Staff' }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- Record Vitals Modal -->
-      <div *ngIf="showModal()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-        <div class="bg-slate-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-800 space-y-4">
-          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-            <h3 class="text-lg font-bold text-amber-400">Record Bedside Vital Signs</h3>
-            <button (click)="showModal.set(false)" class="text-slate-400 text-xl font-bold">×</button>
-          </div>
-
-          <form (ngSubmit)="saveVitals()" class="space-y-3 text-xs">
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="block font-semibold text-slate-400 mb-1">Blood Pressure (mmHg) *</label>
-                <input type="text" [(ngModel)]="newVitals.bloodPressure" name="bloodPressure" placeholder="120/80" required class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white font-mono" />
-              </div>
-              <div>
-                <label class="block font-semibold text-slate-400 mb-1">Heart Rate (bpm) *</label>
-                <input type="number" [(ngModel)]="newVitals.heartRate" name="heartRate" placeholder="72" required class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white font-mono" />
-              </div>
-            </div>
-
-            <div class="grid grid-cols-3 gap-3">
-              <div>
-                <label class="block font-semibold text-slate-400 mb-1">Temp (°C)</label>
-                <input type="number" step="0.1" [(ngModel)]="newVitals.temperature" name="temperature" placeholder="36.8" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white font-mono" />
-              </div>
-              <div>
-                <label class="block font-semibold text-slate-400 mb-1">SpO2 (%)</label>
-                <input type="number" [(ngModel)]="newVitals.oxygenSaturation" name="oxygenSaturation" placeholder="98" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white font-mono" />
-              </div>
-              <div>
-                <label class="block font-semibold text-slate-400 mb-1">Glucose (mg/dL)</label>
-                <input type="number" [(ngModel)]="newVitals.bloodGlucose" name="bloodGlucose" placeholder="115" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white font-mono" />
-              </div>
-            </div>
-
-            <div class="flex justify-end gap-3 pt-2">
-              <button type="button" (click)="showModal.set(false)" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl">Cancel</button>
-              <button type="submit" class="px-5 py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl">Save Vitals Reading</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  `
+  imports: [CommonModule, FormsModule, TableModule, DialogModule, ButtonModule, CardModule, TagModule, SelectModule, InputTextModule],
+  templateUrl: './vitals.component.html',
+  styleUrl: './vitals.component.css'
 })
 export class VitalsComponent implements OnInit {
   vitalsList = signal<Vitals[]>([]);

@@ -10,7 +10,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+
 @Component
+@ConditionalOnProperty(name = "medvault.seed.enabled", havingValue = "true", matchIfMissing = false)
 public class DataSeeder implements CommandLineRunner {
 
     private final RoleRepository roleRepository;
@@ -82,7 +85,7 @@ public class DataSeeder implements CommandLineRunner {
         admin.setDepartment("Patient Intake & Administration");
         userRepository.save(admin);
 
-        User doctor = new User("doctor", passwordEncoder.encode("doctor123"), "mahtab.khan@medvault.org", "Dr. Mahtab Khan");
+        User doctor = new User("doctor", passwordEncoder.encode("doctor123"), "doctor@medvault.org", "Dr. Mahtab Khan");
         doctor.setRoles(Set.of(doctorRole));
         doctor.setSpecialization("Cardiology & Internal Medicine");
         doctor.setDepartment("Cardiovascular Medicine");
@@ -100,7 +103,7 @@ public class DataSeeder implements CommandLineRunner {
         doctorRajesh.setDepartment("Neurological Sciences");
         userRepository.save(doctorRajesh);
 
-        User nurse = new User("nurse", passwordEncoder.encode("nurse123"), "priya.verma@medvault.org", "Nurse Priya Verma");
+        User nurse = new User("nurse", passwordEncoder.encode("nurse123"), "nurse@medvault.org", "Nurse Priya Verma");
         nurse.setRoles(Set.of(nurseRole));
         nurse.setDepartment("Emergency / ICU Bedside");
         userRepository.save(nurse);
