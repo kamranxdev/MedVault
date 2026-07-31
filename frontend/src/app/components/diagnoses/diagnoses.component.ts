@@ -1,9 +1,10 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { PatientContextService } from '../../core/services/patient-context.service';
+import { HasRoleDirective, HasAnyRoleDirective } from '../../core/directives/has-role.directive';
 import { Diagnosis, Patient } from '../../core/models/models';
 
 import { TableModule } from 'primeng/table';
@@ -20,7 +21,7 @@ import { TextareaModule } from 'primeng/textarea';
 @Component({
   selector: 'app-diagnoses',
   standalone: true,
-  imports: [CommonModule, FormsModule, TableModule, DialogModule, ButtonModule, TagModule, CardModule, MessageModule, InputTextModule, SelectModule, DatePickerModule, TextareaModule],
+  imports: [CommonModule, FormsModule, TableModule, DialogModule, ButtonModule, TagModule, CardModule, MessageModule, InputTextModule, SelectModule, DatePickerModule, TextareaModule, HasRoleDirective, HasAnyRoleDirective],
   templateUrl: './diagnoses.component.html',
   styleUrl: './diagnoses.component.css'
 })
@@ -43,7 +44,15 @@ export class DiagnosesComponent implements OnInit {
     private apiService: ApiService, 
     public authService: AuthService,
     public patientContext: PatientContextService
-  ) {}
+  ) {
+    effect(() => {
+      const active = this.patientContext.activePatient();
+      if (active && !this.isPatient()) {
+        this.selectedPatientId = active.id;
+        this.loadDiagnoses();
+      }
+    });
+  }
 
   isPatient(): boolean {
     return this.authService.hasRole('ROLE_PATIENT');

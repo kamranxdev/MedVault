@@ -1,9 +1,10 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { ApiService } from '../../core/services/api.service';
 import { PatientContextService } from '../../core/services/patient-context.service';
+import { HasRoleDirective, HasAnyRoleDirective } from '../../core/directives/has-role.directive';
 import { Appointment, Patient, Prescription, Vitals } from '../../core/models/models';
 
 import { CardModule } from 'primeng/card';
@@ -13,7 +14,7 @@ import { TagModule } from 'primeng/tag';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, CardModule, ButtonModule, TagModule],
+  imports: [CommonModule, RouterModule, CardModule, ButtonModule, TagModule, HasRoleDirective, HasAnyRoleDirective],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
@@ -30,7 +31,22 @@ export class DashboardComponent implements OnInit {
     public authService: AuthService, 
     private apiService: ApiService,
     public patientContext: PatientContextService
-  ) {}
+  ) {
+    effect(() => {
+      const active = this.patientContext.activePatient();
+      if (active && !this.authService.hasRole('ROLE_PATIENT')) {
+        this.loadPatientMetrics(active.id);
+      }
+    });
+  }
+
+  private loadPatientMetrics(patientId: number): void {
+    this.apiService.getPrescriptionsByPatient(patientId).subscribe(rx => this.activeRxCount.set(rx.length));
+    this.apiService.getVitalsByPatient(patientId).subscribe(v => {
+      if (v.length > 0) this.latestVitals.set(v[v.length - 1]);
+      else this.latestVitals.set(null);
+    });
+  }
 
   get currentUser() {
     return this.authService.currentUser();

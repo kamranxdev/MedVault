@@ -1,9 +1,10 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { PatientContextService } from '../../core/services/patient-context.service';
+import { HasRoleDirective, HasAnyRoleDirective } from '../../core/directives/has-role.directive';
 import { MedicalRecord, Patient } from '../../core/models/models';
 
 import { TableModule } from 'primeng/table';
@@ -28,7 +29,9 @@ import { TextareaModule } from 'primeng/textarea';
     CardModule,
     TagModule,
     SelectModule,
-    TextareaModule
+    TextareaModule,
+    HasRoleDirective,
+    HasAnyRoleDirective
   ],
   templateUrl: './records.component.html',
   styleUrl: './records.component.css'
@@ -50,7 +53,15 @@ export class RecordsComponent implements OnInit {
     private apiService: ApiService,
     public authService: AuthService,
     public patientContext: PatientContextService,
-  ) { }
+  ) {
+    effect(() => {
+      const active = this.patientContext.activePatient();
+      if (active && !this.isPatient()) {
+        this.selectedPatientId = active.id;
+        this.loadRecords(active.id);
+      }
+    });
+  }
 
   isPatient(): boolean {
     return this.authService.hasRole('ROLE_PATIENT');

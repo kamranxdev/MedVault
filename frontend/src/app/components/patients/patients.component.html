@@ -1,5 +1,5 @@
 <div class="flex flex-col gap-6">
-  <p-toolbar *ngIf="!authService.hasRole('ROLE_PATIENT')">
+  <p-toolbar *hasAnyRole="['ROLE_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE', 'ROLE_AUDITOR']">
     <ng-template #start>
       <div class="flex flex-col">
         <h1 class="text-2xl font-bold m-0">Master Patient Index</h1>
@@ -18,7 +18,7 @@
           class="w-64" />
           
         <p-button 
-          *ngIf="authService.hasRole('ROLE_ADMIN')" 
+          *hasRole="'ROLE_ADMIN'" 
           label="Intake New Patient" 
           icon="pi pi-user-plus" 
           (onClick)="showIntakeModal.set(true)" />
@@ -26,7 +26,7 @@
     </ng-template>
   </p-toolbar>
 
-  <div *ngIf="!authService.hasRole('ROLE_PATIENT')" class="flex overflow-x-auto gap-4 pb-2">
+  <div *hasAnyRole="['ROLE_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE', 'ROLE_AUDITOR']" class="flex overflow-x-auto gap-4 pb-2">
     <div 
       *ngFor="let p of filteredPatients()" 
       (click)="selectPatient(p)"

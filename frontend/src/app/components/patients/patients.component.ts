@@ -1,9 +1,10 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { PatientContextService } from '../../core/services/patient-context.service';
+import { HasRoleDirective, HasAnyRoleDirective } from '../../core/directives/has-role.directive';
 import { Patient, Vitals, Prescription, Encounter, Allergy, Diagnosis, SafetyCheckResult } from '../../core/models/models';
 
 import { TableModule } from 'primeng/table';
@@ -36,7 +37,9 @@ import { TabsModule } from 'primeng/tabs';
     TextareaModule,
     MessageModule,
     ToolbarModule,
-    TabsModule
+    TabsModule,
+    HasRoleDirective,
+    HasAnyRoleDirective
   ],
   templateUrl: './patients.component.html',
   styleUrl: './patients.component.css'
@@ -124,7 +127,16 @@ export class PatientsComponent implements OnInit {
     private apiService: ApiService,
     public authService: AuthService,
     public patientContext: PatientContextService,
-  ) { }
+  ) {
+    effect(() => {
+      const active = this.patientContext.activePatient();
+      if (active && !this.authService.hasRole('ROLE_PATIENT')) {
+        if (this.selectedPatient()?.id !== active.id) {
+          this.selectPatient(active);
+        }
+      }
+    });
+  }
 
   ngOnInit(): void {
     if (this.authService.hasRole('ROLE_PATIENT')) {

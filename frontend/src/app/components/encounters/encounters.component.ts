@@ -1,9 +1,10 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { PatientContextService } from '../../core/services/patient-context.service';
+import { HasRoleDirective, HasAnyRoleDirective } from '../../core/directives/has-role.directive';
 import { Encounter, Patient } from '../../core/models/models';
 
 import { TableModule } from 'primeng/table';
@@ -32,7 +33,9 @@ import { DatePickerModule } from 'primeng/datepicker';
     CardModule,
     TagModule,
     MessageModule,
-    DatePickerModule
+    DatePickerModule,
+    HasRoleDirective,
+    HasAnyRoleDirective
   ],
   templateUrl: './encounters.component.html',
   styleUrl: './encounters.component.css'
@@ -61,7 +64,15 @@ export class EncountersComponent implements OnInit {
     private apiService: ApiService, 
     public authService: AuthService,
     public patientContext: PatientContextService
-  ) {}
+  ) {
+    effect(() => {
+      const active = this.patientContext.activePatient();
+      if (active && !this.isPatient()) {
+        this.selectedPatientId = active.id;
+        this.loadEncounters(active.id);
+      }
+    });
+  }
 
   get patientOptions() {
     return [

@@ -1,7 +1,7 @@
 <div class="space-y-6">
   
   <!-- PATIENT PERSONA DASHBOARD -->
-  <div *ngIf="authService.hasRole('ROLE_PATIENT')" class="space-y-6">
+  <div *hasRole="'ROLE_PATIENT'" class="space-y-6">
     <!-- Patient Banner -->
     <div class="bg-slate-900/40 backdrop-blur-md p-8 rounded-3xl border border-teal-500/20 shadow-2xl relative overflow-hidden group">
       <div class="absolute inset-0 bg-gradient-to-br from-teal-500/10 via-transparent to-transparent opacity-50 group-hover:opacity-70 transition-opacity duration-500"></div>
@@ -135,7 +135,7 @@
   </div>
 
   <!-- CLINICIAN / DOCTOR / NURSE / ADMIN DASHBOARD -->
-  <div *ngIf="!authService.hasRole('ROLE_PATIENT')" class="space-y-6">
+  <div *hasAnyRole="['ROLE_DOCTOR', 'ROLE_NURSE', 'ROLE_ADMIN', 'ROLE_AUDITOR']" class="space-y-6">
     <!-- Welcome Banner -->
     <div class="bg-slate-900/40 backdrop-blur-md p-8 rounded-3xl border border-indigo-500/20 shadow-2xl relative overflow-hidden group">
       <div class="absolute inset-0 bg-gradient-to-br from-indigo-600/10 via-transparent to-transparent opacity-50 group-hover:opacity-70 transition-opacity duration-500"></div>

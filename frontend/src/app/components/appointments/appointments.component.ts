@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { PatientContextService } from '../../core/services/patient-context.service';
+import { HasRoleDirective, HasAnyRoleDirective } from '../../core/directives/has-role.directive';
 import { Appointment, Patient, User } from '../../core/models/models';
 
 import { TableModule } from 'primeng/table';
@@ -21,7 +22,7 @@ import { TextareaModule } from 'primeng/textarea';
 @Component({
   selector: 'app-appointments',
   standalone: true,
-  imports: [CommonModule, FormsModule, TableModule, DialogModule, ButtonModule, InputTextModule, TagModule, CardModule, ToolbarModule, ProgressSpinnerModule, SelectModule, DatePickerModule, TextareaModule],
+  imports: [CommonModule, FormsModule, TableModule, DialogModule, ButtonModule, InputTextModule, TagModule, CardModule, ToolbarModule, ProgressSpinnerModule, SelectModule, DatePickerModule, TextareaModule, HasRoleDirective, HasAnyRoleDirective],
   templateUrl: './appointments.component.html',
   styleUrl: './appointments.component.css'
 })
