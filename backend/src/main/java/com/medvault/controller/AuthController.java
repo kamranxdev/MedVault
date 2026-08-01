@@ -61,16 +61,20 @@ public class AuthController {
             SecurityContextHolder.getContext().setAuthentication(authentication);
             String jwt = tokenProvider.generateToken(authentication);
 
-            User user = userRepository.findByUsername(loginRequest.getUsername()).orElseThrow();
+            User user = userRepository.findByUsernameOrEmail(loginRequest.getUsername(), loginRequest.getUsername()).orElseThrow();
             Set<String> roles = user.getRoles().stream().map(Role::getName).collect(Collectors.toSet());
 
-            auditLogRepository.save(new AuditLog(
-                    user.getUsername(),
-                    roles.iterator().next(),
-                    "LOGIN",
-                    "AUTH",
-                    "User logged in successfully"
-            ));
+            try {
+                auditLogRepository.save(new AuditLog(
+                        user.getUsername(),
+                        roles.isEmpty() ? "ROLE_USER" : roles.iterator().next(),
+                        "LOGIN",
+                        "AUTH",
+                        "User logged in successfully"
+                ));
+            } catch (Exception auditEx) {
+                System.err.println("[AuthController] Notice: Audit log entry skipped due to DB constraint: " + auditEx.getMessage());
+            }
 
             return ResponseEntity.ok(new JwtAuthResponse(
                     jwt,
