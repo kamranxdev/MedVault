@@ -46,14 +46,29 @@ MedVault is an enterprise-scale Electronic Health Record (EHR) platform built wi
 
 ## 🚀 Quick Start
 
-### 1. Database Setup (Optional Docker Container or Local Database)
-To run the Oracle database via Docker:
+### 1. Database Setup (Docker or Local Database)
+
+### 1. Database Setup (Docker or Local Database)
+
+**Option 1: Automatic Execution via Docker Container (Recommended)**
 ```bash
 docker compose up -d
 ```
-Then execute the SQL scripts in your database SQL editor:
-- **`backend/schema.sql`** (Creates database tables)
-- **`backend/seed.sql`** (Populates default roles, users, and clinical seed records)
+*`docker-compose.yml` mounts `backend/schema.sql` and `backend/seed.sql` into `/container-entrypoint-initdb.d/`, automatically creating tables and populating seed data when the database container starts.*
+
+**Option 2: Manual Execution via Docker CLI**
+```bash
+# 1. Create tables (DDL)
+docker exec -i medvault-oracle-db sqlplus system/Oracle123!@FREEPDB1 < backend/schema.sql
+
+# 2. Populate seed data (DML)
+docker exec -i medvault-oracle-db sqlplus system/Oracle123!@FREEPDB1 < backend/seed.sql
+```
+
+**Option 3: GUI SQL Editor (DBeaver / Oracle SQL Developer)**
+- **Host**: `localhost` | **Port**: `1521` | **Service Name**: `FREEPDB1`
+- **Username**: `system` (or `medvault`) | **Password**: `Oracle123!` (or `MedVaultPass123!`)
+- Open and run `backend/schema.sql` followed by `backend/seed.sql`.
 
 ### 2. Backend Server
 ```bash
