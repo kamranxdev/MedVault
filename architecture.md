@@ -154,16 +154,23 @@ Database selection is governed dynamically by environment variables configured i
 
 ---
 
-## 🌐 HL7 FHIR R4 Interoperability Subsystem
+## 🌐 HL7 FHIR R4 Enterprise Interoperability Subsystem
 
-MedVault features a built-in HL7 FHIR R4 converter translating internal relational database models into standard FHIR resources:
+MedVault features a built-in, gold-standard **HL7 FHIR Release 4 (v4.0.1)** engine (`FhirService` & `FhirController`) exposing full RESTful CRUD interactions, discovery metadata, and clinical bundles:
 
-* **FHIR Patient** (`/fhir/v1/Patient`): Demographics, MRN, insurance coverage.
-* **FHIR Encounter** (`/fhir/v1/Encounter`): Visit classification, chief complaints, attending providers.
-* **FHIR AllergyIntolerance** (`/fhir/v1/AllergyIntolerance`): Substance, severity, reaction description.
-* **FHIR Condition** (`/fhir/v1/Condition`): Problems, ICD-10 & SNOMED CT clinical codes.
-* **FHIR MedicationRequest** (`/fhir/v1/MedicationRequest`): RxNorm codes, dosage instructions, refills.
-* **FHIR Observation** (`/fhir/v1/Observation`): Vital signs flowsheet (BP, HR, SpO2, BMI).
+* **FHIR Conformance Statement** (`GET /fhir/v1/metadata`): Returns official FHIR R4 `CapabilityStatement` declaring server software capabilities, supported resources, search parameters, and OAuth2/Bearer JWT security definitions.
+* **FHIR Patient** (`/fhir/v1/Patient`): Complete `HumanName` structures, MRN (`urn:oid:2.16.840.1.113883.4.1`) & SSN identifiers, telecom, address, gender, birth date, and insurance extension. Supports `GET`, `POST`, `PUT`, `DELETE`, and single read `GET /Patient/{id}`.
+* **FHIR Encounter** (`/fhir/v1/Encounter`): Visit classification (`AMB`/`IMP`/`EMER`), chief complaint, participant practitioners, and start/end period.
+* **FHIR AllergyIntolerance** (`/fhir/v1/AllergyIntolerance`): Clinical/verification status codes, category, criticality, and RxNorm substance codings (`http://www.nlm.nih.gov/research/umls/rxnorm`).
+* **FHIR Condition** (`/fhir/v1/Condition`): Problem list items with dual **ICD-10** (`http://hl7.org/fhir/sid/icd-10`) & **SNOMED CT** (`http://snomed.info/sct`) codings.
+* **FHIR MedicationRequest** (`/fhir/v1/MedicationRequest`): Active eRx orders with RxNorm codings, requester practitioner, intent (`order`), and dosage instructions.
+* **FHIR Observation** (`/fhir/v1/Observation`): Vital signs flowsheet with standard **LOINC** codes (`http://loinc.org`) and **UCUM** units (`mmHg`, `/min`, `Cel`, `%`, `kg/m2`, `mg/dL`):
+  - Blood Pressure Panel (`85354-9`) with Systolic (`8480-6`) & Diastolic (`8462-4`) components
+  - Heart Rate (`8867-4`), Body Temperature (`8310-5`), SpO2 (`2708-6`), Respiratory Rate (`9279-1`)
+  - Weight (`29463-7`), Height (`8302-2`), BMI (`39156-5`), Blood Glucose (`15074-8`).
+* **Patient `$everything` Operation** (`GET /fhir/v1/Patient/{id}/$everything`): Exports longitudinal patient clinical history into a single FHIR `Bundle`.
+* **Standard Error Handling**: Formatted `OperationOutcome` payloads returned for 404, 400, 403, and 500 statuses.
+* **Interactive FHIR Explorer**: Standalone Angular dashboard (`/fhir-explorer`) for live querying, metadata inspection, and payload ingestion.
 
 ---
 

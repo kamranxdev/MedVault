@@ -1,0 +1,230 @@
+<div class="min-h-screen bg-background text-foreground py-10 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-5xl mx-auto space-y-8">
+
+    <!-- Top Action Bar -->
+    <div class="flex items-center justify-between">
+      <a routerLink="/" class="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors bg-card/60 backdrop-blur-md px-3.5 py-2 rounded-xl border border-border/40">
+        <ng-icon name="lucideChevronLeft" size="16" />
+        Back to Home
+      </a>
+
+      <div class="flex items-center gap-2">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+          <span class="size-1.5 rounded-full bg-emerald-500"></span>
+          HIPAA & HL7 FHIR Compliant
+        </span>
+      </div>
+    </div>
+
+    <!-- Header Section (Open Typography Header, No Boxed Card) -->
+    <div class="py-4 space-y-4 border-b border-border/40 pb-8">
+      <div class="flex items-center gap-4">
+        <div class="p-3.5 rounded-2xl bg-primary/10 text-primary border border-primary/20 shrink-0">
+          <ng-icon name="lucideShieldCheck" size="32" />
+        </div>
+        <div>
+          <h1 class="text-3xl sm:text-4xl font-black tracking-tight text-foreground">MedVault EHR Platform Privacy Policy</h1>
+          <p class="text-xs sm:text-sm text-muted-foreground mt-1 font-medium">Health Insurance Portability and Accountability Act (HIPAA) & HL7 FHIR Interoperability Statement</p>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3 text-xs text-muted-foreground font-medium pt-1">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-muted/60 border border-border/40">
+          Effective Date: <strong class="text-foreground font-semibold">August 2, 2026</strong>
+        </span>
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-muted/60 border border-border/40">
+          Version: <strong class="text-foreground font-semibold">1.0.0-ENTERPRISE-GOLD</strong>
+        </span>
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-muted/60 border border-border/40">
+          Governance: <strong class="text-foreground font-semibold">45 CFR Parts 160 and 164 (HIPAA)</strong>
+        </span>
+      </div>
+    </div>
+
+    <!-- Executive Overview Card -->
+    <div class="p-6 rounded-2xl bg-primary/5 border border-primary/20 space-y-3">
+      <div class="flex items-center gap-2 font-bold text-sm text-primary">
+        <ng-icon name="lucideScale" size="18" />
+        Legal & Regulatory Commitment Statement
+      </div>
+      <p class="text-xs text-muted-foreground leading-relaxed">
+        MedVault Systems ("MedVault", "we", "our", or "us") operates an enterprise Electronic Health Record (EHR) platform designed to store, manage, and transmit Protected Health Information (PHI) under strict adherence to federal healthcare privacy laws. This Privacy Policy governs our compliance with the HIPAA Privacy and Security Rules (45 CFR § 164.308 / § 164.312), the 21st Century Cures Act, and the HL7 FHIR R4 interoperability standard.
+      </p>
+    </div>
+
+    <!-- Main Content Policy Sections -->
+    <div class="space-y-6">
+
+      <!-- SECTION 1: Scope & Authorization -->
+      <div class="bg-card/60 backdrop-blur-md p-6 rounded-2xl border border-border/40 shadow-sm space-y-3">
+        <div class="flex items-center gap-2.5">
+          <div class="p-2 rounded-lg bg-muted text-foreground">
+            <ng-icon name="lucideFileText" size="18" />
+          </div>
+          <h2 class="text-base font-bold text-foreground">1. Scope & System Governance</h2>
+        </div>
+        <p class="text-xs text-muted-foreground leading-relaxed">
+          This policy applies to all clinical users (Physicians, Nurses, Hospital Administrators, Compliance Auditors) and Patients accessing the MedVault platform via web browsers, API endpoints (`/api/v1/...`), or HL7 FHIR R4 REST services (`/fhir/v1/...`). By creating an account or accessing patient records within MedVault, you acknowledge the terms of this Privacy Policy and agree to abide by all applicable clinical role permissions.
+        </p>
+      </div>
+
+      <!-- SECTION 2: Information We Collect -->
+      <div class="bg-card/60 backdrop-blur-md p-6 rounded-2xl border border-border/40 shadow-sm space-y-4">
+        <div class="flex items-center gap-2.5">
+          <div class="p-2 rounded-lg bg-muted text-foreground">
+            <ng-icon name="lucideActivity" size="18" />
+          </div>
+          <h2 class="text-base font-bold text-foreground">2. Categories of Information Collected</h2>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <div class="p-4 rounded-xl border border-border/40 bg-muted/20 space-y-2">
+            <h3 class="font-semibold text-foreground flex items-center gap-1.5">
+              <span class="size-2 rounded-full bg-primary"></span>
+              Protected Health Information (PHI)
+            </h3>
+            <ul class="list-disc list-inside text-muted-foreground space-y-1 pl-1">
+              <li>Master Patient Index (MPI): Full Name, DOB, Gender, SSN, MRN code.</li>
+              <li>Clinical Encounter Logs: SOAP Progress notes, chief complaints, visit types.</li>
+              <li>Bedside Vitals: Blood pressure, heart rate, SpO2, BMI, glucose.</li>
+              <li>Coded Diagnoses: Problem lists mapped to ICD-10 & SNOMED CT.</li>
+              <li>eRx Pharmacy Orders: Prescriptions, dosages, routes, RxNorm codes.</li>
+              <li>Allergy Register: Allergen substances, severity ratings, ADR histories.</li>
+            </ul>
+          </div>
+
+          <div class="p-4 rounded-xl border border-border/40 bg-muted/20 space-y-2">
+            <h3 class="font-semibold text-foreground flex items-center gap-1.5">
+              <span class="size-2 rounded-full bg-primary"></span>
+              System Audit & Technical Metadata
+            </h3>
+            <ul class="list-disc list-inside text-muted-foreground space-y-1 pl-1">
+              <li>User Credentials: Hashed passwords, assigned RBAC roles.</li>
+              <li>JWT Authentication Tokens: Claims, issuing timestamps, expirations.</li>
+              <li>WORM Audit Trails: User ID, IP address, request URI, target entity ID.</li>
+              <li>HTTP Request Headers: User-Agent, Accept header (`application/fhir+json`).</li>
+              <li>Session Context: Active patient chart selections by clinicians.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 3: Technical Security Safeguards -->
+      <div class="bg-card/60 backdrop-blur-md p-6 rounded-2xl border border-border/40 shadow-sm space-y-4">
+        <div class="flex items-center gap-2.5">
+          <div class="p-2 rounded-lg bg-muted text-foreground">
+            <ng-icon name="lucideLock" size="18" />
+          </div>
+          <h2 class="text-base font-bold text-foreground">3. HIPAA Technical Safeguards (§ 164.312)</h2>
+        </div>
+
+        <div class="space-y-3 text-xs text-muted-foreground leading-relaxed">
+          <div class="p-4 rounded-xl border border-border/40 bg-card space-y-1.5">
+            <span class="font-semibold text-foreground block">Stateless JWT Bearer Token Security</span>
+            <p>Authentication utilizes JSON Web Tokens (JWT) signed with HMAC SHA-512 cryptographic keys. Tokens expire automatically after 24 hours to prevent unauthorized access from idle sessions.</p>
+          </div>
+
+          <div class="p-4 rounded-xl border border-border/40 bg-card space-y-1.5">
+            <span class="font-semibold text-foreground block">Role-Based Access Control (RBAC) & Method-Level Security</span>
+            <p>Every API endpoint is protected by Spring Security `@PreAuthorize` rules. Clinicians (`ROLE_DOCTOR`, `ROLE_NURSE`) can view patient records, while administrative functions are strictly reserved for `ROLE_ADMIN` and compliance functions for `ROLE_AUDITOR`.</p>
+          </div>
+
+          <div class="p-4 rounded-xl border border-border/40 bg-card space-y-1.5">
+            <span class="font-semibold text-foreground block">Smart Safety Engine & Clinical Quality Controls</span>
+            <p>Prescription requests automatically trigger computerized drug-allergy contraindication checks against the patient's active allergy register prior to order confirmation.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 4: Immutable Audit Ledger -->
+      <div class="bg-card/60 backdrop-blur-md p-6 rounded-2xl border border-border/40 shadow-sm space-y-3">
+        <div class="flex items-center gap-2.5">
+          <div class="p-2 rounded-lg bg-muted text-foreground">
+            <ng-icon name="lucideServer" size="18" />
+          </div>
+          <h2 class="text-base font-bold text-foreground">4. Immutable WORM Audit Ledger (HIPAA § 164.312(b))</h2>
+        </div>
+        <p class="text-xs text-muted-foreground leading-relaxed">
+          MedVault maintains a Write-Once-Read-Many (WORM) audit trail ledger in the database (`audit_logs`). Any action involving patient data creation, view, update, export, or deletion generates an immutable audit record containing:
+        </p>
+        <div class="bg-zinc-950 p-4 rounded-xl font-mono text-xs text-emerald-400 border border-border/40">
+          [AUDIT LOG ENTRY] Timestamp | User ID | Role | IP Address | Action (READ/WRITE/EXPORT) | Target Patient ID
+        </div>
+      </div>
+
+      <!-- SECTION 5: HL7 FHIR Interoperability & Patient Data Ownership -->
+      <div class="bg-card/60 backdrop-blur-md p-6 rounded-2xl border border-border/40 shadow-sm space-y-4">
+        <div class="flex items-center gap-2.5">
+          <div class="p-2 rounded-lg bg-muted text-foreground">
+            <ng-icon name="lucideGlobe" size="18" />
+          </div>
+          <h2 class="text-base font-bold text-foreground">5. HL7 FHIR R4 Interoperability & 21st Century Cures Act</h2>
+        </div>
+        <p class="text-xs text-muted-foreground leading-relaxed">
+          In accordance with ONC Interoperability rules and the 21st Century Cures Act, MedVault guarantees patient data ownership and open data portability:
+        </p>
+        <ul class="list-disc list-inside text-xs text-muted-foreground space-y-1.5 pl-2">
+          <li><strong>Patient `$everything` Export</strong>: Patients and authorized clinicians can export complete longitudinal clinical records in open `application/fhir+json` format.</li>
+          <li><strong>Standard Codings</strong>: Data is serialized using international healthcare standards including <strong>LOINC</strong> (vitals), <strong>SNOMED CT</strong> & <strong>ICD-10</strong> (problem lists), and <strong>RxNorm</strong> (eRx orders).</li>
+          <li><strong>CapabilityStatement (`GET /fhir/v1/metadata`)</strong>: Publicly advertises server capabilities and supported resource types without disclosing PHI.</li>
+        </ul>
+      </div>
+
+      <!-- SECTION 6: Patient Rights -->
+      <div class="bg-card/60 backdrop-blur-md p-6 rounded-2xl border border-border/40 shadow-sm space-y-3">
+        <div class="flex items-center gap-2.5">
+          <div class="p-2 rounded-lg bg-muted text-foreground">
+            <ng-icon name="lucideUserCheck" size="18" />
+          </div>
+          <h2 class="text-base font-bold text-foreground">6. Your Rights Under HIPAA Privacy Rule</h2>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <div class="p-3.5 rounded-xl border border-border/40 bg-muted/20 space-y-1">
+            <span class="font-semibold text-foreground block">Right to Inspect & Copy</span>
+            <span class="text-muted-foreground">Request access or 1-click FHIR JSON downloads of your complete medical record.</span>
+          </div>
+          <div class="p-3.5 rounded-xl border border-border/40 bg-muted/20 space-y-1">
+            <span class="font-semibold text-foreground block">Right to Request Amendment</span>
+            <span class="text-muted-foreground">Request corrections to inaccurate clinical notes or demographic information.</span>
+          </div>
+          <div class="p-3.5 rounded-xl border border-border/40 bg-muted/20 space-y-1">
+            <span class="font-semibold text-foreground block">Right to Accounting</span>
+            <span class="text-muted-foreground">Obtain a detailed log of all disclosures of your PHI for treatment or compliance audits.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 7: Contact & Compliance Officer -->
+      <div class="bg-card/60 backdrop-blur-md p-6 rounded-2xl border border-border/40 shadow-sm space-y-3">
+        <div class="flex items-center gap-2.5">
+          <div class="p-2 rounded-lg bg-muted text-foreground">
+            <ng-icon name="lucideKey" size="18" />
+          </div>
+          <h2 class="text-base font-bold text-foreground">7. Compliance & Privacy Contact</h2>
+        </div>
+        <p class="text-xs text-muted-foreground leading-relaxed">
+          For inquiries regarding HIPAA privacy safeguards, data export requests, or reporting security concerns, contact our Chief Privacy Officer:
+        </p>
+        <div class="p-4 rounded-xl border border-border/40 bg-muted/20 text-xs space-y-1">
+          <p class="font-semibold text-foreground">MedVault Systems HIPAA Privacy Office</p>
+          <p class="text-muted-foreground">Email: privacy&#64;medvault.health | Security Hotline: +1 (800) 555-HIPAA</p>
+          <p class="text-muted-foreground">Address: 100 Health Systems Plaza, Suite 500, Healthcare City, US</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer Copyright -->
+    <div class="text-center text-xs text-muted-foreground py-4 border-t border-border/30 space-y-2">
+      <div class="flex items-center justify-center gap-4">
+        <a routerLink="/privacy-policy" class="hover:text-foreground transition-colors font-semibold text-foreground">HIPAA Privacy Policy</a>
+        <span>&bull;</span>
+        <a routerLink="/terms-of-service" class="hover:text-foreground transition-colors">Terms of Service</a>
+      </div>
+      <div>
+        &copy; 2026 MedVault EHR Platform Systems. All rights reserved. HIPAA § 164.312 Protected.
+      </div>
+    </div>
+
+  </div>
+</div>

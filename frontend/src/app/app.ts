@@ -191,6 +191,7 @@ export class App implements OnInit, OnDestroy {
           { icon: 'lucideTriangleAlert', label: 'Allergies & Risk Register', routerLink: '/allergies' },
           { icon: 'lucideActivity', label: 'Bedside Vitals', routerLink: '/vitals' },
           { icon: 'lucideCalendarClock', label: 'Consultation Schedule', routerLink: '/appointments' },
+          { icon: 'lucideShieldCheck', label: 'FHIR R4 Explorer', routerLink: '/fhir-explorer', badge: 'R4 API' },
         ],
       }];
     }
@@ -205,6 +206,7 @@ export class App implements OnInit, OnDestroy {
           { icon: 'lucidePill', label: 'Medication Orders (MAR)', routerLink: '/prescriptions' },
           { icon: 'lucideHospital', label: 'Patient Intake & Visits', routerLink: '/encounters' },
           { icon: 'lucideCalendarClock', label: 'Unit Ward Schedule', routerLink: '/appointments' },
+          { icon: 'lucideShieldCheck', label: 'FHIR R4 Explorer', routerLink: '/fhir-explorer', badge: 'R4 API' },
         ],
       }];
     }
@@ -224,6 +226,7 @@ export class App implements OnInit, OnDestroy {
           items: [
             { icon: 'lucideSettings', label: 'User RBAC Management', routerLink: '/admin' },
             { icon: 'lucideShieldCheck', label: 'HIPAA Compliance Vault', routerLink: '/audit-ledger' },
+            { icon: 'lucideHeartPulse', label: 'FHIR R4 Interop Explorer', routerLink: '/fhir-explorer', badge: 'R4 API' },
           ],
         },
       ];
@@ -235,6 +238,7 @@ export class App implements OnInit, OnDestroy {
           { icon: 'lucideLayoutDashboard', label: 'Compliance Overview', routerLink: '/dashboard' },
           { icon: 'lucideShieldCheck', label: 'HIPAA WORM Audit Vault', routerLink: '/audit-ledger' },
           { icon: 'lucideHeartPulse', label: 'Patient Access Audit Logs', routerLink: '/patients' },
+          { icon: 'lucideShieldCheck', label: 'FHIR R4 Interop Explorer', routerLink: '/fhir-explorer', badge: 'R4 API' },
         ],
       }];
     }
@@ -250,6 +254,7 @@ export class App implements OnInit, OnDestroy {
         { icon: 'lucideFileText', label: 'My Progress Notes', routerLink: '/records' },
         { icon: 'lucideHospital', label: 'My Visit History', routerLink: '/encounters' },
         { icon: 'lucideCalendarClock', label: 'My Appointments', routerLink: '/appointments' },
+        { icon: 'lucideShieldCheck', label: 'FHIR R4 Interop Explorer', routerLink: '/fhir-explorer', badge: 'R4 API' },
       ],
     }];
   });

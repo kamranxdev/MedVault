@@ -19,6 +19,9 @@
     </nav>
 
     <div class="flex items-center gap-3">
+      <button hlmBtn variant="ghost" size="icon" class="size-8 text-muted-foreground hover:text-foreground" hlmTooltip="Toggle theme" (click)="toggleTheme()">
+        <ng-icon [name]="theme.mode() === 'dark' ? 'lucideSun' : 'lucideMoon'" size="16" />
+      </button>
       <a routerLink="/login" hlmBtn variant="default" size="sm" class="gap-2">
         <span>Sign In</span>
         <ng-icon name="lucideLogIn" size="15" />
@@ -394,6 +397,14 @@
       </div>
 
       <div class="flex items-center gap-4">
+        <a routerLink="/privacy-policy" class="hover:text-foreground transition-colors">
+          <span>HIPAA Privacy Policy</span>
+        </a>
+        <span>&bull;</span>
+        <a routerLink="/terms-of-service" class="hover:text-foreground transition-colors">
+          <span>Terms of Service</span>
+        </a>
+        <span>&bull;</span>
         <a routerLink="/login" class="hover:text-foreground transition-colors flex items-center gap-1">
           <span>Sign In</span>
           <ng-icon name="lucideChevronRight" size="14" />

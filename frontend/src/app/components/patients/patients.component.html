@@ -69,7 +69,15 @@
           </div>
         </div>
 
-        <div class="flex gap-3">
+        <div class="flex gap-3 items-center">
+          <button 
+            hlmBtn 
+            variant="outline" 
+            size="sm" 
+            (click)="downloadFhirBundle(p.id, p.fullName)" 
+            class="gap-1.5 font-semibold text-xs border-primary/30 text-primary hover:bg-primary/10">
+            <ng-icon name="lucideShieldCheck" size="14" /> Export FHIR R4 Bundle
+          </button>
           <div class="p-3 border border-border rounded-lg bg-muted/40 text-xs">
             <span class="text-muted-foreground block text-[10px] uppercase font-semibold">Insurance Provider</span>
             <span class="font-semibold text-foreground block mt-0.5">{{ p.insuranceProvider || 'Self-Pay' }}</span>
@@ -406,11 +414,11 @@
             <thead hlmTableHeader>
               <tr hlmTableRow class="bg-muted/40">
                 <th hlmTableHead>Date</th>
-                <th hlmTableHead>BP</th>
-                <th hlmTableHead>HR</th>
-                <th hlmTableHead>Temp</th>
-                <th hlmTableHead>SpO2</th>
-                <th hlmTableHead>BMI</th>
+                <th hlmTableHead>BP <span class="text-[10px] text-muted-foreground font-mono font-normal block">LOINC 85354-9</span></th>
+                <th hlmTableHead>HR <span class="text-[10px] text-muted-foreground font-mono font-normal block">LOINC 8867-4</span></th>
+                <th hlmTableHead>Temp <span class="text-[10px] text-muted-foreground font-mono font-normal block">LOINC 8310-5</span></th>
+                <th hlmTableHead>SpO2 <span class="text-[10px] text-muted-foreground font-mono font-normal block">LOINC 2708-6</span></th>
+                <th hlmTableHead>BMI <span class="text-[10px] text-muted-foreground font-mono font-normal block">LOINC 39156-5</span></th>
               </tr>
             </thead>
             <tbody hlmTableBody>

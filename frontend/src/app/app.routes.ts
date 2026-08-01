@@ -70,5 +70,18 @@ export const routes: Routes = [
     canActivate: [authGuard, roleGuard],
     data: { roles: ['ROLE_ADMIN'] }
   },
+  { 
+    path: 'fhir-explorer', 
+    loadComponent: () => import('./components/fhir-explorer/fhir-explorer.component').then(m => m.FhirExplorerComponent),
+    canActivate: [authGuard]
+  },
+  { 
+    path: 'privacy-policy', 
+    loadComponent: () => import('./components/privacy-policy/privacy-policy.component').then(m => m.PrivacyPolicyComponent) 
+  },
+  { 
+    path: 'terms-of-service', 
+    loadComponent: () => import('./components/terms-of-service/terms-of-service.component').then(m => m.TermsOfServiceComponent) 
+  },
   { path: '**', redirectTo: '' }
 ];

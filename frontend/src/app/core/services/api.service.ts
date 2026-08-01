@@ -160,4 +160,38 @@ export class ApiService {
     const url = search ? `${this.baseUrl}/admin/audit-logs?search=${encodeURIComponent(search)}` : `${this.baseUrl}/admin/audit-logs`;
     return this.http.get<AuditLog[]>(url);
   }
+
+  // HL7 FHIR R4 Interoperability Subsystem
+  private fhirUrl = 'http://localhost:8080/fhir/v1';
+
+  getFhirMetadata(): Observable<any> {
+    return this.http.get<any>(`${this.fhirUrl}/metadata`);
+  }
+
+  getFhirPatients(name?: string, gender?: string, identifier?: string): Observable<any> {
+    let query = '';
+    const params: string[] = [];
+    if (name) params.push(`name=${encodeURIComponent(name)}`);
+    if (gender) params.push(`gender=${encodeURIComponent(gender)}`);
+    if (identifier) params.push(`identifier=${encodeURIComponent(identifier)}`);
+    if (params.length > 0) query = '?' + params.join('&');
+    return this.http.get<any>(`${this.fhirUrl}/Patient${query}`);
+  }
+
+  getFhirResource(resourceType: string, patientId?: number): Observable<any> {
+    const query = patientId ? `?patientId=${patientId}` : '';
+    return this.http.get<any>(`${this.fhirUrl}/${resourceType}${query}`);
+  }
+
+  getFhirResourceById(resourceType: string, id: string): Observable<any> {
+    return this.http.get<any>(`${this.fhirUrl}/${resourceType}/${id}`);
+  }
+
+  getFhirPatientEverything(patientId: number): Observable<any> {
+    return this.http.get<any>(`${this.fhirUrl}/Patient/${patientId}/$everything`);
+  }
+
+  createFhirPatient(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.fhirUrl}/Patient`, payload);
+  }
 }

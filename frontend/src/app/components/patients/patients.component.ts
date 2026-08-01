@@ -333,4 +333,19 @@ export class PatientsComponent implements OnInit {
       }
     });
   }
+
+  downloadFhirBundle(patientId: number, fullName: string): void {
+    this.apiService.getFhirPatientEverything(patientId).subscribe({
+      next: (bundle) => {
+        const jsonStr = JSON.stringify(bundle, null, 2);
+        const blob = new Blob([jsonStr], { type: 'application/fhir+json' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `FHIR_R4_Bundle_${fullName.replace(/\s+/g, '_')}_ID${patientId}.json`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      }
+    });
+  }
 }
