@@ -40,35 +40,83 @@ MedVault is an enterprise-scale Electronic Health Record (EHR) platform built wi
 - **Frontend**: Angular 19+ (Standalone Components, Signals, Reactive Forms, Vanilla CSS system).
 - **Backend**: Java 17 / Spring Boot 3.2+, Spring Security 6 (Stateless JWT Authentication & `@PreAuthorize` Method Security).
 - **Database & Data**: Relational JPA/Hibernate. Database table creation and seed data provided via standard SQL scripts (`schema.sql`, `seed.sql`).
-- **Containerization**: Docker Compose service for `medvault-oracle-db`.
+- **Containerization**: Docker Compose service for `medvault-postgres-db`.
+
+---
+
+## 🏛️ System Architecture
+
+For a complete architectural specification, security sequence flows, and database decoupling diagrams, see **[architecture.md](file:///mnt/workspace/MedVault/architecture.md)**.
+
+```mermaid
+flowchart TD
+    UI["Angular 19+ SPA (Standalone & Signals)"] -->|"HTTPS / REST (JWT)"| Security["Spring Security 6 (Stateless JWT + RBAC)"]
+    Security --> Services["Clinical & Interoperability Services"]
+    Services --> JPA["Spring Data JPA / Hibernate ORM"]
+    JPA --> DB1["Option 1: In-Memory H2 DB"]
+    JPA --> DB2["Option 2: Docker PostgreSQL"]
+    JPA --> DB3["Option 3: Cloud PostgreSQL (Supabase)"]
+```
 
 ---
 
 ## 🚀 Quick Start
 
-### 1. Database Setup (Docker or Local Database)
+### 1. Database Execution & Running Options
 
-### 1. Database Setup (Docker or Local Database)
+MedVault supports 3 execution environments without application code changes:
 
-**Option 1: Automatic Execution via Docker Container (Recommended)**
+#### Option 1: Standalone In-Memory H2 (Zero Setup - No Docker Required)
+Default fallback mode for instant local testing and development.
 ```bash
-docker compose up -d
+cd backend
+./mvnw spring-boot:run
 ```
-*`docker-compose.yml` mounts `backend/src/main/resources/schema.sql` and `backend/src/main/resources/seed.sql` into `/container-entrypoint-initdb.d/`, automatically creating tables and populating seed data when the database container starts.*
+*Spring Boot uses an embedded in-memory database (`jdbc:h2:mem:medvaultdb`) with H2 PostgreSQL mode. Tables and seed data auto-initialize on startup.*
 
-**Option 2: Manual Execution via Docker CLI**
+* **Interactive H2 Web Console**: Access at `http://localhost:8080/h2-console`
+  - **JDBC URL**: `jdbc:h2:mem:medvaultdb`
+  - **User Name**: `sa`
+  - **Password**: *(leave blank)*
+
+#### Option 2: Local PostgreSQL Container (Docker Compose)
+1. Start the PostgreSQL 16 container (auto-loads `schema.sql` and `seed.sql` on first boot):
+   ```bash
+   docker compose up -d
+   ```
+2. Start the backend connected to the local container:
+   ```bash
+   cd backend
+   SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/medvault \
+   SPRING_DATASOURCE_DRIVER=org.postgresql.Driver \
+   SPRING_DATASOURCE_USERNAME=medvault \
+   SPRING_DATASOURCE_PASSWORD=MedVaultPass123! \
+   SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect \
+   ./mvnw spring-boot:run
+   ```
+
+#### Option 3: Cloud PostgreSQL (Supabase / AWS RDS / GCP Cloud SQL)
+Set terminal environment variables with your cloud connection string and credentials:
 ```bash
-# 1. Create tables (DDL)
-docker exec -i medvault-oracle-db sqlplus system/Oracle123!@FREEPDB1 < backend/src/main/resources/schema.sql
+export SPRING_DATASOURCE_URL="jdbc:postgresql://db.<your-project-ref>.supabase.co:5432/postgres?sslmode=require"
+export SPRING_DATASOURCE_DRIVER="org.postgresql.Driver"
+export SPRING_DATASOURCE_USERNAME="postgres"
+export SPRING_DATASOURCE_PASSWORD="YourSupabasePassword123!"
+export SPRING_JPA_DATABASE_PLATFORM="org.hibernate.dialect.PostgreSQLDialect"
 
-# 2. Populate seed data (DML)
-docker exec -i medvault-oracle-db sqlplus system/Oracle123!@FREEPDB1 < backend/src/main/resources/seed.sql
+cd backend
+./mvnw spring-boot:run
 ```
 
-**Option 3: GUI SQL Editor (DBeaver / Oracle SQL Developer)**
-- **Host**: `localhost` | **Port**: `1521` | **Service Name**: `FREEPDB1`
-- **Username**: `system` (or `medvault`) | **Password**: `Oracle123!` (or `MedVaultPass123!`)
-- Open and run `backend/src/main/resources/schema.sql` followed by `backend/src/main/resources/seed.sql`.
+#### Option 4: Manual DDL/DML Script Execution (Docker CLI or SQL Editors)
+- **Docker CLI**:
+  ```bash
+  docker exec -i medvault-postgres-db psql -U medvault -d medvault < backend/src/main/resources/schema.sql
+  docker exec -i medvault-postgres-db psql -U medvault -d medvault < backend/src/main/resources/seed.sql
+  ```
+- **GUI SQL Editor (DBeaver / pgAdmin / TablePlus / Supabase SQL Editor)**:
+  - Connect to host `localhost:5432` (`medvault`) or Supabase URL.
+  - Run `backend/src/main/resources/schema.sql` followed by `backend/src/main/resources/seed.sql`.
 
 ### 2. Backend Server
 ```bash
@@ -114,6 +162,6 @@ MedVault/
 │   ├── src/                  # Components, Services, Guards, Routes
 │   └── package.json
 │
-├── docker-compose.yml        # Docker setup for database container (medvault-oracle-db)
+├── docker-compose.yml        # Docker setup for database container (medvault-postgres-db)
 └── README.md                 # Master Project Overview
 ```

@@ -21,21 +21,51 @@ Java 17 / Spring Boot RESTful API service powering the MedVault Electronic Healt
 - **`src/main/resources/seed.sql`**: Initial sample dataset (roles, default users, patients, vitals, prescriptions, encounters, audit logs).
 
 ### Database Execution Options:
-1. **Automatic via Docker**:
+
+1. **Standalone In-Memory H2 Mode (No Docker Required)**:
    ```bash
+   ./mvnw spring-boot:run
+   ```
+   *Runs against an embedded in-memory H2 database (`jdbc:h2:mem:medvaultdb`) in PostgreSQL compatibility mode. Automatically executes `schema.sql` and `seed.sql` on startup.*
+   
+   * **H2 Web Console**: `http://localhost:8080/h2-console`
+     - **JDBC URL**: `jdbc:h2:mem:medvaultdb`
+     - **Username**: `sa` | **Password**: *(leave blank)*
+
+2. **Local PostgreSQL Container (Docker Compose)**:
+   ```bash
+   # Start container
    docker compose up -d
-   ```
-   *Automatically runs `schema.sql` and `seed.sql` on container startup via `/container-entrypoint-initdb.d/`.*
 
-2. **Manual via Docker CLI**:
+   # Run backend pointing to container
+   SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/medvault \
+   SPRING_DATASOURCE_DRIVER=org.postgresql.Driver \
+   SPRING_DATASOURCE_USERNAME=medvault \
+   SPRING_DATASOURCE_PASSWORD=MedVaultPass123! \
+   SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect \
+   ./mvnw spring-boot:run
+   ```
+
+3. **Cloud PostgreSQL (Supabase / AWS RDS / GCP Cloud SQL)**:
    ```bash
-   docker exec -i medvault-oracle-db sqlplus system/Oracle123!@FREEPDB1 < src/main/resources/schema.sql
-   docker exec -i medvault-oracle-db sqlplus system/Oracle123!@FREEPDB1 < src/main/resources/seed.sql
+   export SPRING_DATASOURCE_URL="jdbc:postgresql://db.<your-project-ref>.supabase.co:5432/postgres?sslmode=require"
+   export SPRING_DATASOURCE_DRIVER="org.postgresql.Driver"
+   export SPRING_DATASOURCE_USERNAME="postgres"
+   export SPRING_DATASOURCE_PASSWORD="YourSupabasePassword123!"
+   export SPRING_JPA_DATABASE_PLATFORM="org.hibernate.dialect.PostgreSQLDialect"
+
+   ./mvnw spring-boot:run
    ```
 
-3. **Manual via SQL Editor** (DBeaver / Oracle SQL Developer):
-   - **Host**: `localhost` | **Port**: `1521` | **Service**: `FREEPDB1`
-   - Run `src/main/resources/schema.sql` followed by `src/main/resources/seed.sql`.
+4. **Manual DDL/DML SQL Script Execution**:
+   - **Docker CLI**:
+     ```bash
+     docker exec -i medvault-postgres-db psql -U medvault -d medvault < src/main/resources/schema.sql
+     docker exec -i medvault-postgres-db psql -U medvault -d medvault < src/main/resources/seed.sql
+     ```
+   - **GUI SQL Editor** (DBeaver / pgAdmin / TablePlus / Supabase SQL Editor):
+     - Connect to `localhost:5432` (`medvault`) or Supabase URL.
+     - Execute `src/main/resources/schema.sql` followed by `src/main/resources/seed.sql`.
 
 ---
 
