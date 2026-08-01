@@ -438,8 +438,17 @@
   <ng-template #noPatientSelected>
     <div class="flex flex-col items-center justify-center p-12 text-center border border-border rounded-xl bg-card space-y-3">
       <ng-icon name="lucideUsers" size="32" class="text-muted-foreground" />
-      <h3 class="text-base font-semibold text-foreground">Select a Patient Profile</h3>
-      <p class="text-xs text-muted-foreground max-w-sm">Choose a patient from the bar above or search the MPI to open complete EHR clinical charts.</p>
+      <h3 class="text-base font-semibold text-foreground">
+        {{ authService.hasRole('ROLE_PATIENT') ? 'No Patient Profile Linked' : 'Select a Patient Profile' }}
+      </h3>
+      <p class="text-xs text-muted-foreground max-w-sm">
+        <ng-container *ngIf="authService.hasRole('ROLE_PATIENT')">
+          Your user account is not currently linked to an active clinical patient profile record. Please contact administration.
+        </ng-container>
+        <ng-container *ngIf="!authService.hasRole('ROLE_PATIENT')">
+          Choose a patient from the bar above or search the MPI to open complete EHR clinical charts.
+        </ng-container>
+      </p>
     </div>
   </ng-template>
 </div>

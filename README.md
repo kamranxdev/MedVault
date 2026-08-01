@@ -54,21 +54,21 @@ MedVault is an enterprise-scale Electronic Health Record (EHR) platform built wi
 ```bash
 docker compose up -d
 ```
-*`docker-compose.yml` mounts `backend/schema.sql` and `backend/seed.sql` into `/container-entrypoint-initdb.d/`, automatically creating tables and populating seed data when the database container starts.*
+*`docker-compose.yml` mounts `backend/src/main/resources/schema.sql` and `backend/src/main/resources/seed.sql` into `/container-entrypoint-initdb.d/`, automatically creating tables and populating seed data when the database container starts.*
 
 **Option 2: Manual Execution via Docker CLI**
 ```bash
 # 1. Create tables (DDL)
-docker exec -i medvault-oracle-db sqlplus system/Oracle123!@FREEPDB1 < backend/schema.sql
+docker exec -i medvault-oracle-db sqlplus system/Oracle123!@FREEPDB1 < backend/src/main/resources/schema.sql
 
 # 2. Populate seed data (DML)
-docker exec -i medvault-oracle-db sqlplus system/Oracle123!@FREEPDB1 < backend/seed.sql
+docker exec -i medvault-oracle-db sqlplus system/Oracle123!@FREEPDB1 < backend/src/main/resources/seed.sql
 ```
 
 **Option 3: GUI SQL Editor (DBeaver / Oracle SQL Developer)**
 - **Host**: `localhost` | **Port**: `1521` | **Service Name**: `FREEPDB1`
 - **Username**: `system` (or `medvault`) | **Password**: `Oracle123!` (or `MedVaultPass123!`)
-- Open and run `backend/schema.sql` followed by `backend/seed.sql`.
+- Open and run `backend/src/main/resources/schema.sql` followed by `backend/src/main/resources/seed.sql`.
 
 ### 2. Backend Server
 ```bash
@@ -107,9 +107,7 @@ npm run build
 ```
 MedVault/
 ├── backend/                  # Spring Boot REST API & Security Engine
-│   ├── schema.sql            # Database DDL table definitions
-│   ├── seed.sql              # Database DML initial seed data
-│   ├── src/                  # Source code
+│   ├── src/                  # Source code & SQL scripts (src/main/resources/{schema.sql,seed.sql})
 │   └── pom.xml
 │
 ├── frontend/                 # Angular Standalone Enterprise UI

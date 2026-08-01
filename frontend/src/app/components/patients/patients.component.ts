@@ -170,7 +170,7 @@ export class PatientsComponent implements OnInit {
   ) {
     effect(() => {
       const active = this.patientContext.activePatient();
-      if (active && !this.authService.hasRole('ROLE_PATIENT')) {
+      if (active) {
         if (this.selectedPatient()?.id !== active.id) {
           this.selectPatient(active);
         }
@@ -180,11 +180,16 @@ export class PatientsComponent implements OnInit {
 
   ngOnInit(): void {
     if (this.authService.hasRole('ROLE_PATIENT')) {
-      const u = this.authService.currentUser();
-      if (u) {
-        this.apiService.getPatientByUserId(u.userId).subscribe(p => {
-          if (p) this.selectPatient(p);
-        });
+      const active = this.patientContext.activePatient();
+      if (active) {
+        this.selectPatient(active);
+      } else {
+        const u = this.authService.currentUser();
+        if (u) {
+          this.apiService.getPatientByUserId(u.userId).subscribe(p => {
+            if (p) this.selectPatient(p);
+          });
+        }
       }
     } else {
       this.loadPatients();

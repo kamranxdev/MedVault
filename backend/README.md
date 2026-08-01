@@ -17,8 +17,8 @@ Java 17 / Spring Boot RESTful API service powering the MedVault Electronic Healt
 
 ## 💾 Database Scripts & Setup
 
-- **`schema.sql`**: Table creation DDL statements.
-- **`seed.sql`**: Initial sample dataset (roles, default users, patients, vitals, prescriptions, encounters, audit logs).
+- **`src/main/resources/schema.sql`**: Table creation DDL statements.
+- **`src/main/resources/seed.sql`**: Initial sample dataset (roles, default users, patients, vitals, prescriptions, encounters, audit logs).
 
 ### Database Execution Options:
 1. **Automatic via Docker**:
@@ -29,13 +29,13 @@ Java 17 / Spring Boot RESTful API service powering the MedVault Electronic Healt
 
 2. **Manual via Docker CLI**:
    ```bash
-   docker exec -i medvault-oracle-db sqlplus system/Oracle123!@FREEPDB1 < backend/schema.sql
-   docker exec -i medvault-oracle-db sqlplus system/Oracle123!@FREEPDB1 < backend/seed.sql
+   docker exec -i medvault-oracle-db sqlplus system/Oracle123!@FREEPDB1 < src/main/resources/schema.sql
+   docker exec -i medvault-oracle-db sqlplus system/Oracle123!@FREEPDB1 < src/main/resources/seed.sql
    ```
 
 3. **Manual via SQL Editor** (DBeaver / Oracle SQL Developer):
    - **Host**: `localhost` | **Port**: `1521` | **Service**: `FREEPDB1`
-   - Run `schema.sql` followed by `seed.sql`.
+   - Run `src/main/resources/schema.sql` followed by `src/main/resources/seed.sql`.
 
 ---
 

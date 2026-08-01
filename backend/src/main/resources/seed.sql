@@ -54,6 +54,9 @@ VALUES (10, 'user_aarav', '$2a$10$1Knu6HwyDwDWpqngg1N6nOoWKupSsqQLU0Mw/3EmTdJ.XK
 INSERT INTO users (id, username, password, email, full_name, specialization, department, created_at) 
 VALUES (11, 'user_ananya', '$2a$10$1Knu6HwyDwDWpqngg1N6nOoWKupSsqQLU0Mw/3EmTdJ.XKt4e32kC', 'ananya.sharma@example.com', 'Ananya Sharma', NULL, NULL, CURRENT_TIMESTAMP);
 
+INSERT INTO users (id, username, password, email, full_name, specialization, department, created_at) 
+VALUES (12, 'user_rohan', '$2a$10$1Knu6HwyDwDWpqngg1N6nOoWKupSsqQLU0Mw/3EmTdJ.XKt4e32kC', 'rohan.mehta@example.com', 'Rohan Mehta', NULL, NULL, CURRENT_TIMESTAMP);
+
 -- ------------------------------------------------------------------------------
 -- 3. USER ROLES (JOIN TABLE)
 -- ------------------------------------------------------------------------------
@@ -68,18 +71,22 @@ INSERT INTO user_roles (user_id, role_id) VALUES (8, 5);
 INSERT INTO user_roles (user_id, role_id) VALUES (9, 5);
 INSERT INTO user_roles (user_id, role_id) VALUES (10, 5);
 INSERT INTO user_roles (user_id, role_id) VALUES (11, 5);
+INSERT INTO user_roles (user_id, role_id) VALUES (12, 5);
 
 -- ------------------------------------------------------------------------------
 -- 4. PATIENTS
 -- ------------------------------------------------------------------------------
 INSERT INTO patients (id, patient_code, ssn, full_name, date_of_birth, gender, blood_type, phone, email, address, emergency_contact, insurance_provider, insurance_policy_number, insurance_group_number, coverage_plan, medical_alerts, user_id, created_at) 
-VALUES (1, 'PAT-1001', '459-00-1284', 'Kamran Khan', '1985-04-12', 'Male', 'O+', '+91 98765 43210', 'kamran.khan@example.com', '742 Marine Drive, Mumbai', 'Farah Khan (Wife) - +91 98765 98765', 'Star Health Insurance', 'STAR-9874102', 'GRP-55410', 'Premier Comprehensive Care', 'Type 2 Diabetes, Severe Penicillin Allergy, Mild Asthma', 9, CURRENT_TIMESTAMP);
+VALUES (1, 'PAT-1001', '459-00-1284', 'Kamran Khan', '1985-04-12', 'Male', 'O+', '+91 98765 43210', 'patient@medvault.org', '742 Marine Drive, Mumbai', 'Farah Khan (Wife) - +91 98765 98765', 'Star Health Insurance', 'STAR-9874102', 'GRP-55410', 'Premier Comprehensive Care', 'Type 2 Diabetes, Severe Penicillin Allergy, Mild Asthma', 8, CURRENT_TIMESTAMP);
 
 INSERT INTO patients (id, patient_code, ssn, full_name, date_of_birth, gender, blood_type, phone, email, address, emergency_contact, insurance_provider, insurance_policy_number, insurance_group_number, coverage_plan, medical_alerts, user_id, created_at) 
 VALUES (2, 'PAT-1002', '218-00-9831', 'Aarav Patel', '1972-09-28', 'Male', 'A+', '+91 98765 12345', 'aarav.patel@example.com', '1204 CG Road, Ahmedabad', 'Priya Patel (Wife) - +91 98765 87654', 'HDFC ERGO Health', 'HDFC-5510923', 'GRP-11092', 'Optima Secure', 'Essential Hypertension, Hyperlipidemia', 10, CURRENT_TIMESTAMP);
 
 INSERT INTO patients (id, patient_code, ssn, full_name, date_of_birth, gender, blood_type, phone, email, address, emergency_contact, insurance_provider, insurance_policy_number, insurance_group_number, coverage_plan, medical_alerts, user_id, created_at) 
 VALUES (3, 'PAT-1003', '781-00-4491', 'Ananya Sharma', '1996-11-05', 'Female', 'B-', '+91 98765 67890', 'ananya.sharma@example.com', '45 Park Street, Kolkata', 'Rajesh Sharma (Father) - +91 98765 76543', 'ICICI Lombard', 'ICI-7740192', 'GRP-88102', 'Health Shield Gold', 'Latex Allergy', 11, CURRENT_TIMESTAMP);
+
+INSERT INTO patients (id, patient_code, ssn, full_name, date_of_birth, gender, blood_type, phone, email, address, emergency_contact, insurance_provider, insurance_policy_number, insurance_group_number, coverage_plan, medical_alerts, user_id, created_at) 
+VALUES (4, 'PAT-1004', '312-00-5582', 'Rohan Mehta', '1990-07-22', 'Male', 'AB+', '+91 98765 88990', 'rohan.mehta@example.com', '88 Bandra Reclamation, Mumbai', 'Neha Mehta (Sister) - +91 98765 11223', 'Care Health Insurance', 'CARE-3341029', 'GRP-99401', 'Super Mediclaim', 'Peanut Allergy', 12, CURRENT_TIMESTAMP);
 
 -- ------------------------------------------------------------------------------
 -- 5. ENCOUNTERS
@@ -93,6 +100,9 @@ VALUES (2, 2, 2, 'EMERGENCY', 'Acute morning headache and elevated home blood pr
 INSERT INTO encounters (id, patient_id, attending_provider_id, encounter_type, chief_complaint, clinical_notes, discharge_summary, status, encounter_date)
 VALUES (3, 3, 2, 'TELEHEALTH', 'Follow-up for latex allergy reaction', 'Patient reports mild rash after using latex gloves.', 'Avoid latex products. Prescribed antihistamine.', 'COMPLETED', CURRENT_TIMESTAMP);
 
+INSERT INTO encounters (id, patient_id, attending_provider_id, encounter_type, chief_complaint, clinical_notes, discharge_summary, status, encounter_date)
+VALUES (4, 4, 4, 'OUTPATIENT', 'Annual physical and neurological screening.', 'Neurological exam normal. Cranial nerves II-XII intact. DTRs 2+ bilaterally.', 'Screening completed without abnormalities.', 'COMPLETED', CURRENT_TIMESTAMP);
+
 -- ------------------------------------------------------------------------------
 -- 6. ALLERGIES
 -- ------------------------------------------------------------------------------
@@ -101,6 +111,9 @@ VALUES (1, 1, 'Penicillin', 'RxNorm-70618', 'DRUG', 'SEVERE', 'Anaphylaxis, acut
 
 INSERT INTO allergies (id, patient_id, allergen_name, allergen_code, category, severity, reaction_description, status, recorded_by_id, recorded_at)
 VALUES (2, 3, 'Latex', 'SNOMED-300916003', 'ENVIRONMENTAL', 'MODERATE', 'Contact dermatitis and localized pruritus.', 'ACTIVE', 5, CURRENT_TIMESTAMP);
+
+INSERT INTO allergies (id, patient_id, allergen_name, allergen_code, category, severity, reaction_description, status, recorded_by_id, recorded_at)
+VALUES (3, 4, 'Peanuts', 'SNOMED-91935009', 'FOOD', 'SEVERE', 'Facial swelling and dyspnea upon exposure.', 'ACTIVE', 2, CURRENT_TIMESTAMP);
 
 -- ------------------------------------------------------------------------------
 -- 7. DIAGNOSES
@@ -114,6 +127,9 @@ VALUES (2, 2, 2, 'Essential (Primary) Hypertension', 'I10', '59621000', '2021-08
 INSERT INTO diagnoses (id, patient_id, doctor_id, condition_name, icd_code, snomed_code, onset_date, status, notes, recorded_at)
 VALUES (3, 3, 2, 'Contact Dermatitis', 'L23.8', '4022007', '2026-07-30', 'ACTIVE', 'Allergic reaction to latex exposure.', CURRENT_TIMESTAMP);
 
+INSERT INTO diagnoses (id, patient_id, doctor_id, condition_name, icd_code, snomed_code, onset_date, status, notes, recorded_at)
+VALUES (4, 4, 4, 'Tension Headache', 'G44.2', '398057008', '2025-11-12', 'RESOLVED', 'Stress-related tension headaches, resolved after lifestyle modifications.', CURRENT_TIMESTAMP);
+
 -- ------------------------------------------------------------------------------
 -- 8. MEDICAL RECORDS
 -- ------------------------------------------------------------------------------
@@ -122,6 +138,9 @@ VALUES (1, 1, 2, 'Routine Cardiac Follow-up & Glycemic Assessment', 'E11.9', 'Mi
 
 INSERT INTO medical_records (id, patient_id, doctor_id, diagnosis, icd_code, symptoms, treatment_plan, notes, created_at)
 VALUES (2, 2, 2, 'Hypertension Management', 'I10', 'Occasional morning headaches.', 'Continue Lisinopril. Monitor BP daily.', 'BP is stable on current medication.', CURRENT_TIMESTAMP);
+
+INSERT INTO medical_records (id, patient_id, doctor_id, diagnosis, icd_code, symptoms, treatment_plan, notes, created_at)
+VALUES (3, 4, 4, 'Annual Neurological Check', 'Z00.00', 'None reported.', 'Maintain regular physical exercise and sleep hygiene.', 'All vitals and reflex responses within optimal baseline parameters.', CURRENT_TIMESTAMP);
 
 -- ------------------------------------------------------------------------------
 -- 9. VITALS
@@ -147,6 +166,9 @@ VALUES (6, 3, 5, '112/72', 74, 36.7, 98, 14, 55.0, 160.0, 21.5, NULL, CURRENT_TI
 INSERT INTO vitals (id, patient_id, recorded_by_id, blood_pressure, heart_rate, temperature, oxygen_saturation, respiratory_rate, weight_kg, height_cm, bmi, blood_glucose, recorded_at)
 VALUES (7, 3, 5, '115/75', 75, 36.8, 99, 15, 55.0, 160.0, 21.5, NULL, CURRENT_TIMESTAMP);
 
+INSERT INTO vitals (id, patient_id, recorded_by_id, blood_pressure, heart_rate, temperature, oxygen_saturation, respiratory_rate, weight_kg, height_cm, bmi, blood_glucose, recorded_at)
+VALUES (8, 4, 5, '120/78', 70, 36.6, 99, 15, 75.0, 175.0, 24.5, 92, CURRENT_TIMESTAMP);
+
 -- ------------------------------------------------------------------------------
 -- 10. PRESCRIPTIONS
 -- ------------------------------------------------------------------------------
@@ -159,6 +181,9 @@ VALUES (2, 2, 2, 'Lisinopril', '29046', '10 mg', 'Oral', 'Once daily in the morn
 INSERT INTO prescriptions (id, patient_id, doctor_id, medication_name, rx_norm_code, dosage, route, frequency, duration_days, refills, instructions, status, prescribed_at)
 VALUES (3, 3, 2, 'Hydroxyzine', '3423', '25 mg', 'Oral', 'As needed for allergic reaction', 14, 1, 'Take 1 tablet every 6 hours as needed.', 'ACTIVE', CURRENT_TIMESTAMP);
 
+INSERT INTO prescriptions (id, patient_id, doctor_id, medication_name, rx_norm_code, dosage, route, frequency, duration_days, refills, instructions, status, prescribed_at)
+VALUES (4, 4, 4, 'EpiPen Auto-Injector', '314684', '0.3 mg', 'Intramuscular', 'As needed for severe allergic reaction', 365, 2, 'Use immediately upon accidental peanut exposure and call emergency services.', 'ACTIVE', CURRENT_TIMESTAMP);
+
 -- ------------------------------------------------------------------------------
 -- 11. APPOINTMENTS
 -- ------------------------------------------------------------------------------
@@ -170,6 +195,9 @@ VALUES (2, 2, 2, '2026-08-06 14:30:00', 'SCHEDULED', 'Hypertension Follow-up', N
 
 INSERT INTO appointments (id, patient_id, doctor_id, appointment_date, status, reason, notes, created_at)
 VALUES (3, 3, 2, '2026-08-08 11:00:00', 'SCHEDULED', 'Allergy Consult', NULL, CURRENT_TIMESTAMP);
+
+INSERT INTO appointments (id, patient_id, doctor_id, appointment_date, status, reason, notes, created_at)
+VALUES (4, 4, 4, '2026-08-10 15:00:00', 'SCHEDULED', 'Neurology Routine Review', 'Annual follow up.', CURRENT_TIMESTAMP);
 
 -- ------------------------------------------------------------------------------
 -- 12. AUDIT LOGS
@@ -197,4 +225,3 @@ VALUES ('doctor', 'ROLE_DOCTOR', 'CREATE', 'DIAGNOSIS', '3', '127.0.0.1', 'Logge
 
 INSERT INTO audit_logs (username, user_role, action, entity_name, resource_id, ip_address, details, timestamp)
 VALUES ('doctor', 'ROLE_DOCTOR', 'CREATE', 'ENCOUNTER', '3', '127.0.0.1', 'Logged TELEHEALTH encounter for patient PAT-1003.', CURRENT_TIMESTAMP);
-
