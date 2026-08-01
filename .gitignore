@@ -4,6 +4,12 @@
 **/*.class
 **/.m2/
 .m2/
+**/.maven/
+.maven/
+**/.npm/
+.npm/
+**/.angular/
+.angular/
 
 # IDE & Editor files
 .idea/

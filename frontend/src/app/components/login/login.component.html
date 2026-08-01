@@ -1,23 +1,34 @@
 <div class="min-h-screen bg-background text-foreground flex flex-col lg:flex-row overflow-hidden">
 
   <!-- LEFT BRAND PANEL -->
-  <div class="hidden lg:flex lg:w-1/2 bg-muted/40 border-r border-border p-12 flex-col justify-between relative">
-    <div class="flex items-center gap-3">
-      <div class="size-9 rounded-lg bg-primary text-primary-foreground flex items-center justify-center">
-        <ng-icon name="lucideHeartPulse" size="18" />
+  <div class="hidden lg:flex lg:w-1/2 bg-muted/30 border-r border-border p-12 flex-col justify-between relative overflow-hidden">
+    <!-- Background Image with Gradient Overlay & Glassmorphism -->
+    <div class="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105 transition-transform duration-1000 z-0" style="background-image: url('/assets/images/hospital_hero.jpg');"></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/20 z-10"></div>
+    <div class="absolute inset-0 bg-primary/5 mix-blend-overlay z-10"></div>
+
+    <!-- Top Header -->
+    <div class="relative z-20 flex items-center gap-3">
+      <div class="size-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-lg shadow-primary/20 ring-1 ring-white/20">
+        <ng-icon name="lucideHeartPulse" size="20" />
       </div>
       <div>
         <div class="flex items-center gap-2">
-          <span class="font-semibold text-base tracking-tight">MedVault</span>
-          <span hlmBadge variant="outline" class="text-[10px]">Enterprise EHR</span>
+          <span class="font-semibold text-lg tracking-tight">MedVault</span>
+          <span hlmBadge variant="outline" class="text-[10px] bg-background/50 backdrop-blur-sm border-primary/30 text-primary font-medium">Enterprise EHR</span>
         </div>
         <p class="text-[11px] text-muted-foreground">Healthcare Information System</p>
       </div>
     </div>
 
-    <div class="space-y-6 max-w-lg">
+    <!-- Middle Content Card Positioned Lower Towards Bottom -->
+    <div class="relative z-20 space-y-6 max-w-lg p-8 rounded-2xl bg-background/40 backdrop-blur-xl border border-white/10 shadow-2xl ring-1 ring-black/5 mt-auto mb-6">
       <div class="space-y-3">
-        <h2 class="text-3xl font-semibold tracking-tight leading-tight">
+        <div class="inline-flex items-center gap-2 text-xs text-primary font-medium px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20">
+          <span class="size-1.5 rounded-full bg-primary animate-pulse"></span>
+          Clinical Intelligence & Management
+        </div>
+        <h2 class="text-3xl font-bold tracking-tight leading-tight text-foreground">
           Unified EHR & Patient Portal System
         </h2>
         <p class="text-xs sm:text-sm text-muted-foreground leading-relaxed">
@@ -25,24 +36,26 @@
         </p>
       </div>
 
-      <div class="flex flex-wrap gap-2 text-xs">
-        <span hlmBadge variant="secondary" class="gap-1.5 py-1">
-          <ng-icon name="lucideShieldCheck" size="14" />
+      <div class="flex flex-wrap gap-2 text-xs pt-2">
+        <span hlmBadge variant="secondary" class="gap-1.5 py-1.5 px-3 bg-background/60 backdrop-blur-md border border-border/50 text-foreground">
+          <ng-icon name="lucideShieldCheck" size="14" class="text-primary" />
           FHIR R4 Compliant
         </span>
-        <span hlmBadge variant="secondary" class="gap-1.5 py-1">
-          <ng-icon name="lucideKeyRound" size="14" />
+        <span hlmBadge variant="secondary" class="gap-1.5 py-1.5 px-3 bg-background/60 backdrop-blur-md border border-border/50 text-foreground">
+          <ng-icon name="lucideKeyRound" size="14" class="text-primary" />
           RBAC Security
         </span>
-        <span hlmBadge variant="secondary" class="gap-1.5 py-1">
-          <ng-icon name="lucideShieldCheck" size="14" />
+        <span hlmBadge variant="secondary" class="gap-1.5 py-1.5 px-3 bg-background/60 backdrop-blur-md border border-border/50 text-foreground">
+          <ng-icon name="lucideShieldCheck" size="14" class="text-primary" />
           WORM Vault Audit Log
         </span>
       </div>
     </div>
 
-    <div class="text-xs text-muted-foreground">
-      &copy; 2026 MedVault EHR System. All rights reserved.
+    <!-- Footer Copyright -->
+    <div class="relative z-20 text-xs text-muted-foreground flex items-center justify-between">
+      <span>&copy; 2026 MedVault EHR System. All rights reserved.</span>
+      <span class="text-[11px] text-muted-foreground/80">v2.4.0 • Enterprise Edition</span>
     </div>
   </div>
 

@@ -22,7 +22,14 @@ import {
   lucideSettings,
   lucideServer,
   lucideCheck,
-  lucideChevronRight
+  lucideChevronRight,
+  lucideLock,
+  lucideKey,
+  lucideShieldAlert,
+  lucideLayers,
+  lucideCpu,
+  lucideFileCode,
+  lucideDatabase
 } from '@ng-icons/lucide';
 
 @Component({
@@ -53,7 +60,14 @@ import {
       lucideSettings,
       lucideServer,
       lucideCheck,
-      lucideChevronRight
+      lucideChevronRight,
+      lucideLock,
+      lucideKey,
+      lucideShieldAlert,
+      lucideLayers,
+      lucideCpu,
+      lucideFileCode,
+      lucideDatabase
     })
   ],
   templateUrl: './landing.component.html',

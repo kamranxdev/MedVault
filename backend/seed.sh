@@ -5,11 +5,11 @@
 # ==============================================================================
 
 echo "======================================================================"
-echo "  MedVault EHR CLI Data Seeder Tool"
+echo "  MedVault EHR Manual Database Seeder Tool"
 echo "======================================================================"
-echo "Triggering on-demand database seeding..."
+echo "Database SQL Scripts:"
+echo "  1) schema.sql -> Table creation & structure (DDL)"
+echo "  2) seed.sql   -> Initial sample data insertion (DML)"
+echo "======================================================================"
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-cd "$DIR"
 
-./mvnw spring-boot:run -Dspring-boot.run.arguments="--medvault.seed.enabled=true"
