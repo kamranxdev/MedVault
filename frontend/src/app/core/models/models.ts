@@ -170,9 +170,64 @@ export interface Appointment {
   doctor: User;
   appointmentDate: string;
   status: string;
+  stage?: string;
   reason?: string;
   notes?: string;
+  insuranceVerified?: boolean;
+  insuranceDetails?: string;
+  reportsUploaded?: string;
+  followUpDate?: string;
+  vitals?: Vitals;
   createdAt?: string;
+}
+
+export interface AppointmentNote {
+  id?: number;
+  appointmentId?: number;
+  authorId?: number;
+  authorName: string;
+  authorRole: string;
+  noteType: 'RECEPTIONIST_ADMIN' | 'NURSE_OBSERVATION' | 'DOCTOR_CLINICAL' | 'PATIENT_REMARK' | string;
+  content: string;
+  createdAt?: string;
+  updatedAt?: string;
+  edited?: boolean;
+  editHistoryJson?: string;
+}
+
+export interface AppointmentCancellation {
+  id?: number;
+  appointment?: Appointment;
+  appointmentId?: number;
+  cancelledByUser?: User;
+  cancelledByRole: 'PATIENT' | 'DOCTOR' | 'RECEPTIONIST' | 'ADMIN' | string;
+  cancellationReason: string;
+  additionalComment?: string;
+  cancelledAt?: string;
+  refundStatus?: string;
+}
+
+export interface AppointmentLabOrder {
+  id?: number;
+  appointmentId?: number;
+  testName: string;
+  priority: 'ROUTINE' | 'URGENT' | 'STAT' | string;
+  clinicalIndications?: string;
+  orderedBy?: User;
+  orderedAt?: string;
+}
+
+export interface AppointmentBilling {
+  id?: number;
+  appointmentId?: number;
+  consultationFee: number;
+  triageFee: number;
+  labFee: number;
+  pharmacyFee: number;
+  insuranceCoverage: number;
+  netPayable: number;
+  paymentStatus: string;
+  generatedAt?: string;
 }
 
 export interface AuditLog {
@@ -186,3 +241,4 @@ export interface AuditLog {
   details: string;
   timestamp: string;
 }
+

@@ -2,166 +2,104 @@
 
 > **HL7 FHIR R4 & HIPAA § 164.312 Compliant Electronic Health Record (EHR) & Clinical Management System**
 
-MedVault is an enterprise-scale Electronic Health Record (EHR) platform built with standalone Angular frontend, Spring Boot backend, individual patient data scoping, multi-persona clinical workspaces, real-time Smart Allergy safety engine, HIPAA WORM audit log, and HL7 FHIR R4 interoperability APIs.
+MedVault is an enterprise-scale Electronic Health Record (EHR) platform featuring multi-persona clinical workspaces, a Smart Allergy Safety Engine, immutable HIPAA WORM audit logging, HL7 FHIR R4 interoperability, and integrated Synthea synthetic patient generation.
 
 ---
 
-## 🌟 Key Highlights & Features
+## 🌟 Key Features
 
-- **🌐 Enterprise Landing Page (`/`)**: Overview of clinical features, compliance standards, and direct portal access.
-- **🖼️ Split-Screen Sign-In (`/login`)**: Built-in 1-click persona switcher and standard credential sign-in.
-- **🔒 HIPAA Scoped Patient Portal**: Logged-in patients (`ROLE_PATIENT`) are strictly scoped to their personal health summary (`/api/patients/user/{userId}`).
-- **🩺 Physician Desk (`/dashboard`, `/encounters`, `/diagnoses`)**: SOAP progress notes, ICD-10 & SNOMED-CT problem lists, eRx orders with allergy check overrides.
-- **💉 Bedside Nurse Flowsheet (`/vitals`, `/encounters`)**: Longitudinal vitals tracking (BP, HR, Temp, SpO2, Glucose, BMI).
-- **⚙️ Admin Command Center (`/admin`, `/patients`)**: Master Patient Index (MPI), user RBAC directory, and 1-click Synthea-aligned synthetic cohort generator.
-- **🛡️ HIPAA WORM Compliance Vault (`/audit-ledger`)**: Immutable append-only audit ledger tracking every data action per HIPAA § 164.312(b).
-- **⚠️ Smart Allergy Safety Engine**: Real-time RxNorm/SNOMED contraindication cross-checking before prescription issuance.
-- **🌐 HL7 FHIR R4 Interoperability API (`/fhir/v1/*`)**: JSON endpoints exporting standard FHIR resources (`Patient`, `Encounter`, `AllergyIntolerance`, `Condition`, `MedicationRequest`, `Observation`).
-
----
-
-## 🔑 Pre-Configured Demo Credentials
-
-| Role | Username | Password | User Profile | Primary Scope |
-| :--- | :--- | :--- | :--- | :--- |
-| **Patient 1** | `user_kamran` | `patient123` | **Kamran Khan** (`PAT-1001`) | Personal Health Summary, Type 2 Diabetes, Penicillin Allergy |
-| **Patient 2** | `user_aarav` | `patient123` | **Aarav Patel** (`PAT-1002`) | Personal Health Summary, Essential Hypertension |
-| **Patient 3** | `user_ananya` | `patient123` | **Ananya Sharma** (`PAT-1003`) | Personal Health Summary, Latex Allergy |
-| **Doctor (Cardiology)**| `doctor_mahtab` | `doctor123` | **Dr. Mahtab Khan** | Physician Desk, SOAP Notes, eRx Safety Overrides |
-| **Doctor (Neurology)**| `doctor_rajesh` | `doctor123` | **Dr. Rajesh Sharma** | Physician Desk, Neurology Consultations |
-| **Clinical Nurse** | `nurse_priya` | `nurse123` | **Nurse Priya Verma** | Bedside Vitals Flowsheet, Encounter Logs |
-| **Hospital Admin** | `admin` | `admin123` | **Dr. Vikramaditya Gupta** | MPI Registration, RBAC, Synthetic Cohort Generator |
-| **Compliance Auditor**| `auditor` | `auditor123` | **Inspector Suresh Menon** | Read-Only WORM Audit Vault |
+| Feature | Description |
+| :--- | :--- |
+| **🔒 Scoped Patient Portal** | Patients see strictly their own health summary — vitals, conditions, prescriptions, allergies |
+| **🩺 Physician Desk** | SOAP progress notes, ICD-10 & SNOMED-CT problem lists, eRx orders with smart allergy safety checks |
+| **💉 Bedside Nurse Flowsheet** | Longitudinal vitals tracking (BP, HR, Temp, SpO2, Glucose, BMI) with trend visualization |
+| **⚙️ Admin Command Center** | Master Patient Index (MPI), staff directory, Synthea synthetic patient generation pipeline |
+| **🛡️ HIPAA WORM Audit Vault** | Immutable append-only audit ledger for full regulatory compliance under HIPAA § 164.312(b) |
+| **⚠️ Smart Allergy Safety Engine** | Real-time RxNorm contraindication cross-checking before prescription issuance |
+| **🌐 HL7 FHIR R4 API** | Standard FHIR endpoints (`Patient`, `Encounter`, `Observation`, `$everything` bundles) |
+| **🧬 Synthea Pipeline** | Generate realistic synthetic patient cohorts via the official Synthea framework |
 
 ---
 
 ## 🏗️ Technology Stack
 
-- **Frontend**: Angular 19+ (Standalone Components, Signals, Reactive Forms, Vanilla CSS system).
-- **Backend**: Java 17 / Spring Boot 3.2+, Spring Security 6 (Stateless JWT Authentication & `@PreAuthorize` Method Security).
-- **Database & Data**: Relational JPA/Hibernate. Database table creation and seed data provided via standard SQL scripts (`schema.sql`, `seed.sql`).
-- **Containerization**: Docker Compose service for `medvault-postgres-db`.
-
----
-
-## 🏛️ System Architecture
-
-For a complete architectural specification, security sequence flows, and database decoupling diagrams, see **[architecture.md](file:///mnt/workspace/MedVault/architecture.md)**.
-
-```mermaid
-flowchart TD
-    UI["Angular 19+ SPA (Standalone & Signals)"] -->|"HTTPS / REST (JWT)"| Security["Spring Security 6 (Stateless JWT + RBAC)"]
-    Security --> Services["Clinical & Interoperability Services"]
-    Services --> JPA["Spring Data JPA / Hibernate ORM"]
-    JPA --> DB1["Option 1: In-Memory H2 DB"]
-    JPA --> DB2["Option 2: Docker PostgreSQL"]
-    JPA --> DB3["Option 3: Cloud PostgreSQL (Supabase)"]
-```
+| Layer | Technology |
+| :--- | :--- |
+| **Frontend** | Angular 19+ (Standalone Components, Signals, Reactive Forms) |
+| **Backend** | Java 17+ / Spring Boot 3.2, Spring Security 6 (Stateless JWT, Method-Level RBAC) |
+| **ORM** | Spring Data JPA / Hibernate 6.4 (Dialect-Abstracted, DB-Agnostic) |
+| **Database** | H2 In-Memory (Dev) · PostgreSQL 16 Docker (Local) · Cloud PostgreSQL (Prod) |
+| **Interoperability** | HL7 FHIR R4, LOINC, ICD-10, SNOMED-CT, RxNorm |
 
 ---
 
 ## 🚀 Quick Start
 
-### 1. Database Execution & Running Options
-
-MedVault supports 3 execution environments without application code changes:
-
-#### Option 1: Standalone In-Memory H2 (Zero Setup - No Docker Required)
-Default fallback mode for instant local testing and development.
 ```bash
+# 1. Start Backend (Port 8080) — uses embedded H2 by default, zero setup
 cd backend
 ./mvnw spring-boot:run
-```
-*Spring Boot uses an embedded in-memory database (`jdbc:h2:mem:medvaultdb`) with H2 PostgreSQL mode. Tables and seed data auto-initialize on startup.*
 
-* **Interactive H2 Web Console**: Access at `http://localhost:8080/h2-console`
-  - **JDBC URL**: `jdbc:h2:mem:medvaultdb`
-  - **User Name**: `sa`
-  - **Password**: *(leave blank)*
-
-#### Option 2: Local PostgreSQL Container (Docker Compose)
-1. Start the PostgreSQL 16 container (auto-loads `schema.sql` and `seed.sql` on first boot):
-   ```bash
-   docker compose up -d
-   ```
-2. Start the backend connected to the local container:
-   ```bash
-   cd backend
-   SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/medvault \
-   SPRING_DATASOURCE_DRIVER=org.postgresql.Driver \
-   SPRING_DATASOURCE_USERNAME=medvault \
-   SPRING_DATASOURCE_PASSWORD=MedVaultPass123! \
-   SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect \
-   ./mvnw spring-boot:run
-   ```
-
-#### Option 3: Cloud PostgreSQL (Supabase / AWS RDS / GCP Cloud SQL)
-Set terminal environment variables with your cloud connection string and credentials:
-```bash
-export SPRING_DATASOURCE_URL="jdbc:postgresql://db.<your-project-ref>.supabase.co:5432/postgres?sslmode=require"
-export SPRING_DATASOURCE_DRIVER="org.postgresql.Driver"
-export SPRING_DATASOURCE_USERNAME="postgres"
-export SPRING_DATASOURCE_PASSWORD="YourSupabasePassword123!"
-export SPRING_JPA_DATABASE_PLATFORM="org.hibernate.dialect.PostgreSQLDialect"
-
-cd backend
-./mvnw spring-boot:run
-```
-
-#### Option 4: Manual DDL/DML Script Execution (Docker CLI or SQL Editors)
-- **Docker CLI**:
-  ```bash
-  docker exec -i medvault-postgres-db psql -U medvault -d medvault < backend/src/main/resources/schema.sql
-  docker exec -i medvault-postgres-db psql -U medvault -d medvault < backend/src/main/resources/seed.sql
-  ```
-- **GUI SQL Editor (DBeaver / pgAdmin / TablePlus / Supabase SQL Editor)**:
-  - Connect to host `localhost:5432` (`medvault`) or Supabase URL.
-  - Run `backend/src/main/resources/schema.sql` followed by `backend/src/main/resources/seed.sql`.
-
-### 2. Backend Server
-```bash
-cd backend
-./mvnw spring-boot:run
-```
-*API runs at `http://localhost:8080`*
-
-### 3. Frontend Web App
-```bash
+# 2. Start Frontend (Port 4200)
 cd frontend
 npm install
 npm start
 ```
-*App runs at `http://localhost:4200`*
+
+Open **http://localhost:4200** and sign in with any demo credential below.
+
+### Demo Credentials
+
+| Role | Username | Password |
+| :--- | :--- | :--- |
+| **Patient** | `user_kamran` | `patient123` |
+| **Doctor** | `doctor_mahtab` | `doctor123` |
+| **Nurse** | `nurse_priya` | `nurse123` |
+| **Admin** | `admin` | `admin123` |
+| **Auditor** | `auditor` | `auditor123` |
+
+> For the full credentials matrix with user profiles and scopes, see [Getting Started Guide → Credentials](docs/getting-started.md).
 
 ---
 
-## 🧪 Build & Verification Commands
+## 📚 Documentation
 
-```bash
-# Backend Build & Test
-cd backend
-./mvnw compile
-./mvnw test
+All detailed documentation is organized in the [`docs/`](docs/) directory:
 
-# Frontend Production Build
-cd frontend
-npm run build
-```
+| Document | Description |
+| :--- | :--- |
+| **[Getting Started](docs/getting-started.md)** | Prerequisites, full credentials matrix, all 3 database execution modes, build & test commands |
+| **[Architecture](docs/architecture.md)** | High-level system architecture, real-world analogies, multi-tier diagrams, RBAC matrix |
+| **[Clinical Workflows](docs/workflows.md)** | End-to-end workflow guides for Patient Portal, Physician eRx, Nurse Vitals, Audit Vault, Synthea Pipeline, and FHIR Interop |
+| **[Security & HIPAA](docs/security.md)** | JWT authentication deep dive, Spring Security filter chain, password hashing, HIPAA § 164.312 compliance mapping, WORM audit log |
+| **[Database Schema](docs/database.md)** | Full entity-relationship diagram, table reference, foreign key map, healthcare coding standards (ICD-10, SNOMED, RxNorm, LOINC) |
+| **[API Reference](docs/api-guide.md)** | Complete REST endpoint catalog, request/response examples, FHIR R4 resource API specification |
+| **[Synthea Pipeline](docs/synthea-pipeline.md)** | Synthea framework integration, FHIR-to-entity mapping matrix, LOINC vitals mapping, CLI & web UI usage |
 
 ---
 
-## 📁 Repository Directory Structure
+## 📁 Repository Structure
 
 ```
 MedVault/
 ├── backend/                  # Spring Boot REST API & Security Engine
-│   ├── src/                  # Source code & SQL scripts (src/main/resources/{schema.sql,seed.sql})
+│   ├── src/main/java/        # Controllers, Services, Models, Security
+│   ├── src/main/resources/   # schema.sql, seed.sql, application.properties
 │   └── pom.xml
 │
-├── frontend/                 # Angular Standalone Enterprise UI
-│   ├── src/                  # Components, Services, Guards, Routes
+├── frontend/                 # Angular 19+ Standalone Enterprise UI
+│   ├── src/app/              # Components, Services, Guards, Routes
 │   └── package.json
 │
-├── docker-compose.yml        # Docker setup for database container (medvault-postgres-db)
-└── README.md                 # Master Project Overview
+├── docs/                     # 📚 Comprehensive Documentation Suite
+│   ├── architecture.md       # System architecture & diagrams
+│   ├── workflows.md          # Clinical & admin workflow guides
+│   ├── security.md           # Security, JWT, HIPAA compliance
+│   ├── database.md           # ER diagram & schema reference
+│   ├── api-guide.md          # REST API & FHIR R4 specification
+│   └── synthea-pipeline.md   # Synthea synthetic data pipeline
+│
+├── scripts/                  # Automation scripts (Synthea CLI runner)
+├── docker-compose.yml        # PostgreSQL 16 container setup
+└── README.md                 # ← You are here
 ```

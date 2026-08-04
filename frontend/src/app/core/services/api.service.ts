@@ -4,6 +4,10 @@ import { Observable } from 'rxjs';
 import { 
   Allergy, 
   Appointment, 
+  AppointmentBilling,
+  AppointmentCancellation,
+  AppointmentLabOrder,
+  AppointmentNote,
   AuditLog, 
   Diagnosis, 
   Encounter, 
@@ -138,9 +142,13 @@ export class ApiService {
     return this.http.put<Prescription>(`${this.baseUrl}/prescriptions/${id}/status?status=${status}`, {});
   }
 
-  // Appointments
+  // Appointments & Collaborative Workflow
   getAppointments(): Observable<Appointment[]> {
     return this.http.get<Appointment[]>(`${this.baseUrl}/appointments`);
+  }
+
+  getAppointmentById(id: number): Observable<Appointment> {
+    return this.http.get<Appointment>(`${this.baseUrl}/appointments/${id}`);
   }
 
   getAppointmentsByPatient(patientId: number): Observable<Appointment[]> {
@@ -164,9 +172,67 @@ export class ApiService {
     return this.http.put<Appointment>(`${this.baseUrl}/appointments/${id}/status?status=${status}`, {});
   }
 
+  checkInPatient(id: number, payload: { insuranceVerified?: boolean; insuranceDetails?: string; reportsUploaded?: string; note?: string }): Observable<Appointment> {
+    return this.http.post<Appointment>(`${this.baseUrl}/appointments/${id}/check-in`, payload);
+  }
+
+  recordTriageVitals(id: number, payload: any): Observable<Appointment> {
+    return this.http.post<Appointment>(`${this.baseUrl}/appointments/${id}/triage-vitals`, payload);
+  }
+
+  recordDoctorConsultation(id: number, payload: any): Observable<Appointment> {
+    return this.http.post<Appointment>(`${this.baseUrl}/appointments/${id}/doctor-consultation`, payload);
+  }
+
+  getAppointmentNotes(id: number): Observable<AppointmentNote[]> {
+    return this.http.get<AppointmentNote[]>(`${this.baseUrl}/appointments/${id}/notes`);
+  }
+
+  addAppointmentNote(id: number, noteType: string, content: string): Observable<AppointmentNote> {
+    return this.http.post<AppointmentNote>(`${this.baseUrl}/appointments/${id}/notes`, { noteType, content });
+  }
+
+  editAppointmentNote(noteId: number, content: string): Observable<AppointmentNote> {
+    return this.http.put<AppointmentNote>(`${this.baseUrl}/appointments/notes/${noteId}`, { content });
+  }
+
+  cancelAppointment(id: number, reason: string, comment?: string): Observable<AppointmentCancellation> {
+    return this.http.post<AppointmentCancellation>(`${this.baseUrl}/appointments/${id}/cancel`, { reason, comment });
+  }
+
+  getCancellationDetails(id: number): Observable<AppointmentCancellation> {
+    return this.http.get<AppointmentCancellation>(`${this.baseUrl}/appointments/${id}/cancellation`);
+  }
+
+  generateBilling(id: number, payload: any): Observable<AppointmentBilling> {
+    return this.http.post<AppointmentBilling>(`${this.baseUrl}/appointments/${id}/billing`, payload);
+  }
+
+  getBillingDetails(id: number): Observable<AppointmentBilling> {
+    return this.http.get<AppointmentBilling>(`${this.baseUrl}/appointments/${id}/billing`);
+  }
+
+  getLabOrders(id: number): Observable<AppointmentLabOrder[]> {
+    return this.http.get<AppointmentLabOrder[]>(`${this.baseUrl}/appointments/${id}/lab-orders`);
+  }
+
   // Synthetic Data Pipeline
   generateSyntheticCohort(count = 3): Observable<any> {
     return this.http.post<any>(`${this.baseUrl}/synthetic/generate`, { count });
+  }
+
+  getSyntheaPipelineStatus(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/synthetic/pipeline-status`);
+  }
+
+  generateSyntheaPipeline(count = 3, state = 'Massachusetts'): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/synthetic/generate`, { count, state });
+  }
+
+  ingestSyntheaBundle(bundleJson: string): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/synthetic/ingest-bundle`, bundleJson, {
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 
   getDoctors(): Observable<User[]> {

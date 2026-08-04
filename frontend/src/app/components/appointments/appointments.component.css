@@ -1,1 +1,11 @@
-/* No custom styles - uses PrimeNG defaults + Tailwind */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .printable-area, .printable-area * {
+    visibility: visible;
+  }
+}

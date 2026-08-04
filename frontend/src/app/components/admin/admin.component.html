@@ -4,21 +4,110 @@
     <div>
       <div class="flex items-center gap-2.5">
         <ng-icon name="lucideSettings" size="20" class="text-foreground" />
-        <h1 class="text-xl font-semibold tracking-tight text-foreground">User RBAC Management & Doctor Registration</h1>
+        <h1 class="text-xl font-semibold tracking-tight text-foreground">Admin Command Center & Synthea Synthetic Pipeline</h1>
       </div>
       <p class="text-xs text-muted-foreground mt-0.5">
-        User account directory, doctor practice license & qualification verification, and RBAC privileges.
+        Synthea framework patient generator, FHIR bundle ingestion engine, RBAC privileges, and doctor verification directory.
       </p>
     </div>
 
-    <button
-      hlmBtn
-      variant="default"
-      size="sm"
-      (click)="showCreateUserModal.set(true)"
-      class="gap-1.5 font-semibold text-xs">
-      <ng-icon name="lucidePlus" size="14" /> Register Doctor / Staff Account
-    </button>
+    <div class="flex items-center gap-2">
+      <button
+        hlmBtn
+        variant="outline"
+        size="sm"
+        (click)="showIngestModal.set(true)"
+        class="gap-1.5 font-semibold text-xs border-primary/30 text-primary hover:bg-primary/10">
+        <ng-icon name="lucideUploadCloud" size="14" /> Ingest FHIR Bundle
+      </button>
+      <button
+        hlmBtn
+        variant="default"
+        size="sm"
+        (click)="showCreateUserModal.set(true)"
+        class="gap-1.5 font-semibold text-xs">
+        <ng-icon name="lucidePlus" size="14" /> Register Doctor / Staff Account
+      </button>
+    </div>
+  </div>
+
+  <!-- Synthea Framework Pipeline Card -->
+  <div class="p-5 rounded-xl border border-primary/20 bg-card shadow-sm space-y-4">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/60 pb-3">
+      <div class="flex items-center gap-2.5">
+        <div class="p-2 rounded-lg bg-primary/10 text-primary">
+          <ng-icon name="lucideCpu" size="20" />
+        </div>
+        <div>
+          <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
+            Synthea Synthetic Patient Generator Pipeline
+            <span hlmBadge variant="outline" class="text-[10px] bg-emerald-500/10 text-emerald-600 border-emerald-500/30">
+              HL7 FHIR R4 Compliant
+            </span>
+          </h2>
+          <p class="text-[11px] text-muted-foreground">
+            Generate synthetic patient cohorts with realistic disease histories, LOINC vitals, RxNorm medications, and SNOMED/ICD-10 diagnoses.
+          </p>
+        </div>
+      </div>
+
+      <!-- Readiness Status Badge -->
+      <div *ngIf="syntheaStatus()" class="flex items-center gap-2 text-xs">
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+          <ng-icon name="lucideCheckCircle" size="12" /> Engine Ready
+        </span>
+        <span class="text-[11px] font-mono text-muted-foreground hidden lg:inline">
+          {{ syntheaStatus().frameworkVersion }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Controls Form Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+      <div class="space-y-1">
+        <label class="font-medium text-foreground block">Cohort Population Count</label>
+        <input hlmInput type="number" [(ngModel)]="syntheaCount" name="syntheaCount" min="1" max="50" class="w-full h-8 text-xs font-mono" />
+      </div>
+
+      <div class="space-y-1">
+        <label class="font-medium text-foreground block">Demographic Region (State)</label>
+        <select hlmInput [(ngModel)]="syntheaState" name="syntheaState" class="w-full h-8 text-xs">
+          <option *ngFor="let st of syntheaStates" [value]="st">{{ st }}</option>
+        </select>
+      </div>
+
+      <div class="flex items-end">
+        <button
+          hlmBtn
+          variant="default"
+          size="sm"
+          [disabled]="isGeneratingSynthea()"
+          (click)="handleRunSyntheaPipeline()"
+          class="w-full h-8 gap-1.5 font-semibold text-xs bg-primary text-primary-foreground hover:bg-primary/90">
+          <ng-icon [name]="isGeneratingSynthea() ? 'lucideCpu' : 'lucidePlay'" size="14" [class.animate-spin]="isGeneratingSynthea()" />
+          {{ isGeneratingSynthea() ? 'Executing Pipeline...' : 'Generate Synthea Cohort' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Execution Results Banner -->
+    <div *ngIf="syntheaResult()" [class]="'p-3.5 rounded-lg border text-xs space-y-2 ' + (syntheaResult().status === 'SUCCESS' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300' : 'bg-destructive/10 border-destructive/30 text-destructive')">
+      <div class="flex items-center justify-between font-semibold">
+        <span class="flex items-center gap-1.5">
+          <ng-icon [name]="syntheaResult().status === 'SUCCESS' ? 'lucideCheckCircle' : 'lucideAlertCircle'" size="14" />
+          {{ syntheaResult().message }}
+        </span>
+      </div>
+
+      <div *ngIf="syntheaResult().status === 'SUCCESS'" class="grid grid-cols-2 sm:grid-cols-6 gap-2 pt-1 border-t border-emerald-500/20 text-[11px]">
+        <div><span class="font-semibold block">Patients:</span> {{ syntheaResult().patientsIngested }}</div>
+        <div><span class="font-semibold block">Encounters:</span> {{ syntheaResult().encountersIngested }}</div>
+        <div><span class="font-semibold block">Allergies:</span> {{ syntheaResult().allergiesIngested }}</div>
+        <div><span class="font-semibold block">Diagnoses:</span> {{ syntheaResult().conditionsIngested }}</div>
+        <div><span class="font-semibold block">eRx Orders:</span> {{ syntheaResult().prescriptionsIngested }}</div>
+        <div><span class="font-semibold block">Vitals Flows:</span> {{ syntheaResult().vitalsIngested }}</div>
+      </div>
+    </div>
   </div>
 
   <!-- Role Metrics Grid -->
@@ -98,6 +187,39 @@
       </table>
     </div>
   </div>
+
+  <!-- Ingest FHIR Bundle Modal -->
+  <hlm-dialog *ngIf="showIngestModal()" (closed)="showIngestModal.set(false)">
+    <hlm-dialog-content class="sm:max-w-[600px]">
+      <hlm-dialog-header>
+        <h3 hlmDialogTitle class="text-base font-semibold">Ingest Synthea FHIR R4 Bundle JSON</h3>
+      </hlm-dialog-header>
+
+      <div class="space-y-3 my-2 text-xs">
+        <p class="text-muted-foreground text-[11px]">
+          Paste a complete HL7 FHIR R4 Bundle JSON payload exported from Synthea or an external EHR system to parse and ingest patient history.
+        </p>
+
+        <div class="space-y-1">
+          <label class="font-medium text-foreground block">FHIR Bundle JSON *</label>
+          <textarea
+            hlmInput
+            [(ngModel)]="rawFhirJson"
+            rows="10"
+            placeholder='{ "resourceType": "Bundle", "type": "collection", "entry": [ ... ] }'
+            class="w-full font-mono text-[11px] p-2 rounded-lg border border-border">
+          </textarea>
+        </div>
+
+        <hlm-dialog-footer class="mt-4 flex justify-end gap-2">
+          <button hlmBtn type="button" variant="ghost" size="sm" (click)="showIngestModal.set(false)">Cancel</button>
+          <button hlmBtn type="button" variant="default" size="sm" [disabled]="!rawFhirJson.trim() || isGeneratingSynthea()" (click)="handleIngestRawFhirBundle()">
+            Ingest Bundle Records
+          </button>
+        </hlm-dialog-footer>
+      </div>
+    </hlm-dialog-content>
+  </hlm-dialog>
 
   <!-- Create Doctor / Staff User Modal -->
   <hlm-dialog *ngIf="showCreateUserModal()" (closed)="showCreateUserModal.set(false)">

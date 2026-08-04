@@ -53,7 +53,36 @@ export class AuthService {
     return roles.some(r => this.hasRole(r));
   }
 
+  isReceptionist(): boolean {
+    return this.hasRole('ROLE_RECEPTIONIST') || this.hasRole('ROLE_ADMIN');
+  }
+
+  isNurse(): boolean {
+    return this.hasRole('ROLE_NURSE') || this.hasRole('ROLE_ADMIN');
+  }
+
+  isDoctor(): boolean {
+    return this.hasRole('ROLE_DOCTOR') || this.hasRole('ROLE_ADMIN');
+  }
+
+  isAdmin(): boolean {
+    return this.hasRole('ROLE_ADMIN');
+  }
+
+  isPatient(): boolean {
+    return this.hasRole('ROLE_PATIENT');
+  }
+
+  getPrimaryRole(): 'Patient' | 'Doctor' | 'Nurse' | 'Receptionist' | 'Admin' {
+    if (this.hasRole('ROLE_ADMIN')) return 'Admin';
+    if (this.hasRole('ROLE_RECEPTIONIST')) return 'Receptionist';
+    if (this.hasRole('ROLE_DOCTOR')) return 'Doctor';
+    if (this.hasRole('ROLE_NURSE')) return 'Nurse';
+    return 'Patient';
+  }
+
   createStaffUser(payload: any): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/admin/create-user`, payload);
   }
 }
+

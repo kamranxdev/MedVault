@@ -27,3 +27,7 @@ yarn-error.log*
 # Environment files
 .env
 .env.local
+
+# Synthea Framework (auto-downloaded at runtime, ~40MB JAR)
+backend/tools/
+scripts/output/

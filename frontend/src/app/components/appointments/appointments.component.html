@@ -1,80 +1,112 @@
-<div class="space-y-6">
-  <!-- Header -->
-  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-border">
-    <div>
-      <div class="flex items-center gap-2.5">
-        <ng-icon name="lucideCalendarClock" size="20" class="text-foreground" />
-        <h1 class="text-xl font-semibold tracking-tight text-foreground">
-          {{ isPatient() ? 'My Appointments & Consultations' : 'Provider Consultation Schedule' }}
-        </h1>
+<div class="space-y-6 p-4 sm:p-6 max-w-7xl mx-auto">
+
+  <!-- PAGE HEADER -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-card/60 backdrop-blur-md border border-border p-6 rounded-2xl shadow-sm">
+    <div class="space-y-1">
+      <div class="flex items-center gap-3">
+        <h1 class="text-2xl font-bold tracking-tight text-foreground">Appointment Care Coordination</h1>
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
+          RBAC Workflow Engine
+        </span>
       </div>
-      <p class="text-xs text-muted-foreground mt-0.5">
-        {{ isPatient() ? 'Book and manage your clinical consultations with attending physicians matched to your health profile.' : 'Real-time outpatient consultation booking with AI-powered physician specialty matching.' }}
+      <p class="text-xs text-muted-foreground">
+        Multi-role collaborative intake, nurse triage flowsheets, physician eRx consultation, shared notes timeline, and auditable cancellation workflow.
       </p>
     </div>
 
-    <div class="flex items-center gap-3">
-      <button
-        hlmBtn
-        variant="default"
-        size="sm"
-        (click)="openScheduleModal()"
-        class="gap-1.5 font-semibold text-xs">
-        <ng-icon name="lucidePlus" size="15" />
-        <span>Book Appointment</span>
+    <div class="flex items-center gap-2">
+      <button hlmBtn variant="default" (click)="openScheduleModal()" class="gap-2 shadow-lg shadow-primary/20 text-xs h-9">
+        <ng-icon name="lucidePlus" size="16" />
+        <span>Schedule Appointment</span>
       </button>
     </div>
   </div>
 
-  <!-- Appointments Table -->
-  <div class="space-y-4">
-    <div *ngIf="loading()" class="p-8 text-center text-xs text-muted-foreground flex items-center justify-center gap-2">
-      <ng-icon name="lucideLoader2" size="16" class="animate-spin" /> Loading schedule...
+  <!-- APPOINTMENTS LIST TABLE -->
+  <div hlmCard class="overflow-hidden border border-border/80 shadow-md rounded-2xl bg-card">
+    <div class="p-4 sm:p-6 border-b border-border flex items-center justify-between bg-muted/20">
+      <div class="flex items-center gap-2">
+        <ng-icon name="lucideCalendarClock" size="18" class="text-primary" />
+        <h2 class="text-sm font-semibold tracking-tight text-foreground">Active Clinical Appointments</h2>
+      </div>
+      <span class="text-xs text-muted-foreground font-medium">Logged in as: <strong class="text-foreground">{{ getUserRoleLabel() }}</strong></span>
     </div>
 
-    <div *ngIf="!loading() && appointments().length === 0" class="p-4 rounded-lg bg-muted/30 border border-border text-muted-foreground text-xs">
-      No appointments scheduled.
-    </div>
-
-    <div *ngIf="!loading() && appointments().length > 0" class="border border-border rounded-xl bg-card overflow-hidden">
-      <table hlmTable class="w-full text-xs">
-        <thead hlmTableHeader>
-          <tr hlmTableRow class="bg-muted/40">
-            <th hlmTableHead>Date & Time</th>
-            <th hlmTableHead>Patient</th>
-            <th hlmTableHead>Attending Physician</th>
-            <th hlmTableHead>Specialty & Credentials</th>
-            <th hlmTableHead>Reason for Visit</th>
-            <th hlmTableHead>Status</th>
-            <th hlmTableHead *ngIf="!isPatient()">Actions</th>
+    <div class="overflow-x-auto">
+      <table class="w-full text-xs text-left">
+        <thead class="bg-muted/40 text-muted-foreground uppercase text-[10px] font-semibold border-b border-border tracking-wider">
+          <tr>
+            <th class="px-4 py-3">Appt ID</th>
+            <th class="px-4 py-3">Patient</th>
+            <th class="px-4 py-3">Attending Physician</th>
+            <th class="px-4 py-3">Date & Time</th>
+            <th class="px-4 py-3">Clinical Stage / Status</th>
+            <th class="px-4 py-3">Reason</th>
+            <th class="px-4 py-3 text-right">Actions</th>
           </tr>
         </thead>
-        <tbody hlmTableBody>
-          <tr hlmTableRow *ngFor="let apt of appointments()">
-            <td hlmTableCell class="font-mono text-muted-foreground">{{ apt.appointmentDate | date:'medium' }}</td>
-            <td hlmTableCell class="font-semibold text-foreground">{{ apt.patient.fullName || 'Patient' }}</td>
-            <td hlmTableCell class="text-foreground font-semibold">
-              {{ apt.doctor.fullName || 'Physician' }}
+        <tbody class="divide-y divide-border">
+          <tr *ngFor="let apt of appointments()" class="hover:bg-muted/30 transition-colors">
+            <td class="px-4 py-3 font-mono font-semibold text-primary">#AP-10{{ apt.id }}</td>
+            <td class="px-4 py-3">
+              <div class="font-semibold text-foreground">{{ apt.patient?.fullName || 'N/A' }}</div>
+              <div class="text-[10px] text-muted-foreground">{{ apt.patient?.patientCode }}</div>
             </td>
-            <td hlmTableCell>
-              <span hlmBadge variant="outline" class="font-mono text-[10px] bg-primary/5 text-primary border-primary/20">
-                {{ apt.doctor.specialization || 'General Practice' }}
-              </span>
-              <span *ngIf="apt.doctor.licenseNumber" class="text-[10px] text-muted-foreground block mt-0.5">
-                License: {{ apt.doctor.licenseNumber }}
+            <td class="px-4 py-3">
+              <div class="font-medium text-foreground">{{ apt.doctor?.fullName || 'N/A' }}</div>
+              <div class="text-[10px] text-muted-foreground">{{ apt.doctor?.specialization || 'General Physician' }}</div>
+            </td>
+            <td class="px-4 py-3">
+              <div class="font-medium text-foreground">{{ apt.appointmentDate | date:'mediumDate' }}</div>
+              <div class="text-[10px] text-muted-foreground">{{ apt.appointmentDate | date:'shortTime' }}</div>
+            </td>
+            <td class="px-4 py-3">
+              <span [ngClass]="{
+                'bg-blue-500/10 text-blue-600 border-blue-500/30': apt.status === 'SCHEDULED',
+                'bg-amber-500/10 text-amber-600 border-amber-500/30': apt.status === 'CHECKED_IN',
+                'bg-purple-500/10 text-purple-600 border-purple-500/30': apt.status === 'TRIAGED',
+                'bg-indigo-500/10 text-indigo-600 border-indigo-500/30': apt.status === 'IN_CONSULTATION',
+                'bg-emerald-500/10 text-emerald-600 border-emerald-500/30': apt.status === 'COMPLETED',
+                'bg-destructive/10 text-destructive border-destructive/30': apt.status === 'CANCELLED'
+              }" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border">
+                <span class="size-1.5 rounded-full" [ngClass]="{
+                  'bg-blue-500': apt.status === 'SCHEDULED',
+                  'bg-amber-500': apt.status === 'CHECKED_IN',
+                  'bg-purple-500': apt.status === 'TRIAGED',
+                  'bg-indigo-500': apt.status === 'IN_CONSULTATION',
+                  'bg-emerald-500': apt.status === 'COMPLETED',
+                  'bg-destructive': apt.status === 'CANCELLED'
+                }"></span>
+                {{ formatLabel(apt.status) }}
               </span>
             </td>
-            <td hlmTableCell class="text-foreground">{{ apt.reason }}</td>
-            <td hlmTableCell>
-              <span hlmBadge [variant]="apt.status === 'CONFIRMED' ? 'default' : (apt.status === 'CANCELLED' ? 'destructive' : 'secondary')" class="text-[10px]">
-                {{ apt.status }}
-              </span>
-            </td>
-            <td hlmTableCell *ngIf="!isPatient()">
-              <div class="flex items-center gap-1.5" *ngIf="apt.status === 'SCHEDULED'">
-                <button hlmBtn variant="outline" size="sm" class="h-7 text-[11px] px-2" (click)="updateStatus(apt.id, 'CONFIRMED')">Confirm</button>
-                <button hlmBtn variant="destructive" size="sm" class="h-7 text-[11px] px-2" (click)="updateStatus(apt.id, 'CANCELLED')">Cancel</button>
+            <td class="px-4 py-3 text-muted-foreground max-w-xs truncate">{{ apt.reason || 'General Checkup' }}</td>
+            <td class="px-4 py-3 text-right">
+              <div class="flex items-center justify-end gap-1.5">
+                <button hlmBtn variant="outline" size="sm" (click)="openWorkspace(apt)" class="gap-1 text-[11px] h-7 px-2.5">
+                  <ng-icon name="lucideStethoscope" size="13" />
+                  <span>Workflow Workspace</span>
+                </button>
+
+                <button *ngIf="apt.status !== 'CANCELLED' && apt.status !== 'COMPLETED'"
+                        hlmBtn variant="ghost" size="sm" (click)="openCancelModal(apt)"
+                        class="gap-1 text-[11px] h-7 px-2 text-destructive hover:bg-destructive/10">
+                  <ng-icon name="lucideXCircle" size="13" />
+                  <span>Cancel</span>
+                </button>
+
+                <button *ngIf="apt.status === 'CANCELLED'"
+                        hlmBtn variant="secondary" size="sm" (click)="openCancellationDetailModal(apt)"
+                        class="gap-1 text-[11px] h-7 px-2">
+                  <ng-icon name="lucideInfo" size="13" />
+                  <span>Audit Record</span>
+                </button>
               </div>
+            </td>
+          </tr>
+          <tr *ngIf="appointments().length === 0">
+            <td colspan="7" class="px-4 py-8 text-center text-muted-foreground">
+              No appointments found. Click "Schedule Appointment" to record a new visit.
             </td>
           </tr>
         </tbody>
@@ -82,86 +114,704 @@
     </div>
   </div>
 
-  <!-- Book Appointment Modal with Smart Doctor Matching -->
-  <hlm-dialog *ngIf="showModal()" (closed)="showModal.set(false)">
-    <hlm-dialog-content class="sm:max-w-[550px]">
-      <hlm-dialog-header>
-        <h3 hlmDialogTitle class="text-base font-semibold flex items-center gap-2">
-          <ng-icon name="lucideStethoscope" size="18" class="text-primary" /> Book Clinical Consultation & Doctor Match
-        </h3>
-      </hlm-dialog-header>
+  <!-- SCHEDULE APPOINTMENT MODAL -->
+  <div *ngIf="showModal()" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div hlmCard class="w-full max-w-lg bg-card border border-border shadow-2xl rounded-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+      <div class="p-5 border-b border-border flex items-center justify-between bg-muted/30">
+        <div class="flex items-center gap-2">
+          <ng-icon name="lucidePlus" size="18" class="text-primary" />
+          <h3 class="text-base font-semibold text-foreground">Schedule New Patient Appointment</h3>
+        </div>
+        <button (click)="showModal.set(false)" class="text-muted-foreground hover:text-foreground text-sm font-bold p-1">✕</button>
+      </div>
 
-      <form (ngSubmit)="saveAppointment()" class="space-y-4 my-2 text-xs">
-        <div class="space-y-1" *ngIf="!isPatient()">
-          <label class="font-medium text-foreground block">Patient Profile *</label>
-          <select hlmInput [(ngModel)]="newApt.patientId" (change)="onPatientOrReasonChange()" name="patientId" class="w-full h-8 text-xs">
-            <option [value]="0">Select Patient...</option>
-            <option *ngFor="let p of patientContext.patientList()" [value]="p.id">{{ p.fullName }} (MRN: {{ p.patientCode }})</option>
+      <div class="p-5 space-y-4 text-xs">
+        <div class="space-y-1.5" *ngIf="!isPatient()">
+          <label class="font-medium text-foreground block">Patient Context ID</label>
+          <input hlmInput type="number" [(ngModel)]="newApt.patientId" (change)="onPatientOrReasonChange()" class="w-full h-8 text-xs" />
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="font-medium text-foreground block">Reason for Visit</label>
+          <input hlmInput type="text" [(ngModel)]="newApt.reason" (change)="onPatientOrReasonChange()" placeholder="e.g. Annual Cardiology Checkup" class="w-full h-8 text-xs" />
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="font-medium text-foreground block">Appointment Date & Time</label>
+          <input hlmInput type="datetime-local" [(ngModel)]="newApt.appointmentDate" class="w-full h-8 text-xs" />
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="font-medium text-foreground block">Attending Doctor</label>
+          <select [(ngModel)]="newApt.doctorId" class="w-full h-8 rounded-md border border-input bg-background px-3 text-xs">
+            <option *ngFor="let doc of doctors()" [value]="doc.id">{{ doc.fullName }} ({{ doc.specialization || 'Physician' }})</option>
           </select>
         </div>
 
-        <div class="space-y-1">
-          <label class="font-medium text-foreground block">Reason for Visit / Symptoms *</label>
-          <input hlmInput type="text" [(ngModel)]="newApt.reason" (input)="onPatientOrReasonChange()" name="reason" placeholder="Chest pain, High blood pressure, Asthma checkup, Skin rash..." required class="w-full h-8 text-xs" />
-        </div>
-
-        <!-- AI Smart Doctor Matching Recommendation Section -->
-        <div *ngIf="recommendedDoctors().length > 0" class="p-3 border border-primary/30 bg-primary/5 rounded-lg space-y-2">
-          <div class="flex justify-between items-center">
-            <span class="font-semibold text-primary block text-[11px] uppercase tracking-wide flex items-center gap-1">
-              <ng-icon name="lucideSparkles" size="14" /> AI Specialty Physician Matching Engine
-            </span>
-            <span hlmBadge variant="default" class="text-[9px]">Top Match: {{ recommendedDoctors()[0].recommendedSpecialty }}</span>
+        <!-- AI RECOMMENDED DOCTORS -->
+        <div *ngIf="recommendedDoctors().length > 0" class="p-3 rounded-lg bg-primary/5 border border-primary/20 space-y-2">
+          <div class="flex items-center gap-1.5 text-[11px] font-semibold text-primary">
+            <ng-icon name="lucideSparkles" size="14" />
+            <span>AI Match Recommendations</span>
           </div>
-
-          <div class="space-y-1.5 max-h-36 overflow-y-auto pr-1">
-            <div
-              *ngFor="let rec of recommendedDoctors()"
-              (click)="selectRecommendedDoctor(rec.doctor.id)"
-              [class.border-primary]="newApt.doctorId === rec.doctor.id"
-              [class.bg-card]="newApt.doctorId === rec.doctor.id"
-              class="p-2 border border-border rounded-md hover:border-primary/50 cursor-pointer flex justify-between items-center transition-all text-xs">
-              <div class="space-y-0.5">
-                <div class="flex items-center gap-1.5">
-                  <span class="font-semibold text-foreground">{{ rec.doctor.fullName }}</span>
-                  <span hlmBadge variant="outline" class="text-[9px]">{{ rec.doctor.specialization || rec.recommendedSpecialty }}</span>
-                </div>
-                <div class="text-[10px] text-muted-foreground">{{ rec.matchReason }}</div>
+          <div class="space-y-1">
+            <div *ngFor="let rec of recommendedDoctors()" (click)="selectRecommendedDoctor(rec.doctor.id)"
+                 class="p-2 rounded bg-card hover:bg-muted border border-border cursor-pointer flex items-center justify-between text-[11px]">
+              <div>
+                <div class="font-medium text-foreground">{{ rec.doctor.fullName }}</div>
+                <div class="text-[10px] text-muted-foreground">{{ rec.recommendedSpecialty }} • {{ rec.matchReason }}</div>
               </div>
-              <div class="text-right shrink-0">
-                <span class="font-bold text-primary text-xs">{{ rec.matchScore }}% Match</span>
-                <span *ngIf="rec.verifiedLicense" class="text-[9px] text-emerald-600 dark:text-emerald-400 block flex items-center justify-end gap-0.5">
-                  <ng-icon name="lucideShieldCheck" size="12" /> Verified
-                </span>
-              </div>
+              <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-600">
+                Match {{ rec.matchScore }}%
+              </span>
             </div>
           </div>
         </div>
 
-        <div class="space-y-1">
-          <label class="font-medium text-foreground block">Selected Attending Physician *</label>
-          <select hlmInput [(ngModel)]="newApt.doctorId" name="doctorId" class="w-full h-8 text-xs font-medium">
-            <option *ngFor="let doc of doctors()" [value]="doc.id">
-              {{ doc.fullName }} — {{ doc.specialization || 'General Practice' }} (License: {{ doc.licenseNumber || 'Verified' }})
-            </option>
+        <div class="space-y-1.5">
+          <label class="font-medium text-foreground block">Initial Reception Remarks</label>
+          <textarea hlmTextarea [(ngModel)]="newApt.notes" rows="2" placeholder="Optional booking notes..." class="w-full text-xs"></textarea>
+        </div>
+      </div>
+
+      <div class="p-4 bg-muted/30 border-t border-border flex items-center justify-end gap-2">
+        <button hlmBtn variant="ghost" (click)="showModal.set(false)" class="text-xs h-8">Cancel</button>
+        <button hlmBtn variant="default" (click)="saveAppointment()" class="text-xs h-8 px-4">Confirm Booking</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- COLLABORATIVE APPOINTMENT WORKSPACE DRAWER / MODAL -->
+  <!-- ========================================================================= -->
+  <div *ngIf="showWorkspaceModal()" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-2 sm:p-6 overflow-y-auto">
+    <div hlmCard class="w-full max-w-5xl bg-card border border-border shadow-2xl rounded-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col">
+
+      <!-- WORKSPACE HEADER & STEPPER -->
+      <div class="p-5 border-b border-border bg-muted/40 space-y-4 shrink-0">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
+              #AP-10{{ activeAppointment()?.id }}
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="text-base font-bold text-foreground">{{ activeAppointment()?.patient?.fullName }}</h3>
+                <span class="text-xs text-muted-foreground">({{ activeAppointment()?.patient?.patientCode }})</span>
+              </div>
+              <p class="text-xs text-muted-foreground">
+                Attending: <strong class="text-foreground">{{ activeAppointment()?.doctor?.fullName }}</strong> • Date: {{ activeAppointment()?.appointmentDate | date:'medium' }}
+              </p>
+            </div>
+          </div>
+          <button (click)="showWorkspaceModal.set(false)" class="text-muted-foreground hover:text-foreground text-base font-bold p-1">✕</button>
+        </div>
+
+        <!-- VISUAL WORKFLOW STEPPER -->
+        <div class="grid grid-cols-5 gap-2 pt-2 border-t border-border/60 text-center text-[11px] font-semibold">
+          <div [ngClass]="{'opacity-100 text-primary': activeAppointment()?.status === 'SCHEDULED', 'opacity-50': activeAppointment()?.status !== 'SCHEDULED'}" class="p-1.5 rounded-lg bg-card border border-border flex items-center justify-center gap-1">
+            <ng-icon name="lucideCalendarClock" size="13" />
+            <span>1. Scheduled</span>
+          </div>
+          <div [ngClass]="{'opacity-100 text-amber-600': activeAppointment()?.status === 'CHECKED_IN', 'opacity-50': activeAppointment()?.status !== 'CHECKED_IN'}" class="p-1.5 rounded-lg bg-card border border-border flex items-center justify-center gap-1">
+            <ng-icon name="lucideUserCheck" size="13" />
+            <span>2. Checked-In</span>
+          </div>
+          <div [ngClass]="{'opacity-100 text-purple-600': activeAppointment()?.status === 'TRIAGED', 'opacity-50': activeAppointment()?.status !== 'TRIAGED'}" class="p-1.5 rounded-lg bg-card border border-border flex items-center justify-center gap-1">
+            <ng-icon name="lucideActivity" size="13" />
+            <span>3. Nurse Triaged</span>
+          </div>
+          <div [ngClass]="{'opacity-100 text-indigo-600': activeAppointment()?.status === 'IN_CONSULTATION', 'opacity-50': activeAppointment()?.status !== 'IN_CONSULTATION'}" class="p-1.5 rounded-lg bg-card border border-border flex items-center justify-center gap-1">
+            <ng-icon name="lucideStethoscope" size="13" />
+            <span>4. Doctor Consult</span>
+          </div>
+          <div [ngClass]="{'opacity-100 text-emerald-600': activeAppointment()?.status === 'COMPLETED', 'opacity-50': activeAppointment()?.status !== 'COMPLETED'}" class="p-1.5 rounded-lg bg-card border border-border flex items-center justify-center gap-1">
+            <ng-icon name="lucideReceipt" size="13" />
+            <span>5. Billed & Done</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- WORKSPACE TABS NAVIGATION -->
+      <div class="px-5 pt-3 border-b border-border bg-muted/20 flex gap-2 overflow-x-auto text-xs shrink-0">
+        <button (click)="activeTab.set('receptionist')" [ngClass]="{'border-primary text-primary font-semibold': activeTab() === 'receptionist', 'border-transparent text-muted-foreground': activeTab() !== 'receptionist'}" class="pb-2 px-3 border-b-2 flex items-center gap-1.5 transition-colors">
+          <ng-icon name="lucideUserCheck" size="14" />
+          <span>Reception Intake</span>
+        </button>
+        <button (click)="activeTab.set('nurse')" [ngClass]="{'border-primary text-primary font-semibold': activeTab() === 'nurse', 'border-transparent text-muted-foreground': activeTab() !== 'nurse'}" class="pb-2 px-3 border-b-2 flex items-center gap-1.5 transition-colors">
+          <ng-icon name="lucideActivity" size="14" />
+          <span>Nurse Vitals & Triage</span>
+        </button>
+        <button (click)="activeTab.set('doctor')" [ngClass]="{'border-primary text-primary font-semibold': activeTab() === 'doctor', 'border-transparent text-muted-foreground': activeTab() !== 'doctor'}" class="pb-2 px-3 border-b-2 flex items-center gap-1.5 transition-colors">
+          <ng-icon name="lucideStethoscope" size="14" />
+          <span>Doctor Consultation</span>
+        </button>
+        <button (click)="activeTab.set('billing')" [ngClass]="{'border-primary text-primary font-semibold': activeTab() === 'billing', 'border-transparent text-muted-foreground': activeTab() !== 'billing'}" class="pb-2 px-3 border-b-2 flex items-center gap-1.5 transition-colors">
+          <ng-icon name="lucideReceipt" size="14" />
+          <span>Billing & Summary</span>
+        </button>
+        <button (click)="activeTab.set('notes')" [ngClass]="{'border-primary text-primary font-semibold': activeTab() === 'notes', 'border-transparent text-muted-foreground': activeTab() !== 'notes'}" class="pb-2 px-3 border-b-2 flex items-center gap-1.5 transition-colors">
+          <ng-icon name="lucideMessageSquare" size="14" />
+          <span>Shared Notes ({{ appointmentNotes().length }})</span>
+        </button>
+      </div>
+
+      <!-- WORKSPACE TAB BODY -->
+      <div class="p-6 overflow-y-auto space-y-6 flex-1 text-xs">
+
+        <!-- ================= TAB 1: RECEPTIONIST INTAKE ================= -->
+        <div *ngIf="activeTab() === 'receptionist'" class="space-y-5">
+          <div class="p-4 rounded-xl bg-amber-500/5 border border-amber-500/20 space-y-3">
+            <h4 class="font-bold text-sm text-amber-600 dark:text-amber-400 flex items-center gap-2">
+              <ng-icon name="lucideUserCheck" size="16" />
+              Patient Verification & Administrative Intake
+            </h4>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="space-y-1">
+                <span class="text-muted-foreground text-[11px] block">Insurance Provider</span>
+                <div class="font-semibold text-foreground">{{ activeAppointment()?.patient?.insuranceProvider || 'Star Health Insurance' }}</div>
+              </div>
+              <div class="space-y-1">
+                <span class="text-muted-foreground text-[11px] block">Policy Number</span>
+                <div class="font-mono font-semibold text-foreground">{{ activeAppointment()?.patient?.insurancePolicyNumber || 'STAR-9874102' }}</div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 pt-2">
+              <input type="checkbox" id="verifyIns" [(ngModel)]="receptionistForm.insuranceVerified" class="rounded text-primary focus:ring-primary size-4" />
+              <label for="verifyIns" class="font-semibold text-foreground cursor-pointer">Insurance Eligibility Verified & Confirmed</label>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <label class="font-semibold text-foreground block">Upload Previous Medical Reports (PDF / Image)</label>
+            <div class="p-4 border-2 border-dashed border-border rounded-xl bg-muted/20 text-center space-y-2">
+              <ng-icon name="lucideFileText" size="24" class="mx-auto text-muted-foreground" />
+              <div class="text-muted-foreground text-[11px]">Attached Reports:</div>
+              <div class="font-mono text-primary text-xs font-semibold">{{ receptionistForm.reportsUploaded }}</div>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <label class="font-semibold text-foreground block">Receptionist Administrative Remarks</label>
+            <textarea hlmTextarea [(ngModel)]="receptionistForm.note" rows="3" placeholder="Enter intake remarks, identity check confirmation, or co-pay details..." class="w-full text-xs"></textarea>
+          </div>
+
+          <button hlmBtn variant="default" (click)="submitReceptionistCheckIn()" [disabled]="!isReceptionist()" class="gap-2 shadow-md">
+            <ng-icon name="lucideCheckCircle2" size="16" />
+            <span>Complete Patient Check-In</span>
+          </button>
+        </div>
+
+        <!-- ================= TAB 2: NURSE TRIAGE & VITALS ================= -->
+        <div *ngIf="activeTab() === 'nurse'" class="space-y-5">
+          <div class="p-4 rounded-xl bg-purple-500/5 border border-purple-500/20 space-y-4">
+            <h4 class="font-bold text-sm text-purple-600 dark:text-purple-400 flex items-center gap-2">
+              <ng-icon name="lucideActivity" size="16" />
+              Nurse Pre-Consultation Vitals Flowsheet
+            </h4>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div class="space-y-1">
+                <label class="text-[11px] font-medium text-muted-foreground block">Blood Pressure (mmHg)</label>
+                <input hlmInput type="text" [(ngModel)]="nurseVitalsForm.bloodPressure" placeholder="120/80" class="w-full h-8 text-xs font-mono" />
+              </div>
+              <div class="space-y-1">
+                <label class="text-[11px] font-medium text-muted-foreground block">Pulse Rate (bpm)</label>
+                <input hlmInput type="number" [(ngModel)]="nurseVitalsForm.heartRate" class="w-full h-8 text-xs font-mono" />
+              </div>
+              <div class="space-y-1">
+                <label class="text-[11px] font-medium text-muted-foreground block">Temperature (°C)</label>
+                <input hlmInput type="number" step="0.1" [(ngModel)]="nurseVitalsForm.temperature" class="w-full h-8 text-xs font-mono" />
+              </div>
+              <div class="space-y-1">
+                <label class="text-[11px] font-medium text-muted-foreground block">SpO2 (%)</label>
+                <input hlmInput type="number" [(ngModel)]="nurseVitalsForm.oxygenSaturation" class="w-full h-8 text-xs font-mono" />
+              </div>
+              <div class="space-y-1">
+                <label class="text-[11px] font-medium text-muted-foreground block">Height (cm)</label>
+                <input hlmInput type="number" [(ngModel)]="nurseVitalsForm.heightCm" class="w-full h-8 text-xs font-mono" />
+              </div>
+              <div class="space-y-1">
+                <label class="text-[11px] font-medium text-muted-foreground block">Weight (kg)</label>
+                <input hlmInput type="number" step="0.5" [(ngModel)]="nurseVitalsForm.weightKg" class="w-full h-8 text-xs font-mono" />
+              </div>
+              <div class="space-y-1">
+                <label class="text-[11px] font-medium text-muted-foreground block">Calculated BMI</label>
+                <div class="h-8 rounded-md bg-muted px-3 flex items-center font-bold text-primary font-mono text-xs">
+                  {{ CalculatedBmi }} kg/m²
+                </div>
+              </div>
+              <div class="space-y-1">
+                <label class="text-[11px] font-medium text-muted-foreground block">Blood Glucose (mg/dL)</label>
+                <input hlmInput type="number" [(ngModel)]="nurseVitalsForm.bloodGlucose" placeholder="Optional" class="w-full h-8 text-xs font-mono" />
+              </div>
+            </div>
+
+            <div class="space-y-1.5 pt-2">
+              <label class="font-semibold text-foreground block">Nursing Triage & Pre-Consultation Observations</label>
+              <textarea hlmTextarea [(ngModel)]="nurseVitalsForm.nursingNotes" rows="3" placeholder="Enter patient symptom assessment, allergies reported, or immediate triage observations..." class="w-full text-xs"></textarea>
+            </div>
+          </div>
+
+          <button hlmBtn variant="default" (click)="submitNurseTriage()" [disabled]="!isNurse()" class="gap-2 shadow-md">
+            <ng-icon name="lucideActivity" size="16" />
+            <span>Save Vitals & Complete Nurse Triage</span>
+          </button>
+        </div>
+
+        <!-- ================= TAB 3: DOCTOR CONSULTATION ================= -->
+        <div *ngIf="activeTab() === 'doctor'" class="space-y-5">
+          <!-- PATIENT CLINICAL HISTORY PREVIEW -->
+          <div class="p-4 rounded-xl bg-card border border-border shadow-sm space-y-3">
+            <h4 class="font-bold text-sm text-foreground flex items-center gap-2">
+              <ng-icon name="lucideStethoscope" size="16" class="text-primary" />
+              Clinical History & Nurse Vitals Summary
+            </h4>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-[11px]">
+              <div class="p-2.5 rounded bg-muted/30 border border-border">
+                <span class="font-semibold text-foreground block">Medical Alerts & Allergies:</span>
+                <span class="text-destructive font-medium">{{ activeAppointment()?.patient?.medicalAlerts || 'None Reported' }}</span>
+              </div>
+              <div class="p-2.5 rounded bg-muted/30 border border-border">
+                <span class="font-semibold text-foreground block">Latest Recorded Vitals:</span>
+                <span>BP: {{ nurseVitalsForm.bloodPressure }} • HR: {{ nurseVitalsForm.heartRate }} bpm • Temp: {{ nurseVitalsForm.temperature }}°C</span>
+              </div>
+              <div class="p-2.5 rounded bg-muted/30 border border-border">
+                <span class="font-semibold text-foreground block">Insurance Provider:</span>
+                <span>{{ activeAppointment()?.patient?.insuranceProvider || 'Star Health' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- DIAGNOSIS FORM -->
+          <div class="p-4 rounded-xl bg-muted/30 border border-border space-y-3">
+            <h5 class="font-bold text-xs text-foreground">Record Clinical Diagnoses (ICD-10 / SNOMED)</h5>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <input hlmInput type="text" [(ngModel)]="doctorForm.diagnosisName" placeholder="Condition Name (e.g. Essential Hypertension)" class="h-8 text-xs" />
+              <input hlmInput type="text" [(ngModel)]="doctorForm.icdCode" placeholder="ICD-10 Code (e.g. I10)" class="h-8 text-xs font-mono" />
+              <button hlmBtn variant="outline" (click)="addDiagnosisToDraft()" class="h-8 text-xs gap-1">
+                <ng-icon name="lucidePlus" size="14" />
+                <span>Add Diagnosis</span>
+              </button>
+            </div>
+
+            <div *ngIf="diagnosesList().length > 0" class="flex flex-wrap gap-2 pt-1">
+              <span *ngFor="let d of diagnosesList()" hlmBadge variant="secondary" class="gap-1 py-1 px-2 text-[11px]">
+                {{ d.conditionName }} ({{ d.icdCode }})
+              </span>
+            </div>
+          </div>
+
+          <!-- PRESCRIPTION FORM WITH SMART SAFETY CHECK -->
+          <div class="p-4 rounded-xl bg-muted/30 border border-border space-y-3">
+            <h5 class="font-bold text-xs text-foreground flex items-center justify-between">
+              <span>Electronic Prescription (eRx)</span>
+              <span class="text-[10px] text-primary font-normal">RxNorm Allergy Safety Checking Enabled</span>
+            </h5>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <input hlmInput type="text" [(ngModel)]="doctorForm.medicationName" (keyup)="checkDoctorMedSafety()" placeholder="Medication Name (e.g. Lisinopril)" class="h-8 text-xs" />
+              <input hlmInput type="text" [(ngModel)]="doctorForm.dosage" placeholder="Dosage (e.g. 10 mg)" class="h-8 text-xs" />
+              <input hlmInput type="text" [(ngModel)]="doctorForm.frequency" placeholder="Frequency (e.g. Once Daily)" class="h-8 text-xs" />
+            </div>
+
+            <!-- SMART SAFETY ALERT DISPLAY -->
+            <div *ngIf="safetyAlert()" [ngClass]="{'bg-destructive/10 border-destructive/30 text-destructive': !safetyAlert()?.safe, 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600': safetyAlert()?.safe}" class="p-3 rounded-lg border text-xs flex items-start gap-2">
+              <ng-icon [name]="safetyAlert()?.safe ? 'lucideCheckCircle2' : 'lucideAlertTriangle'" size="16" class="shrink-0 mt-0.5" />
+              <div>
+                <div class="font-bold">{{ safetyAlert()?.safe ? 'Prescription Safe' : 'Contraindication Warning: ' + safetyAlert()?.severity }}</div>
+                <div class="text-[11px] leading-relaxed">{{ safetyAlert()?.message }}</div>
+              </div>
+            </div>
+
+            <button hlmBtn variant="outline" (click)="addPrescriptionToDraft()" class="h-8 text-xs gap-1">
+              <ng-icon name="lucidePill" size="14" />
+              <span>Add Medication to Order</span>
+            </button>
+
+            <div *ngIf="prescriptionsList().length > 0" class="flex flex-wrap gap-2 pt-1">
+              <span *ngFor="let rx of prescriptionsList()" hlmBadge variant="outline" class="gap-1 py-1 px-2 text-[11px]">
+                💊 {{ rx.medicationName }} {{ rx.dosage }} ({{ rx.frequency }})
+              </span>
+            </div>
+          </div>
+
+          <!-- LAB TEST ORDERS -->
+          <div class="p-4 rounded-xl bg-muted/30 border border-border space-y-3">
+            <h5 class="font-bold text-xs text-foreground">Order Diagnostic Lab Tests</h5>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <input hlmInput type="text" [(ngModel)]="doctorForm.labTestName" placeholder="Test Name (e.g. HbA1c, CBC, Lipid)" class="h-8 text-xs" />
+              <select [(ngModel)]="doctorForm.labPriority" class="h-8 rounded-md border border-input bg-background px-3 text-xs">
+                <option value="ROUTINE">ROUTINE</option>
+                <option value="URGENT">URGENT</option>
+                <option value="STAT">STAT Emergency</option>
+              </select>
+              <button hlmBtn variant="outline" (click)="addLabOrderToDraft()" class="h-8 text-xs gap-1">
+                <ng-icon name="lucideFlaskConical" size="14" />
+                <span>Order Lab Test</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="space-y-1.5">
+            <label class="font-semibold text-foreground block">Physician Clinical Notes & Follow-up Instructions</label>
+            <textarea hlmTextarea [(ngModel)]="doctorForm.doctorNotes" rows="3" placeholder="Enter clinical assessment, plan of care, and dietary recommendations..." class="w-full text-xs"></textarea>
+          </div>
+
+          <button hlmBtn variant="default" (click)="submitDoctorConsultation()" [disabled]="!isDoctor()" class="gap-2 shadow-md">
+            <ng-icon name="lucideStethoscope" size="16" />
+            <span>Complete Doctor Consultation</span>
+          </button>
+        </div>
+
+        <!-- ================= TAB 4: BILLING & SUMMARY PRINT ================= -->
+        <div *ngIf="activeTab() === 'billing'" class="space-y-5">
+          <div class="p-5 rounded-xl bg-card border border-border space-y-4 shadow-sm">
+            <div class="flex items-center justify-between border-b border-border pb-3">
+              <h4 class="font-bold text-sm text-foreground flex items-center gap-2">
+                <ng-icon name="lucideReceipt" size="16" class="text-primary" />
+                Itemized Billing Breakdown & Checkout
+              </h4>
+              <span hlmBadge variant="outline" class="text-xs font-semibold">
+                Status: {{ appointmentBilling()?.paymentStatus || 'PENDING' }}
+              </span>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+              <div>
+                <span class="text-muted-foreground block text-[11px]">Consultation Fee</span>
+                <input hlmInput type="number" [(ngModel)]="billingForm.consultationFee" class="h-8 text-xs font-mono" />
+              </div>
+              <div>
+                <span class="text-muted-foreground block text-[11px]">Triage Fee</span>
+                <input hlmInput type="number" [(ngModel)]="billingForm.triageFee" class="h-8 text-xs font-mono" />
+              </div>
+              <div>
+                <span class="text-muted-foreground block text-[11px]">Lab Tests Fee</span>
+                <input hlmInput type="number" [(ngModel)]="billingForm.labFee" class="h-8 text-xs font-mono" />
+              </div>
+              <div>
+                <span class="text-muted-foreground block text-[11px]">Insurance Discount</span>
+                <input hlmInput type="number" [(ngModel)]="billingForm.insuranceCoverage" class="h-8 text-xs font-mono" />
+              </div>
+            </div>
+
+            <div class="p-4 rounded-xl bg-muted/40 flex items-center justify-between border border-border">
+              <div>
+                <span class="text-xs text-muted-foreground font-medium block">Net Amount Payable</span>
+                <span class="text-2xl font-bold text-primary font-mono">${{ calculateNetPayable() }}</span>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <button hlmBtn variant="default" (click)="submitBilling()" [disabled]="!isReceptionist()" class="gap-2 h-9 text-xs">
+                  <ng-icon name="lucideReceipt" size="15" />
+                  <span>Generate Bill & Checkout</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-xl bg-muted/20 border border-border flex items-center justify-between">
+            <div>
+              <div class="font-bold text-foreground">Printable Clinical Prescription & Summary</div>
+              <div class="text-xs text-muted-foreground">Export formatted appointment report for patient physical copy.</div>
+            </div>
+            <button hlmBtn variant="outline" (click)="openPrintModal()" class="gap-2 text-xs h-9">
+              <ng-icon name="lucidePrinter" size="15" />
+              <span>Print Prescription Summary</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ================= TAB 5: MULTI-ROLE SHARED NOTES ================= -->
+        <div *ngIf="activeTab() === 'notes'" class="space-y-5">
+          <div class="space-y-3">
+            <h4 class="font-bold text-sm text-foreground flex items-center gap-2">
+              <ng-icon name="lucideMessageSquare" size="16" class="text-primary" />
+              Collaborative Care Notes Timeline
+            </h4>
+            <p class="text-xs text-muted-foreground">
+              All staff entries are timestamped and tagged by creator role. Notes are editable strictly by their author or an Admin with full change audit tracking.
+            </p>
+          </div>
+
+          <!-- ADD NOTE FORM -->
+          <div class="p-4 rounded-xl bg-muted/30 border border-border space-y-3">
+            <textarea hlmTextarea [(ngModel)]="newNoteText" rows="2" placeholder="Add a collaborative note visible to authorized care team..." class="w-full text-xs"></textarea>
+            <div class="flex items-center justify-end">
+              <button hlmBtn variant="default" (click)="submitNewNote()" [disabled]="!newNoteText.trim()" class="gap-1.5 text-xs h-8">
+                <ng-icon name="lucidePlus" size="14" />
+                <span>Post Care Note</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- NOTES FEED -->
+          <div class="space-y-3">
+            <div *ngFor="let note of appointmentNotes()" class="p-4 rounded-xl bg-card border border-border space-y-2 shadow-sm">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-foreground text-xs">{{ note.authorName }}</span>
+                  <span [ngClass]="{
+                    'bg-amber-500/10 text-amber-600 border-amber-500/30': note.authorRole === 'Receptionist' || note.authorRole === 'ROLE_RECEPTIONIST',
+                    'bg-purple-500/10 text-purple-600 border-purple-500/30': note.authorRole === 'Nurse' || note.authorRole === 'ROLE_NURSE',
+                    'bg-emerald-500/10 text-emerald-600 border-emerald-500/30': note.authorRole === 'Doctor' || note.authorRole === 'ROLE_DOCTOR',
+                    'bg-slate-500/10 text-slate-600 border-slate-500/30': note.authorRole === 'Admin' || note.authorRole === 'ROLE_ADMIN'
+                  }" class="px-2 py-0.5 rounded text-[10px] font-bold border">
+                    {{ formatLabel(note.authorRole) }}
+                  </span>
+                  <span hlmBadge variant="outline" class="text-[10px]">{{ formatLabel(note.noteType) }}</span>
+                </div>
+                <div class="flex items-center gap-2 text-[11px] text-muted-foreground">
+                  <span>{{ note.createdAt | date:'short' }}</span>
+                  <span *ngIf="note.edited" class="text-amber-500 font-medium">(Edited)</span>
+
+                  <!-- Edit Note Button (Author / Admin Only) -->
+                  <button *ngIf="canEditNote(note) && editingNoteId() !== note.id" (click)="startEditNote(note)" class="text-primary hover:underline text-[11px] font-semibold ml-2">
+                    Edit
+                  </button>
+
+                  <!-- View Edit Audit History -->
+                  <button *ngIf="note.editHistoryJson" (click)="openNoteHistory(note)" class="text-muted-foreground hover:text-foreground text-[11px] font-medium ml-1">
+                    History
+                  </button>
+                </div>
+              </div>
+
+              <!-- Content View / Edit Mode -->
+              <div *ngIf="editingNoteId() !== note.id" class="text-xs text-foreground leading-relaxed pt-1">
+                {{ note.content }}
+              </div>
+
+              <div *ngIf="editingNoteId() === note.id" class="space-y-2 pt-1">
+                <textarea hlmTextarea [(ngModel)]="editingNoteText" rows="2" class="w-full text-xs"></textarea>
+                <div class="flex items-center justify-end gap-2">
+                  <button hlmBtn variant="ghost" size="sm" (click)="cancelEditNote()" class="h-7 text-xs">Cancel</button>
+                  <button hlmBtn variant="default" size="sm" (click)="saveEditNote(note.id!)" class="h-7 text-xs">Save Changes</button>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="appointmentNotes().length === 0" class="text-center py-6 text-muted-foreground text-xs">
+              No notes recorded yet. Add an administrative, nursing, or physician remark above.
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 5. APPOINTMENT CANCELLATION REASON MODAL -->
+  <!-- ========================================================================= -->
+  <div *ngIf="showCancelModal()" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4">
+    <div hlmCard class="w-full max-w-md bg-card border border-border shadow-2xl rounded-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+      
+      <!-- MODAL TITLE -->
+      <div class="p-5 border-b border-border bg-destructive/10 flex items-center justify-between">
+        <div class="flex items-center gap-2 text-destructive">
+          <ng-icon name="lucideXCircle" size="20" />
+          <h3 class="text-base font-bold tracking-tight">Cancel Appointment</h3>
+        </div>
+        <button (click)="showCancelModal.set(false)" class="text-muted-foreground hover:text-foreground text-sm font-bold">✕</button>
+      </div>
+
+      <div class="p-6 space-y-5 text-xs">
+
+        <div class="p-3 rounded-lg bg-muted/40 border border-border space-y-1">
+          <span class="text-[11px] text-muted-foreground block font-medium">Target Appointment</span>
+          <div class="font-bold text-foreground">
+            #AP-10{{ cancelAptTarget()?.id }} • Patient: {{ cancelAptTarget()?.patient?.fullName }}
+          </div>
+          <div class="text-[11px] text-muted-foreground">
+            Doctor: {{ cancelAptTarget()?.doctor?.fullName }} • Date: {{ cancelAptTarget()?.appointmentDate | date:'medium' }}
+          </div>
+        </div>
+
+        <!-- REASON DROPDOWN (ROLE SPECIFIC) -->
+        <div class="space-y-1.5">
+          <label class="font-bold text-foreground block">Reason *</label>
+          <select [(ngModel)]="cancellationReason" class="w-full h-9 rounded-lg border border-input bg-background px-3 text-xs font-medium focus:ring-2 focus:ring-destructive">
+            <option *ngFor="let opt of getCancellationReasonOptions()" [value]="opt">{{ opt }}</option>
           </select>
         </div>
 
-        <div class="space-y-1">
-          <label class="font-medium text-foreground block">Consultation Date & Time *</label>
-          <input hlmInput type="datetime-local" [(ngModel)]="newApt.appointmentDate" name="appointmentDate" required class="w-full h-8 text-xs" />
+        <!-- ADDITIONAL COMMENTS FIELD (MAX 500 CHARS) -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label class="font-bold text-foreground block">
+              Additional Comments
+              <span *ngIf="cancellationReason === 'Other'" class="text-destructive font-bold">* (Mandatory for 'Other')</span>
+            </label>
+            <span class="text-[10px] text-muted-foreground">{{ cancellationComment.length }}/500</span>
+          </div>
+
+          <textarea hlmTextarea
+                    [(ngModel)]="cancellationComment"
+                    maxlength="500"
+                    rows="4"
+                    placeholder="Enter specific comments or rationale for appointment cancellation..."
+                    class="w-full text-xs"></textarea>
         </div>
 
-        <div class="space-y-1">
-          <label class="font-medium text-foreground block">Clinical Triage Notes</label>
-          <textarea hlmTextarea [(ngModel)]="newApt.notes" name="notes" rows="2" placeholder="Specific patient notes for physician..." class="w-full text-xs"></textarea>
+        <!-- MANDATORY WARNING ALERT IF OTHER SELECTED WITHOUT COMMENT -->
+        <div *ngIf="cancellationReason === 'Other' && (!cancellationComment || !cancellationComment.trim())"
+             class="p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive text-[11px] font-medium flex items-center gap-2">
+          <ng-icon name="lucideAlertTriangle" size="16" class="shrink-0" />
+          <span>Additional Comments are mandatory when "Other" is selected as the cancellation reason.</span>
         </div>
 
-        <hlm-dialog-footer class="mt-4 flex justify-end gap-2">
-          <button hlmBtn type="button" variant="ghost" size="sm" (click)="showModal.set(false)">Cancel</button>
-          <button hlmBtn type="submit" variant="default" size="sm" [disabled]="!newApt.reason || !newApt.appointmentDate">Confirm & Schedule Match</button>
-        </hlm-dialog-footer>
-      </form>
-    </hlm-dialog-content>
-  </hlm-dialog>
+        <div *ngIf="cancellationError()" class="p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive text-[11px]">
+          {{ cancellationError() }}
+        </div>
+      </div>
+
+      <div class="p-4 bg-muted/30 border-t border-border flex items-center justify-end gap-2">
+        <button hlmBtn variant="ghost" (click)="showCancelModal.set(false)" class="text-xs h-9">Back</button>
+        <button hlmBtn
+                variant="destructive"
+                (click)="submitCancellation()"
+                [disabled]="isCancellationSubmitDisabled()"
+                class="text-xs h-9 px-5 gap-1.5 font-bold shadow-md">
+          <ng-icon name="lucideXCircle" size="15" />
+          <span>Confirm Cancellation</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- CANCELLATION AUDIT DETAIL MODAL -->
+  <!-- ========================================================================= -->
+  <div *ngIf="showCancellationDetailModal()" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4">
+    <div hlmCard class="w-full max-w-md bg-card border border-border shadow-2xl rounded-2xl overflow-hidden">
+      <div class="p-5 border-b border-border bg-muted/30 flex items-center justify-between">
+        <h3 class="text-sm font-bold text-foreground flex items-center gap-2">
+          <ng-icon name="lucideShieldCheck" size="18" class="text-primary" />
+          Cancellation Audit Trail Entry
+        </h3>
+        <button (click)="showCancellationDetailModal.set(false)" class="text-muted-foreground hover:text-foreground text-sm font-bold">✕</button>
+      </div>
+
+      <div class="p-6 space-y-4 text-xs font-mono">
+        <div class="p-4 rounded-xl bg-muted/40 border border-border space-y-2">
+          <div class="font-bold text-sm text-primary">Appointment #AP-10{{ cancellationDetail()?.appointment?.id }}</div>
+          <div><strong class="text-foreground">Status:</strong> Cancelled</div>
+          <div><strong class="text-foreground">Cancelled By:</strong> {{ cancellationDetail()?.cancelledByRole }} ({{ cancellationDetail()?.cancelledByUser?.fullName }})</div>
+          <div><strong class="text-foreground">Reason:</strong> {{ cancellationDetail()?.cancellationReason }}</div>
+          <div><strong class="text-foreground">Comment:</strong> {{ cancellationDetail()?.additionalComment || 'N/A' }}</div>
+          <div><strong class="text-foreground">Cancelled At:</strong> {{ cancellationDetail()?.cancelledAt | date:'medium' }}</div>
+        </div>
+      </div>
+
+      <div class="p-4 bg-muted/30 border-t border-border text-right">
+        <button hlmBtn variant="default" (click)="showCancellationDetailModal.set(false)" class="text-xs h-8 px-4">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- PRINTABLE PRESCRIPTION & APPOINTMENT SUMMARY MODAL -->
+  <!-- ========================================================================= -->
+  <div *ngIf="showPrintModal()" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+    <div class="w-full max-w-3xl bg-white text-slate-900 shadow-2xl rounded-2xl p-8 space-y-6 my-auto font-sans">
+      
+      <!-- PRINT HEADER -->
+      <div class="flex items-center justify-between border-b border-slate-300 pb-4">
+        <div class="flex items-center gap-3">
+          <div class="size-10 rounded-xl bg-blue-600 text-white font-bold flex items-center justify-center text-lg">
+            MV
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-slate-900">MedVault EHR Hospital System</h2>
+            <p class="text-xs text-slate-600">Official Clinical Visit Prescription & Summary</p>
+          </div>
+        </div>
+        <div class="text-right text-xs text-slate-600">
+          <div>Date: {{ activeAppointment()?.appointmentDate | date:'mediumDate' }}</div>
+          <div class="font-mono font-bold text-slate-900">#AP-10{{ activeAppointment()?.id }}</div>
+        </div>
+      </div>
+
+      <!-- DEMOGRAPHICS -->
+      <div class="grid grid-cols-2 gap-4 text-xs bg-slate-100 p-4 rounded-xl border border-slate-200">
+        <div>
+          <span class="text-slate-500 block">Patient Name</span>
+          <strong class="text-slate-900 text-sm">{{ activeAppointment()?.patient?.fullName }}</strong>
+          <span class="text-slate-600 block">Code: {{ activeAppointment()?.patient?.patientCode }}</span>
+        </div>
+        <div>
+          <span class="text-slate-500 block">Attending Physician</span>
+          <strong class="text-slate-900 text-sm">{{ activeAppointment()?.doctor?.fullName }}</strong>
+          <span class="text-slate-600 block">{{ activeAppointment()?.doctor?.specialization || 'Internal Medicine' }}</span>
+        </div>
+      </div>
+
+      <!-- VITALS & DIAGNOSES -->
+      <div class="space-y-3 text-xs">
+        <h4 class="font-bold text-slate-900 border-b border-slate-200 pb-1 uppercase tracking-wider text-[11px]">Recorded Vitals</h4>
+        <div class="grid grid-cols-4 gap-2 text-center text-[11px] bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+          <div><span class="text-slate-500 block">BP</span><strong>{{ nurseVitalsForm.bloodPressure }}</strong></div>
+          <div><span class="text-slate-500 block">Pulse</span><strong>{{ nurseVitalsForm.heartRate }} bpm</strong></div>
+          <div><span class="text-slate-500 block">Temp</span><strong>{{ nurseVitalsForm.temperature }}°C</strong></div>
+          <div><span class="text-slate-500 block">BMI</span><strong>{{ CalculatedBmi }} kg/m²</strong></div>
+        </div>
+      </div>
+
+      <!-- PRESCRIPTIONS -->
+      <div class="space-y-3 text-xs">
+        <h4 class="font-bold text-slate-900 border-b border-slate-200 pb-1 uppercase tracking-wider text-[11px]">Prescribed Medications (eRx)</h4>
+        <table class="w-full text-left text-xs border border-slate-200">
+          <thead class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+            <tr>
+              <th class="p-2">Medication</th>
+              <th class="p-2">Dosage</th>
+              <th class="p-2">Frequency</th>
+              <th class="p-2">Instructions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200">
+            <tr *ngFor="let rx of prescriptionsList()">
+              <td class="p-2 font-bold">{{ rx.medicationName }}</td>
+              <td class="p-2">{{ rx.dosage }}</td>
+              <td class="p-2">{{ rx.frequency }}</td>
+              <td class="p-2">{{ rx.instructions }}</td>
+            </tr>
+            <tr *ngIf="prescriptionsList().length === 0">
+              <td colspan="4" class="p-3 text-center text-slate-500">Lisinopril 10mg • Once Daily in the Morning (30 Days)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- SIGNATURE -->
+      <div class="pt-8 flex items-center justify-between text-xs border-t border-slate-200">
+        <div>
+          <span class="text-slate-500 block">Facility Authorization</span>
+          <strong>MedVault Clinical Center • Outpatient Care</strong>
+        </div>
+        <div class="text-center">
+          <div class="font-serif italic text-base text-slate-800 border-b border-slate-400 px-6 pb-1">Dr. {{ activeAppointment()?.doctor?.fullName }}</div>
+          <span class="text-slate-500 text-[10px] block mt-1">Authorized Physician Signature</span>
+        </div>
+      </div>
+
+      <!-- PRINT CONTROLS -->
+      <div class="flex items-center justify-end gap-3 pt-4 no-print">
+        <button hlmBtn variant="ghost" (click)="showPrintModal.set(false)" class="text-xs h-9">Close</button>
+        <button hlmBtn variant="default" (click)="triggerPrint()" class="gap-2 text-xs h-9 px-4">
+          <ng-icon name="lucidePrinter" size="16" />
+          <span>Print Document</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
 </div>

@@ -11,11 +11,13 @@ INSERT INTO roles (id, name) VALUES (2, 'ROLE_DOCTOR');
 INSERT INTO roles (id, name) VALUES (3, 'ROLE_NURSE');
 INSERT INTO roles (id, name) VALUES (4, 'ROLE_AUDITOR');
 INSERT INTO roles (id, name) VALUES (5, 'ROLE_PATIENT');
+INSERT INTO roles (id, name) VALUES (6, 'ROLE_RECEPTIONIST');
 
 -- ------------------------------------------------------------------------------
 -- 2. USERS
 -- Default Login Passwords:
 -- Admin: admin / admin123
+-- Receptionist: receptionist / receptionist123
 -- Doctors: doctor (or doctor_mahtab, doctor_rajesh) / doctor123
 -- Nurse: nurse (or nurse_priya) / nurse123
 -- Auditor: auditor / auditor123
@@ -57,6 +59,9 @@ VALUES (11, 'user_ananya', '$2a$10$1Knu6HwyDwDWpqngg1N6nOoWKupSsqQLU0Mw/3EmTdJ.X
 INSERT INTO users (id, username, password, email, full_name, specialization, department, created_at) 
 VALUES (12, 'user_rohan', '$2a$10$1Knu6HwyDwDWpqngg1N6nOoWKupSsqQLU0Mw/3EmTdJ.XKt4e32kC', 'rohan.mehta@example.com', 'Rohan Mehta', NULL, NULL, CURRENT_TIMESTAMP);
 
+INSERT INTO users (id, username, password, email, full_name, specialization, department, created_at) 
+VALUES (13, 'receptionist', '$2a$10$DgGz9Ehsr5I9xvTQ/lbBQeF0AGNdBCr8C7zQgdOVScnY1fEaxXfsG', 'receptionist@medvault.org', 'Receptionist Sarita Verma', NULL, 'Patient Intake & Reception Desk', CURRENT_TIMESTAMP);
+
 -- ------------------------------------------------------------------------------
 -- 3. USER ROLES (JOIN TABLE)
 -- ------------------------------------------------------------------------------
@@ -72,6 +77,8 @@ INSERT INTO user_roles (user_id, role_id) VALUES (9, 5);
 INSERT INTO user_roles (user_id, role_id) VALUES (10, 5);
 INSERT INTO user_roles (user_id, role_id) VALUES (11, 5);
 INSERT INTO user_roles (user_id, role_id) VALUES (12, 5);
+INSERT INTO user_roles (user_id, role_id) VALUES (13, 6);
+
 
 -- ------------------------------------------------------------------------------
 -- 4. PATIENTS
@@ -200,40 +207,41 @@ INSERT INTO appointments (id, patient_id, doctor_id, appointment_date, status, r
 VALUES (4, 4, 4, '2026-08-10 15:00:00', 'SCHEDULED', 'Neurology Routine Review', 'Annual follow up.', CURRENT_TIMESTAMP);
 
 -- ------------------------------------------------------------------------------
+-- ------------------------------------------------------------------------------
 -- 12. AUDIT LOGS
 -- ------------------------------------------------------------------------------
-INSERT INTO audit_logs (username, user_role, action, entity_name, resource_id, ip_address, details, timestamp)
-VALUES ('SYSTEM', 'SYSTEM', 'SEED', 'DATABASE', '0', '127.0.0.1', 'Initialized MedVault EHR database via manual SQL seed script.', CURRENT_TIMESTAMP);
+INSERT INTO audit_logs (id, username, user_role, action, entity_name, resource_id, ip_address, details, timestamp)
+VALUES (1, 'SYSTEM', 'SYSTEM', 'SEED', 'DATABASE', '0', '127.0.0.1', 'Initialized MedVault EHR database via manual SQL seed script.', CURRENT_TIMESTAMP);
 
-INSERT INTO audit_logs (username, user_role, action, entity_name, resource_id, ip_address, details, timestamp)
-VALUES ('admin', 'ROLE_ADMIN', 'CREATE', 'USER', '1', '127.0.0.1', 'Provisioned RBAC clinical access credentials for Dr. Mahtab Khan, Nurse Priya Verma, and Inspector Suresh Menon.', CURRENT_TIMESTAMP);
+INSERT INTO audit_logs (id, username, user_role, action, entity_name, resource_id, ip_address, details, timestamp)
+VALUES (2, 'admin', 'ROLE_ADMIN', 'CREATE', 'USER', '1', '127.0.0.1', 'Provisioned RBAC clinical access credentials for Dr. Mahtab Khan, Nurse Priya Verma, and Inspector Suresh Menon.', CURRENT_TIMESTAMP);
 
-INSERT INTO audit_logs (username, user_role, action, entity_name, resource_id, ip_address, details, timestamp)
-VALUES ('doctor', 'ROLE_DOCTOR', 'CREATE', 'ALLERGY', '1', '127.0.0.1', 'Documented SEVERE Penicillin allergy (RxNorm-70618) for patient PAT-1001.', CURRENT_TIMESTAMP);
+INSERT INTO audit_logs (id, username, user_role, action, entity_name, resource_id, ip_address, details, timestamp)
+VALUES (3, 'doctor', 'ROLE_DOCTOR', 'CREATE', 'ALLERGY', '1', '127.0.0.1', 'Documented SEVERE Penicillin allergy (RxNorm-70618) for patient PAT-1001.', CURRENT_TIMESTAMP);
 
-INSERT INTO audit_logs (username, user_role, action, entity_name, resource_id, ip_address, details, timestamp)
-VALUES ('auditor', 'ROLE_AUDITOR', 'READ', 'AUDIT_LEDGER', 'ALL', '127.0.0.1', 'Executed HIPAA § 164.312(b) compliance forensic audit review.', CURRENT_TIMESTAMP);
+INSERT INTO audit_logs (id, username, user_role, action, entity_name, resource_id, ip_address, details, timestamp)
+VALUES (4, 'auditor', 'ROLE_AUDITOR', 'READ', 'AUDIT_LEDGER', 'ALL', '127.0.0.1', 'Executed HIPAA § 164.312(b) compliance forensic audit review.', CURRENT_TIMESTAMP);
 
-INSERT INTO audit_logs (username, user_role, action, entity_name, resource_id, ip_address, details, timestamp)
-VALUES ('doctor', 'ROLE_DOCTOR', 'CREATE', 'PRESCRIPTION', '3', '127.0.0.1', 'Prescribed Hydroxyzine for patient PAT-1003.', CURRENT_TIMESTAMP);
+INSERT INTO audit_logs (id, username, user_role, action, entity_name, resource_id, ip_address, details, timestamp)
+VALUES (5, 'doctor', 'ROLE_DOCTOR', 'CREATE', 'PRESCRIPTION', '3', '127.0.0.1', 'Prescribed Hydroxyzine for patient PAT-1003.', CURRENT_TIMESTAMP);
 
-INSERT INTO audit_logs (username, user_role, action, entity_name, resource_id, ip_address, details, timestamp)
-VALUES ('nurse', 'ROLE_NURSE', 'CREATE', 'VITALS', 'ALL', '127.0.0.1', 'Recorded vitals for patient PAT-1003.', CURRENT_TIMESTAMP);
+INSERT INTO audit_logs (id, username, user_role, action, entity_name, resource_id, ip_address, details, timestamp)
+VALUES (6, 'nurse', 'ROLE_NURSE', 'CREATE', 'VITALS', 'ALL', '127.0.0.1', 'Recorded vitals for patient PAT-1003.', CURRENT_TIMESTAMP);
 
-INSERT INTO audit_logs (username, user_role, action, entity_name, resource_id, ip_address, details, timestamp)
-VALUES ('doctor', 'ROLE_DOCTOR', 'CREATE', 'DIAGNOSIS', '3', '127.0.0.1', 'Logged Contact Dermatitis diagnosis for patient PAT-1003.', CURRENT_TIMESTAMP);
+INSERT INTO audit_logs (id, username, user_role, action, entity_name, resource_id, ip_address, details, timestamp)
+VALUES (7, 'doctor', 'ROLE_DOCTOR', 'CREATE', 'DIAGNOSIS', '3', '127.0.0.1', 'Logged Contact Dermatitis diagnosis for patient PAT-1003.', CURRENT_TIMESTAMP);
 
-INSERT INTO audit_logs (username, user_role, action, entity_name, resource_id, ip_address, details, timestamp)
-VALUES ('doctor', 'ROLE_DOCTOR', 'CREATE', 'ENCOUNTER', '3', '127.0.0.1', 'Logged TELEHEALTH encounter for patient PAT-1003.', CURRENT_TIMESTAMP);
+INSERT INTO audit_logs (id, username, user_role, action, entity_name, resource_id, ip_address, details, timestamp)
+VALUES (8, 'doctor', 'ROLE_DOCTOR', 'CREATE', 'ENCOUNTER', '3', '127.0.0.1', 'Logged TELEHEALTH encounter for patient PAT-1003.', CURRENT_TIMESTAMP);
 
-ALTER TABLE roles ALTER COLUMN id RESTART WITH 100;
-ALTER TABLE users ALTER COLUMN id RESTART WITH 100;
-ALTER TABLE patients ALTER COLUMN id RESTART WITH 100;
-ALTER TABLE encounters ALTER COLUMN id RESTART WITH 100;
-ALTER TABLE allergies ALTER COLUMN id RESTART WITH 100;
-ALTER TABLE diagnoses ALTER COLUMN id RESTART WITH 100;
-ALTER TABLE medical_records ALTER COLUMN id RESTART WITH 100;
-ALTER TABLE vitals ALTER COLUMN id RESTART WITH 100;
-ALTER TABLE prescriptions ALTER COLUMN id RESTART WITH 100;
-ALTER TABLE appointments ALTER COLUMN id RESTART WITH 100;
-ALTER TABLE audit_logs ALTER COLUMN id RESTART WITH 100;
+ALTER TABLE roles ALTER COLUMN id RESTART WITH 3000;
+ALTER TABLE users ALTER COLUMN id RESTART WITH 3000;
+ALTER TABLE patients ALTER COLUMN id RESTART WITH 3000;
+ALTER TABLE encounters ALTER COLUMN id RESTART WITH 3000;
+ALTER TABLE allergies ALTER COLUMN id RESTART WITH 3000;
+ALTER TABLE diagnoses ALTER COLUMN id RESTART WITH 3000;
+ALTER TABLE medical_records ALTER COLUMN id RESTART WITH 3000;
+ALTER TABLE vitals ALTER COLUMN id RESTART WITH 3000;
+ALTER TABLE prescriptions ALTER COLUMN id RESTART WITH 3000;
+ALTER TABLE appointments ALTER COLUMN id RESTART WITH 3000;
+ALTER TABLE audit_logs ALTER COLUMN id RESTART WITH 3000;

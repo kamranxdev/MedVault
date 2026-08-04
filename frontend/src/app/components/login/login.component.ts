@@ -59,6 +59,12 @@ export class LoginComponent {
     private router: Router
   ) {}
 
+  fillDemoCredentials(u: string, p: string): void {
+    this.username = u;
+    this.password = p;
+    this.onLogin();
+  }
+
   onLogin(): void {
     if (!this.username || !this.password) return;
     this.loading.set(true);
