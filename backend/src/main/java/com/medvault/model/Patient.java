@@ -35,6 +35,24 @@ public class Patient {
     @Column(length = 1000)
     private String medicalAlerts; // Allergies, chronic conditions summary
 
+    private String dietaryHabits; // e.g. "Low Sodium, Gluten-Free, Vegetarian"
+    private String smokingStatus; // "NEVER", "FORMER", "CURRENT_LIGHT", "CURRENT_HEAVY"
+    private String alcoholConsumption; // "NONE", "OCCASIONAL", "MODERATE", "HEAVY"
+    private String exerciseRoutine; // "SEDENTARY", "MODERATE", "ACTIVE"
+    private String foodAllergies; // e.g. "Peanuts, Shellfish, Lactose"
+
+    @Column(length = 2000)
+    private String pastMedicalHistory; // Previous illnesses, chronic conditions
+    
+    @Column(length = 2000)
+    private String seriousConditions; // High severity conditions, ICU stays, major risks
+
+    @Column(length = 2000)
+    private String surgeriesAndProcedures; // Past operations & procedures
+
+    @Column(length = 2000)
+    private String familyMedicalHistory; // Hereditary risks
+
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user; // Linked user account if patient registers
@@ -169,6 +187,78 @@ public class Patient {
 
     public void setMedicalAlerts(String medicalAlerts) {
         this.medicalAlerts = medicalAlerts;
+    }
+
+    public String getDietaryHabits() {
+        return dietaryHabits;
+    }
+
+    public void setDietaryHabits(String dietaryHabits) {
+        this.dietaryHabits = dietaryHabits;
+    }
+
+    public String getSmokingStatus() {
+        return smokingStatus;
+    }
+
+    public void setSmokingStatus(String smokingStatus) {
+        this.smokingStatus = smokingStatus;
+    }
+
+    public String getAlcoholConsumption() {
+        return alcoholConsumption;
+    }
+
+    public void setAlcoholConsumption(String alcoholConsumption) {
+        this.alcoholConsumption = alcoholConsumption;
+    }
+
+    public String getExerciseRoutine() {
+        return exerciseRoutine;
+    }
+
+    public void setExerciseRoutine(String exerciseRoutine) {
+        this.exerciseRoutine = exerciseRoutine;
+    }
+
+    public String getFoodAllergies() {
+        return foodAllergies;
+    }
+
+    public void setFoodAllergies(String foodAllergies) {
+        this.foodAllergies = foodAllergies;
+    }
+
+    public String getPastMedicalHistory() {
+        return pastMedicalHistory;
+    }
+
+    public void setPastMedicalHistory(String pastMedicalHistory) {
+        this.pastMedicalHistory = pastMedicalHistory;
+    }
+
+    public String getSeriousConditions() {
+        return seriousConditions;
+    }
+
+    public void setSeriousConditions(String seriousConditions) {
+        this.seriousConditions = seriousConditions;
+    }
+
+    public String getSurgeriesAndProcedures() {
+        return surgeriesAndProcedures;
+    }
+
+    public void setSurgeriesAndProcedures(String surgeriesAndProcedures) {
+        this.surgeriesAndProcedures = surgeriesAndProcedures;
+    }
+
+    public String getFamilyMedicalHistory() {
+        return familyMedicalHistory;
+    }
+
+    public void setFamilyMedicalHistory(String familyMedicalHistory) {
+        this.familyMedicalHistory = familyMedicalHistory;
     }
 
     public User getUser() {

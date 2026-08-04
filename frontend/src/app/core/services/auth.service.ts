@@ -52,4 +52,8 @@ export class AuthService {
   hasAnyRole(roles: string[]): boolean {
     return roles.some(r => this.hasRole(r));
   }
+
+  createStaffUser(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/admin/create-user`, payload);
+  }
 }

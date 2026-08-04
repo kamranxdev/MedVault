@@ -4,12 +4,21 @@
     <div>
       <div class="flex items-center gap-2.5">
         <ng-icon name="lucideSettings" size="20" class="text-foreground" />
-        <h1 class="text-xl font-semibold tracking-tight text-foreground">User RBAC Management & Administration</h1>
+        <h1 class="text-xl font-semibold tracking-tight text-foreground">User RBAC Management & Doctor Registration</h1>
       </div>
       <p class="text-xs text-muted-foreground mt-0.5">
-        User account directory, role-based access assignment, and system security privileges (ROLE_ADMIN access).
+        User account directory, doctor practice license & qualification verification, and RBAC privileges.
       </p>
     </div>
+
+    <button
+      hlmBtn
+      variant="default"
+      size="sm"
+      (click)="showCreateUserModal.set(true)"
+      class="gap-1.5 font-semibold text-xs">
+      <ng-icon name="lucidePlus" size="14" /> Register Doctor / Staff Account
+    </button>
   </div>
 
   <!-- Role Metrics Grid -->
@@ -42,26 +51,41 @@
 
   <!-- User Account Table -->
   <div class="space-y-3">
-    <h2 class="text-sm font-semibold text-foreground">User Account Directory</h2>
+    <h2 class="text-sm font-semibold text-foreground">User Account & Doctor License Directory</h2>
     <div class="border border-border rounded-xl bg-card overflow-hidden">
       <table hlmTable class="w-full text-xs">
         <thead hlmTableHeader>
           <tr hlmTableRow class="bg-muted/40">
             <th hlmTableHead class="w-16">ID</th>
-            <th hlmTableHead>Username</th>
-            <th hlmTableHead>Full Name</th>
+            <th hlmTableHead>Username / Name</th>
             <th hlmTableHead>Email</th>
-            <th hlmTableHead>Specialization / Department</th>
+            <th hlmTableHead>Specialization & Department</th>
+            <th hlmTableHead>Practice License & Qualifications</th>
             <th hlmTableHead>Assigned Roles</th>
           </tr>
         </thead>
         <tbody hlmTableBody>
           <tr hlmTableRow *ngFor="let u of users()">
             <td hlmTableCell class="font-mono text-muted-foreground">#{{ u.id }}</td>
-            <td hlmTableCell class="font-semibold font-mono text-foreground">{{ u.username }}</td>
-            <td hlmTableCell class="text-foreground">{{ u.fullName }}</td>
+            <td hlmTableCell>
+              <div class="font-semibold text-foreground">{{ u.fullName }}</div>
+              <div class="text-[11px] font-mono text-muted-foreground">{{ u.username }}</div>
+            </td>
             <td hlmTableCell class="text-muted-foreground">{{ u.email }}</td>
-            <td hlmTableCell class="text-muted-foreground">{{ u.specialization || u.department || 'General Staff' }}</td>
+            <td hlmTableCell class="text-muted-foreground">
+              <span class="font-medium text-foreground">{{ u.specialization || 'General Practice' }}</span>
+              <span class="block text-[11px] text-muted-foreground">{{ u.department || 'Clinical Staff' }}</span>
+            </td>
+            <td hlmTableCell>
+              <div *ngIf="u.roles.includes('ROLE_DOCTOR') || u.licenseNumber" class="space-y-0.5">
+                <span hlmBadge variant="outline" class="font-mono text-[10px] bg-primary/5 text-primary border-primary/20">
+                  License: {{ u.licenseNumber || 'MD-VERIFIED' }}
+                </span>
+                <div class="text-[11px] text-foreground font-semibold">{{ u.qualifications || 'MD, Board Certified' }}</div>
+                <div class="text-[10px] text-muted-foreground">{{ u.yearsOfExperience || 8 }} yrs exp • {{ u.medicalBoardState || 'State Board' }}</div>
+              </div>
+              <span *ngIf="!u.roles.includes('ROLE_DOCTOR') && !u.licenseNumber" class="text-muted-foreground text-[11px]">N/A (Non-Physician)</span>
+            </td>
             <td hlmTableCell>
               <div class="flex gap-1 flex-wrap">
                 <span hlmBadge *ngFor="let r of u.roles" [variant]="r.includes('ADMIN') ? 'destructive' : (r.includes('DOCTOR') ? 'default' : 'secondary')" class="text-[10px] font-mono">
@@ -74,4 +98,87 @@
       </table>
     </div>
   </div>
+
+  <!-- Create Doctor / Staff User Modal -->
+  <hlm-dialog *ngIf="showCreateUserModal()" (closed)="showCreateUserModal.set(false)">
+    <hlm-dialog-content class="sm:max-w-[500px]">
+      <hlm-dialog-header>
+        <h3 hlmDialogTitle class="text-base font-semibold">Register New Doctor or Staff Account</h3>
+      </hlm-dialog-header>
+
+      <form (ngSubmit)="handleCreateUser()" class="space-y-4 my-2 text-xs">
+        <div *ngIf="errorMessage()" class="p-3 rounded bg-destructive/10 border border-destructive/30 text-destructive font-medium">
+          {{ errorMessage() }}
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="space-y-1">
+            <label class="font-medium text-foreground block">Username *</label>
+            <input hlmInput [(ngModel)]="newUser.username" name="username" placeholder="dr.smith" required class="w-full h-8 text-xs" />
+          </div>
+          <div class="space-y-1">
+            <label class="font-medium text-foreground block">Password *</label>
+            <input hlmInput type="password" [(ngModel)]="newUser.password" name="password" placeholder="••••••••" required class="w-full h-8 text-xs" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="space-y-1">
+            <label class="font-medium text-foreground block">Full Name *</label>
+            <input hlmInput [(ngModel)]="newUser.fullName" name="fullName" placeholder="Dr. Sarah Connor, MD" required class="w-full h-8 text-xs" />
+          </div>
+          <div class="space-y-1">
+            <label class="font-medium text-foreground block">Email Address *</label>
+            <input hlmInput type="email" [(ngModel)]="newUser.email" name="email" placeholder="sarah@hospital.org" required class="w-full h-8 text-xs" />
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <label class="font-medium text-foreground block">Assigned Role *</label>
+          <select hlmInput [(ngModel)]="newUser.role" name="role" class="w-full h-8 text-xs">
+            <option *ngFor="let r of roles" [value]="r.value">{{ r.label }}</option>
+          </select>
+        </div>
+
+        <!-- Doctor Credentials Section -->
+        <div *ngIf="newUser.role === 'DOCTOR'" class="p-3 border border-primary/20 bg-primary/5 rounded-lg space-y-3">
+          <span class="font-semibold text-primary block text-[11px] uppercase tracking-wide">Doctor Practice License & Qualifications Verification *</span>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div class="space-y-1">
+              <label class="font-medium text-foreground block">Practice License Number *</label>
+              <input hlmInput [(ngModel)]="newUser.licenseNumber" name="licenseNumber" placeholder="MD-897452-NY" required class="w-full h-8 text-xs" />
+            </div>
+            <div class="space-y-1">
+              <label class="font-medium text-foreground block">Qualifications *</label>
+              <input hlmInput [(ngModel)]="newUser.qualifications" name="qualifications" placeholder="MD, FACC, MBBS" required class="w-full h-8 text-xs" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div class="space-y-1">
+              <label class="font-medium text-foreground block">Specialization</label>
+              <select hlmInput [(ngModel)]="newUser.specialization" name="specialization" class="w-full h-8 text-xs">
+                <option *ngFor="let s of specializations" [value]="s">{{ s }}</option>
+              </select>
+            </div>
+            <div class="space-y-1">
+              <label class="font-medium text-foreground block">Years of Experience</label>
+              <input hlmInput type="number" [(ngModel)]="newUser.yearsOfExperience" name="yearsOfExperience" placeholder="10" class="w-full h-8 text-xs" />
+            </div>
+          </div>
+
+          <div class="space-y-1">
+            <label class="font-medium text-foreground block">Licensing Board State / Jurisdiction</label>
+            <input hlmInput [(ngModel)]="newUser.medicalBoardState" name="medicalBoardState" placeholder="New York State Board of Medicine" class="w-full h-8 text-xs" />
+          </div>
+        </div>
+
+        <hlm-dialog-footer class="mt-4 flex justify-end gap-2">
+          <button hlmBtn type="button" variant="ghost" size="sm" (click)="showCreateUserModal.set(false)">Cancel</button>
+          <button hlmBtn type="submit" variant="default" size="sm">Register & Verify User Account</button>
+        </hlm-dialog-footer>
+      </form>
+    </hlm-dialog-content>
+  </hlm-dialog>
 </div>

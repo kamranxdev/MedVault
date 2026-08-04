@@ -46,6 +46,8 @@ export class PrescriptionsComponent implements OnInit {
   showModal = signal(false);
   showSafetyModal = signal(false);
   safetyAlert = signal<SafetyCheckResult | null>(null);
+  inlineSafetyCheck = signal<SafetyCheckResult | null>(null);
+  overrideJustification = '';
 
   newRx = {
     medicationName: '',
@@ -117,6 +119,18 @@ export class PrescriptionsComponent implements OnInit {
     this.apiService.getPrescriptionsByPatient(patientId).subscribe(rx => this.prescriptions.set(rx));
   }
 
+  onMedicationInputChange(): void {
+    if (!this.newRx.medicationName || this.newRx.medicationName.trim().length < 3 || this.selectedPatientId === 0) {
+      this.inlineSafetyCheck.set(null);
+      return;
+    }
+
+    this.apiService.validatePrescriptionSafety(this.selectedPatientId, this.newRx.medicationName).subscribe({
+      next: (res) => this.inlineSafetyCheck.set(res),
+      error: () => this.inlineSafetyCheck.set(null)
+    });
+  }
+
   handlePrescriptionSubmit(): void {
     if (!this.newRx.medicationName || this.selectedPatientId === 0) return;
 
@@ -143,6 +157,11 @@ export class PrescriptionsComponent implements OnInit {
   }
 
   private executeSave(overrideWarning: boolean): void {
+    let finalInstructions = this.newRx.instructions;
+    if (overrideWarning && this.overrideJustification) {
+      finalInstructions += " [CLINICAL OVERRIDE RATIONALE: " + this.overrideJustification + "]";
+    }
+
     this.apiService.createPrescription({
       patient: { id: Number(this.selectedPatientId) } as Patient,
       medicationName: this.newRx.medicationName,
@@ -151,13 +170,15 @@ export class PrescriptionsComponent implements OnInit {
       frequency: this.newRx.frequency,
       durationDays: Number(this.newRx.durationDays),
       refills: Number(this.newRx.refills),
-      instructions: this.newRx.instructions,
+      instructions: finalInstructions,
       status: 'ACTIVE'
     }, overrideWarning).subscribe({
       next: () => {
         this.showModal.set(false);
         this.showSafetyModal.set(false);
         this.safetyAlert.set(null);
+        this.inlineSafetyCheck.set(null);
+        this.overrideJustification = '';
         this.newRx = { medicationName: '', dosage: '500 mg', route: 'Oral', frequency: 'Twice Daily', durationDays: 30, refills: 2, instructions: '' };
         this.loadRx(this.selectedPatientId);
       }

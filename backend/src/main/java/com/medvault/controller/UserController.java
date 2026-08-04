@@ -23,8 +23,6 @@ public class UserController {
     @GetMapping("/doctors")
     @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR', 'NURSE', 'PATIENT', 'AUDITOR')")
     public List<User> getDoctors() {
-        return userRepository.findAll().stream()
-                .filter(u -> u.getRoles().stream().anyMatch(r -> r.getName().equals("ROLE_DOCTOR")))
-                .toList();
+        return userRepository.findByRolesName("ROLE_DOCTOR");
     }
 }

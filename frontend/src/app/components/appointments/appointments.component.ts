@@ -14,8 +14,8 @@ import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { HlmTextareaImports } from '@spartan-ng/helm/textarea';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucidePlus, lucideCalendarClock, lucideLoader2 } from '@ng-icons/lucide';
-import { Appointment, Patient, User } from '../../core/models/models';
+import { lucidePlus, lucideCalendarClock, lucideLoader2, lucideSparkles, lucideShieldCheck, lucideStethoscope } from '@ng-icons/lucide';
+import { Appointment, DoctorRecommendationDTO, Patient, User } from '../../core/models/models';
 
 @Component({
   selector: 'app-appointments',
@@ -34,7 +34,7 @@ import { Appointment, Patient, User } from '../../core/models/models';
     NgIcon
   ],
   providers: [
-    provideIcons({ lucidePlus, lucideCalendarClock, lucideLoader2 })
+    provideIcons({ lucidePlus, lucideCalendarClock, lucideLoader2, lucideSparkles, lucideShieldCheck, lucideStethoscope })
   ],
   templateUrl: './appointments.component.html',
   styleUrl: './appointments.component.css'
@@ -42,6 +42,7 @@ import { Appointment, Patient, User } from '../../core/models/models';
 export class AppointmentsComponent implements OnInit {
   appointments = signal<Appointment[]>([]);
   doctors = signal<User[]>([]);
+  recommendedDoctors = signal<DoctorRecommendationDTO[]>([]);
   loading = signal(false);
   showModal = signal(false);
 
@@ -113,10 +114,27 @@ export class AppointmentsComponent implements OnInit {
       const active = this.patientContext.activePatient();
       if (active) this.newApt.patientId = active.id;
     }
-    if (this.doctors().length > 0) {
-      this.newApt.doctorId = this.doctors()[0].id;
-    }
     this.showModal.set(true);
+    this.fetchDoctorRecommendations();
+  }
+
+  onPatientOrReasonChange(): void {
+    this.fetchDoctorRecommendations();
+  }
+
+  fetchDoctorRecommendations(): void {
+    this.apiService.getRecommendedDoctors(this.newApt.patientId || undefined, this.newApt.reason || undefined).subscribe({
+      next: (recs) => {
+        this.recommendedDoctors.set(recs);
+        if (recs && recs.length > 0 && (!this.newApt.doctorId || this.newApt.doctorId === 0)) {
+          this.newApt.doctorId = recs[0].doctor.id;
+        }
+      }
+    });
+  }
+
+  selectRecommendedDoctor(docId: number): void {
+    this.newApt.doctorId = docId;
   }
 
   saveAppointment(): void {

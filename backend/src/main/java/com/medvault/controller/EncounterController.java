@@ -1,13 +1,13 @@
 package com.medvault.controller;
 
-import com.medvault.model.AuditLog;
+import com.medvault.exception.ResourceNotFoundException;
 import com.medvault.model.Encounter;
 import com.medvault.model.Patient;
 import com.medvault.model.User;
-import com.medvault.repository.AuditLogRepository;
 import com.medvault.repository.EncounterRepository;
 import com.medvault.repository.PatientRepository;
 import com.medvault.repository.UserRepository;
+import com.medvault.service.AuditService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -22,38 +22,35 @@ public class EncounterController {
     private final EncounterRepository encounterRepository;
     private final PatientRepository patientRepository;
     private final UserRepository userRepository;
-    private final AuditLogRepository auditLogRepository;
+    private final AuditService auditService;
 
     public EncounterController(EncounterRepository encounterRepository,
-                               PatientRepository patientRepository,
-                               UserRepository userRepository,
-                               AuditLogRepository auditLogRepository) {
+                                PatientRepository patientRepository,
+                                UserRepository userRepository,
+                                AuditService auditService) {
         this.encounterRepository = encounterRepository;
         this.patientRepository = patientRepository;
         this.userRepository = userRepository;
-        this.auditLogRepository = auditLogRepository;
+        this.auditService = auditService;
     }
 
     @GetMapping("/patient/{patientId}")
-    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE', 'ADMIN', 'PATIENT')")
+    @PreAuthorize("@patientSecurityService.canAccessPatient(authentication, #patientId)")
     public List<Encounter> getEncountersByPatient(@PathVariable Long patientId, Authentication auth) {
-        auditLogRepository.save(new AuditLog(
-                auth.getName(),
-                auth.getAuthorities().toString(),
-                "READ",
-                "ENCOUNTER",
-                String.valueOf(patientId),
-                "Accessed encounter & visit log history for patient ID: " + patientId
-        ));
+        auditService.logAction(auth, "READ", "ENCOUNTER", String.valueOf(patientId), "Accessed encounter & visit log history for patient ID: " + patientId);
         return encounterRepository.findByPatientIdOrderByEncounterDateDesc(patientId);
     }
 
     @PostMapping
     @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE', 'ADMIN')")
     public ResponseEntity<?> createEncounter(@RequestBody Encounter encounter, Authentication auth) {
+        if (encounter.getPatient() == null || encounter.getPatient().getId() == null) {
+            throw new IllegalArgumentException("Patient ID is required");
+        }
+
         User provider = userRepository.findByUsername(auth.getName()).orElse(null);
         Patient patient = patientRepository.findById(encounter.getPatient().getId())
-                .orElseThrow(() -> new RuntimeException("Patient not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Patient with ID " + encounter.getPatient().getId() + " not found"));
 
         if (encounter.getAttendingProvider() == null || encounter.getAttendingProvider().getId() == null) {
             encounter.setAttendingProvider(provider);
@@ -64,14 +61,7 @@ public class EncounterController {
         encounter.setPatient(patient);
 
         Encounter saved = encounterRepository.save(encounter);
-        auditLogRepository.save(new AuditLog(
-                auth.getName(),
-                auth.getAuthorities().toString(),
-                "CREATE",
-                "ENCOUNTER",
-                String.valueOf(saved.getId()),
-                "Logged new " + saved.getEncounterType() + " encounter for patient ID: " + patient.getId()
-        ));
+        auditService.logAction(auth, "CREATE", "ENCOUNTER", String.valueOf(saved.getId()), "Logged new " + saved.getEncounterType() + " encounter for patient ID: " + patient.getId());
 
         return ResponseEntity.ok(saved);
     }
@@ -79,23 +69,16 @@ public class EncounterController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE', 'ADMIN')")
     public ResponseEntity<?> updateEncounter(@PathVariable Long id, @RequestBody Encounter updated, Authentication auth) {
-        return encounterRepository.findById(id)
-                .map(enc -> {
-                    if (updated.getClinicalNotes() != null) enc.setClinicalNotes(updated.getClinicalNotes());
-                    if (updated.getDischargeSummary() != null) enc.setDischargeSummary(updated.getDischargeSummary());
-                    if (updated.getStatus() != null) enc.setStatus(updated.getStatus());
+        Encounter enc = encounterRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Encounter record with ID " + id + " not found"));
 
-                    Encounter saved = encounterRepository.save(enc);
-                    auditLogRepository.save(new AuditLog(
-                            auth.getName(),
-                            auth.getAuthorities().toString(),
-                            "UPDATE",
-                            "ENCOUNTER",
-                            String.valueOf(id),
-                            "Updated encounter details / clinical notes for ID: " + id
-                    ));
-                    return ResponseEntity.ok(saved);
-                })
-                .orElse(ResponseEntity.notFound().build());
+        if (updated.getClinicalNotes() != null) enc.setClinicalNotes(updated.getClinicalNotes());
+        if (updated.getDischargeSummary() != null) enc.setDischargeSummary(updated.getDischargeSummary());
+        if (updated.getStatus() != null) enc.setStatus(updated.getStatus());
+
+        Encounter saved = encounterRepository.save(enc);
+        auditService.logAction(auth, "UPDATE", "ENCOUNTER", String.valueOf(id), "Updated encounter details / clinical notes for ID: " + id);
+
+        return ResponseEntity.ok(saved);
     }
 }

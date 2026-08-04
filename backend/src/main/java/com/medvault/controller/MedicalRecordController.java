@@ -1,13 +1,13 @@
 package com.medvault.controller;
 
-import com.medvault.model.AuditLog;
+import com.medvault.exception.ResourceNotFoundException;
 import com.medvault.model.MedicalRecord;
 import com.medvault.model.Patient;
 import com.medvault.model.User;
-import com.medvault.repository.AuditLogRepository;
 import com.medvault.repository.MedicalRecordRepository;
 import com.medvault.repository.PatientRepository;
 import com.medvault.repository.UserRepository;
+import com.medvault.service.AuditService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -22,49 +22,42 @@ public class MedicalRecordController {
     private final MedicalRecordRepository recordRepository;
     private final PatientRepository patientRepository;
     private final UserRepository userRepository;
-    private final AuditLogRepository auditLogRepository;
+    private final AuditService auditService;
 
     public MedicalRecordController(MedicalRecordRepository recordRepository,
                                   PatientRepository patientRepository,
                                   UserRepository userRepository,
-                                  AuditLogRepository auditLogRepository) {
+                                  AuditService auditService) {
         this.recordRepository = recordRepository;
         this.patientRepository = patientRepository;
         this.userRepository = userRepository;
-        this.auditLogRepository = auditLogRepository;
+        this.auditService = auditService;
     }
 
     @GetMapping("/patient/{patientId}")
-    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE', 'PATIENT')")
+    @PreAuthorize("@patientSecurityService.canAccessPatient(authentication, #patientId)")
     public List<MedicalRecord> getRecordsByPatient(@PathVariable Long patientId, Authentication auth) {
-        auditLogRepository.save(new AuditLog(
-                auth.getName(),
-                auth.getAuthorities().toString(),
-                "READ",
-                "MEDICAL_RECORD",
-                "Fetched medical history for patient ID: " + patientId
-        ));
+        auditService.logAction(auth, "READ", "MEDICAL_RECORD", String.valueOf(patientId), "Fetched medical history for patient ID: " + patientId);
         return recordRepository.findByPatientIdOrderByCreatedAtDesc(patientId);
     }
 
     @PostMapping
     @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<?> createRecord(@RequestBody MedicalRecord record, Authentication auth) {
-        User doctor = userRepository.findByUsername(auth.getName()).orElseThrow();
+        if (record.getPatient() == null || record.getPatient().getId() == null) {
+            throw new IllegalArgumentException("Patient ID is required");
+        }
+
+        User doctor = userRepository.findByUsername(auth.getName())
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor user profile not found"));
         Patient patient = patientRepository.findById(record.getPatient().getId())
-                .orElseThrow(() -> new RuntimeException("Patient not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Patient record with ID " + record.getPatient().getId() + " not found"));
 
         record.setDoctor(doctor);
         record.setPatient(patient);
 
         MedicalRecord saved = recordRepository.save(record);
-        auditLogRepository.save(new AuditLog(
-                auth.getName(),
-                "ROLE_DOCTOR",
-                "CREATE",
-                "MEDICAL_RECORD",
-                "Created diagnosis & clinical encounter note for patient ID: " + patient.getId()
-        ));
+        auditService.logAction(auth, "CREATE", "MEDICAL_RECORD", String.valueOf(saved.getId()), "Created clinical encounter note for patient ID: " + patient.getId());
 
         return ResponseEntity.ok(saved);
     }

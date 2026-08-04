@@ -36,6 +36,10 @@ export class ApiService {
     return this.http.get<Patient>(`${this.baseUrl}/patients/${id}`);
   }
 
+  getPatientClinicalHistory(id: number): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/patients/${id}/clinical-history`);
+  }
+
   getPatientByUserId(userId: number): Observable<Patient> {
     return this.http.get<Patient>(`${this.baseUrl}/patients/user/${userId}`);
   }
@@ -117,6 +121,15 @@ export class ApiService {
     });
   }
 
+  validatePrescriptionSafety(patientId: number, medicationName: string, dosage?: string, instructions?: string): Observable<SafetyCheckResult> {
+    return this.http.post<SafetyCheckResult>(`${this.baseUrl}/prescriptions/validate-safety`, {
+      patientId,
+      medicationName,
+      dosage,
+      instructions
+    });
+  }
+
   createPrescription(prescription: Partial<Prescription>, overrideWarning = false): Observable<Prescription> {
     return this.http.post<Prescription>(`${this.baseUrl}/prescriptions?overrideWarning=${overrideWarning}`, prescription);
   }
@@ -132,6 +145,15 @@ export class ApiService {
 
   getAppointmentsByPatient(patientId: number): Observable<Appointment[]> {
     return this.http.get<Appointment[]>(`${this.baseUrl}/appointments/patient/${patientId}`);
+  }
+
+  getRecommendedDoctors(patientId?: number, reason?: string): Observable<any[]> {
+    let query = '';
+    const params: string[] = [];
+    if (patientId) params.push(`patientId=${patientId}`);
+    if (reason) params.push(`reason=${encodeURIComponent(reason)}`);
+    if (params.length > 0) query = '?' + params.join('&');
+    return this.http.get<any[]>(`${this.baseUrl}/appointments/recommended-doctors${query}`);
   }
 
   scheduleAppointment(appointment: Partial<Appointment>): Observable<Appointment> {

@@ -96,7 +96,20 @@
       <form (ngSubmit)="handlePrescriptionSubmit()" class="space-y-4 my-2 text-xs">
         <div class="space-y-1">
           <label class="font-medium text-foreground block">Medication Name *</label>
-          <input hlmInput [(ngModel)]="newRx.medicationName" name="medicationName" placeholder="Amoxicillin, Lisinopril..." required class="w-full h-8 text-xs" />
+          <input hlmInput [(ngModel)]="newRx.medicationName" (ngModelChange)="onMedicationInputChange()" name="medicationName" placeholder="Amoxicillin, Lisinopril, Warfarin, Ibuprofen..." required class="w-full h-8 text-xs" />
+          
+          <!-- Live Inline CDS Safety Check Feedback -->
+          <div *ngIf="inlineSafetyCheck() as check" class="mt-1">
+            <div *ngIf="!check.safe" class="p-2 rounded bg-destructive/10 border border-destructive/20 text-destructive text-[11px] space-y-0.5">
+              <div class="font-bold uppercase tracking-wide flex items-center gap-1">
+                <ng-icon name="lucideAlertCircle" size="12" /> CDS Alert: {{ check.severity }} Risk
+              </div>
+              <div class="text-foreground">{{ check.message }}</div>
+            </div>
+            <div *ngIf="check.safe" class="p-1.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[11px] flex items-center gap-1">
+              <span>✓ Safety Pre-Check Passed: No active allergy, DDI, or disease contraindications detected.</span>
+            </div>
+          </div>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
@@ -142,27 +155,32 @@
 
   <!-- Safety Warning Dialog -->
   <hlm-dialog *ngIf="showSafetyModal()" (closed)="closeSafetyModal()">
-    <hlm-dialog-content class="sm:max-w-[420px]">
+    <hlm-dialog-content class="sm:max-w-[450px]">
       <hlm-dialog-header>
         <h3 hlmDialogTitle class="text-base font-semibold text-destructive flex items-center gap-1.5">
-          <ng-icon name="lucideAlertCircle" size="16" /> CONTRAINDICATION SAFETY WARNING
+          <ng-icon name="lucideAlertCircle" size="16" /> CLINICAL DECISION SUPPORT CONTRAINDICATION ALERT
         </h3>
       </hlm-dialog-header>
 
       <div class="space-y-4 my-2 text-xs">
         <div class="p-3 rounded-lg bg-destructive/10 border border-destructive/30 space-y-1 text-destructive">
-          <div><strong>Conflicting Allergen:</strong> {{ safetyAlert()?.conflictingAllergen || 'Known Drug Allergy' }}</div>
+          <div class="font-bold text-xs">Trigger: {{ safetyAlert()?.conflictingAllergen || 'Clinical Risk Detected' }}</div>
           <div><strong>Severity Rating:</strong> {{ safetyAlert()?.severity }}</div>
-          <div class="text-foreground mt-1">{{ safetyAlert()?.message }}</div>
+          <div class="text-foreground mt-1 leading-relaxed">{{ safetyAlert()?.message }}</div>
         </div>
 
-        <p class="text-muted-foreground leading-relaxed">
-          Issuing this prescription poses high clinical risk for adverse reactions. Proceeding will log a high-priority ERX_ALERT in the WORM Compliance Ledger.
+        <div class="space-y-1">
+          <label class="font-semibold text-foreground block">Clinician Override Rationale Note (HIPAA Audited) *</label>
+          <textarea hlmTextarea [(ngModel)]="overrideJustification" name="overrideJustification" rows="2" placeholder="Document clinical rationale for overriding contraindication alert..." class="w-full text-xs"></textarea>
+        </div>
+
+        <p class="text-muted-foreground leading-relaxed text-[11px]">
+          Authorizing this order will log a high-priority ERX_ALERT along with your clinician rationale note in the immutable WORM Compliance Audit Ledger.
         </p>
 
         <hlm-dialog-footer class="mt-4 flex justify-end gap-2">
-          <button hlmBtn variant="ghost" size="sm" (click)="closeSafetyModal()">Cancel</button>
-          <button hlmBtn variant="destructive" size="sm" (click)="forceSavePrescription()">Authorize Override</button>
+          <button hlmBtn variant="ghost" size="sm" (click)="closeSafetyModal()">Cancel Order</button>
+          <button hlmBtn variant="destructive" size="sm" (click)="forceSavePrescription()" [disabled]="!overrideJustification.trim()">Authorize Clinical Override</button>
         </hlm-dialog-footer>
       </div>
     </hlm-dialog-content>

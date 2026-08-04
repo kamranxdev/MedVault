@@ -94,7 +94,7 @@ public class FhirController {
     }
 
     @GetMapping(value = "/Patient/{id}", produces = {"application/fhir+json", MediaType.APPLICATION_JSON_VALUE})
-    @PreAuthorize("hasAnyRole('ADMIN', 'NURSE', 'DOCTOR', 'AUDITOR', 'PATIENT')")
+    @PreAuthorize("@patientSecurityService.canAccessPatient(authentication, #id)")
     public ResponseEntity<Map<String, Object>> getPatientById(@PathVariable Long id) {
         Optional<Patient> patientOpt = patientRepository.findById(id);
         if (patientOpt.isEmpty()) {
@@ -137,7 +137,7 @@ public class FhirController {
     // ==========================================
 
     @GetMapping(value = "/Patient/{id}/$everything", produces = {"application/fhir+json", MediaType.APPLICATION_JSON_VALUE})
-    @PreAuthorize("hasAnyRole('ADMIN', 'NURSE', 'DOCTOR', 'AUDITOR')")
+    @PreAuthorize("@patientSecurityService.canAccessPatient(authentication, #id)")
     public ResponseEntity<Map<String, Object>> getPatientEverything(@PathVariable Long id) {
         Map<String, Object> bundle = fhirService.getPatientEverythingBundle(id);
         if ("OperationOutcome".equalsIgnoreCase((String) bundle.get("resourceType"))) {

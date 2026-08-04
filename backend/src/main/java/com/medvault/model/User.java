@@ -27,6 +27,12 @@ public class User {
     private String specialization; // For Doctors
     private String department;     // For Staff/Doctors
 
+    private String licenseNumber;     // Medical Practice License / NPI Number
+    private String qualifications;    // e.g., MD, MBBS, FACC, Board Certified
+    private Integer yearsOfExperience; // Years of clinical practice
+    private String medicalBoardState; // Licensing board jurisdiction
+    private String verificationStatus = "VERIFIED"; // VERIFIED, PENDING_VERIFICATION
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "user_roles",
@@ -100,6 +106,46 @@ public class User {
 
     public void setDepartment(String department) {
         this.department = department;
+    }
+
+    public String getLicenseNumber() {
+        return licenseNumber;
+    }
+
+    public void setLicenseNumber(String licenseNumber) {
+        this.licenseNumber = licenseNumber;
+    }
+
+    public String getQualifications() {
+        return qualifications;
+    }
+
+    public void setQualifications(String qualifications) {
+        this.qualifications = qualifications;
+    }
+
+    public Integer getYearsOfExperience() {
+        return yearsOfExperience;
+    }
+
+    public void setYearsOfExperience(Integer yearsOfExperience) {
+        this.yearsOfExperience = yearsOfExperience;
+    }
+
+    public String getMedicalBoardState() {
+        return medicalBoardState;
+    }
+
+    public void setMedicalBoardState(String medicalBoardState) {
+        this.medicalBoardState = medicalBoardState;
+    }
+
+    public String getVerificationStatus() {
+        return verificationStatus;
+    }
+
+    public void setVerificationStatus(String verificationStatus) {
+        this.verificationStatus = verificationStatus;
     }
 
     public Set<Role> getRoles() {

@@ -9,7 +9,7 @@
         </h1>
       </div>
       <p class="text-xs text-muted-foreground mt-0.5">
-        {{ isPatient() ? 'Book and manage your clinical consultations with attending physicians.' : 'Real-time outpatient consultation booking and scheduling dashboard.' }}
+        {{ isPatient() ? 'Book and manage your clinical consultations with attending physicians matched to your health profile.' : 'Real-time outpatient consultation booking with AI-powered physician specialty matching.' }}
       </p>
     </div>
 
@@ -19,7 +19,7 @@
         variant="default"
         size="sm"
         (click)="openScheduleModal()"
-        class="gap-1.5">
+        class="gap-1.5 font-semibold text-xs">
         <ng-icon name="lucidePlus" size="15" />
         <span>Book Appointment</span>
       </button>
@@ -42,7 +42,8 @@
           <tr hlmTableRow class="bg-muted/40">
             <th hlmTableHead>Date & Time</th>
             <th hlmTableHead>Patient</th>
-            <th hlmTableHead>Attending Doctor</th>
+            <th hlmTableHead>Attending Physician</th>
+            <th hlmTableHead>Specialty & Credentials</th>
             <th hlmTableHead>Reason for Visit</th>
             <th hlmTableHead>Status</th>
             <th hlmTableHead *ngIf="!isPatient()">Actions</th>
@@ -51,8 +52,18 @@
         <tbody hlmTableBody>
           <tr hlmTableRow *ngFor="let apt of appointments()">
             <td hlmTableCell class="font-mono text-muted-foreground">{{ apt.appointmentDate | date:'medium' }}</td>
-            <td hlmTableCell class="font-semibold text-foreground">{{ apt.patient.fullName || 'Patient' }}</td>
-            <td hlmTableCell class="text-muted-foreground">{{ apt.doctor.fullName || 'Physician' }}</td>
+            <td hlmTableCell class="font-semibold text-foreground">{{ apt.patient?.fullName || 'Patient' }}</td>
+            <td hlmTableCell class="text-foreground font-semibold">
+              {{ apt.doctor?.fullName || 'Physician' }}
+            </td>
+            <td hlmTableCell>
+              <span hlmBadge variant="outline" class="font-mono text-[10px] bg-primary/5 text-primary border-primary/20">
+                {{ apt.doctor?.specialization || 'General Practice' }}
+              </span>
+              <span *ngIf="apt.doctor?.licenseNumber" class="text-[10px] text-muted-foreground block mt-0.5">
+                License: {{ apt.doctor?.licenseNumber }}
+              </span>
+            </td>
             <td hlmTableCell class="text-foreground">{{ apt.reason }}</td>
             <td hlmTableCell>
               <span hlmBadge [variant]="apt.status === 'CONFIRMED' ? 'default' : (apt.status === 'CANCELLED' ? 'destructive' : 'secondary')" class="text-[10px]">
@@ -71,47 +82,84 @@
     </div>
   </div>
 
-  <!-- Book Appointment Modal -->
+  <!-- Book Appointment Modal with Smart Doctor Matching -->
   <hlm-dialog *ngIf="showModal()" (closed)="showModal.set(false)">
-    <hlm-dialog-content class="sm:max-w-[450px]">
+    <hlm-dialog-content class="sm:max-w-[550px]">
       <hlm-dialog-header>
-        <h3 hlmDialogTitle class="text-base font-semibold">Book Clinical Consultation</h3>
+        <h3 hlmDialogTitle class="text-base font-semibold flex items-center gap-2">
+          <ng-icon name="lucideStethoscope" size="18" class="text-primary" /> Book Clinical Consultation & Doctor Match
+        </h3>
       </hlm-dialog-header>
 
       <form (ngSubmit)="saveAppointment()" class="space-y-4 my-2 text-xs">
         <div class="space-y-1" *ngIf="!isPatient()">
           <label class="font-medium text-foreground block">Patient Profile *</label>
-          <select hlmInput [(ngModel)]="newApt.patientId" name="patientId" class="w-full h-8 text-xs">
+          <select hlmInput [(ngModel)]="newApt.patientId" (change)="onPatientOrReasonChange()" name="patientId" class="w-full h-8 text-xs">
             <option [value]="0">Select Patient...</option>
             <option *ngFor="let p of patientContext.patientList()" [value]="p.id">{{ p.fullName }} (MRN: {{ p.patientCode }})</option>
           </select>
         </div>
 
         <div class="space-y-1">
-          <label class="font-medium text-foreground block">Attending Doctor *</label>
-          <select hlmInput [(ngModel)]="newApt.doctorId" name="doctorId" class="w-full h-8 text-xs">
-            <option *ngFor="let doc of doctors()" [value]="doc.id">{{ doc.fullName }} ({{ doc.specialization || 'General' }})</option>
+          <label class="font-medium text-foreground block">Reason for Visit / Symptoms *</label>
+          <input hlmInput type="text" [(ngModel)]="newApt.reason" (input)="onPatientOrReasonChange()" name="reason" placeholder="Chest pain, High blood pressure, Asthma checkup, Skin rash..." required class="w-full h-8 text-xs" />
+        </div>
+
+        <!-- AI Smart Doctor Matching Recommendation Section -->
+        <div *ngIf="recommendedDoctors().length > 0" class="p-3 border border-primary/30 bg-primary/5 rounded-lg space-y-2">
+          <div class="flex justify-between items-center">
+            <span class="font-semibold text-primary block text-[11px] uppercase tracking-wide flex items-center gap-1">
+              <ng-icon name="lucideSparkles" size="14" /> AI Specialty Physician Matching Engine
+            </span>
+            <span hlmBadge variant="default" class="text-[9px]">Top Match: {{ recommendedDoctors()[0].recommendedSpecialty }}</span>
+          </div>
+
+          <div class="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+            <div
+              *ngFor="let rec of recommendedDoctors()"
+              (click)="selectRecommendedDoctor(rec.doctor.id)"
+              [class.border-primary]="newApt.doctorId === rec.doctor.id"
+              [class.bg-card]="newApt.doctorId === rec.doctor.id"
+              class="p-2 border border-border rounded-md hover:border-primary/50 cursor-pointer flex justify-between items-center transition-all text-xs">
+              <div class="space-y-0.5">
+                <div class="flex items-center gap-1.5">
+                  <span class="font-semibold text-foreground">{{ rec.doctor.fullName }}</span>
+                  <span hlmBadge variant="outline" class="text-[9px]">{{ rec.doctor.specialization || rec.recommendedSpecialty }}</span>
+                </div>
+                <div class="text-[10px] text-muted-foreground">{{ rec.matchReason }}</div>
+              </div>
+              <div class="text-right shrink-0">
+                <span class="font-bold text-primary text-xs">{{ rec.matchScore }}% Match</span>
+                <span *ngIf="rec.verifiedLicense" class="text-[9px] text-emerald-600 dark:text-emerald-400 block flex items-center justify-end gap-0.5">
+                  <ng-icon name="lucideShieldCheck" size="12" /> Verified
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <label class="font-medium text-foreground block">Selected Attending Physician *</label>
+          <select hlmInput [(ngModel)]="newApt.doctorId" name="doctorId" class="w-full h-8 text-xs font-medium">
+            <option *ngFor="let doc of doctors()" [value]="doc.id">
+              {{ doc.fullName }} — {{ doc.specialization || 'General Practice' }} (License: {{ doc.licenseNumber || 'Verified' }})
+            </option>
           </select>
         </div>
 
         <div class="space-y-1">
-          <label class="font-medium text-foreground block">Date & Time *</label>
+          <label class="font-medium text-foreground block">Consultation Date & Time *</label>
           <input hlmInput type="datetime-local" [(ngModel)]="newApt.appointmentDate" name="appointmentDate" required class="w-full h-8 text-xs" />
         </div>
 
         <div class="space-y-1">
-          <label class="font-medium text-foreground block">Reason for Visit *</label>
-          <input hlmInput type="text" [(ngModel)]="newApt.reason" name="reason" placeholder="Routine checkup, Follow-up consultation..." required class="w-full h-8 text-xs" />
-        </div>
-
-        <div class="space-y-1">
-          <label class="font-medium text-foreground block">Clinical Notes</label>
-          <textarea hlmTextarea [(ngModel)]="newApt.notes" name="notes" rows="2" placeholder="Additional notes..." class="w-full text-xs"></textarea>
+          <label class="font-medium text-foreground block">Clinical Triage Notes</label>
+          <textarea hlmTextarea [(ngModel)]="newApt.notes" name="notes" rows="2" placeholder="Specific patient notes for physician..." class="w-full text-xs"></textarea>
         </div>
 
         <hlm-dialog-footer class="mt-4 flex justify-end gap-2">
           <button hlmBtn type="button" variant="ghost" size="sm" (click)="showModal.set(false)">Cancel</button>
-          <button hlmBtn type="submit" variant="default" size="sm" [disabled]="!newApt.reason || !newApt.appointmentDate">Book Appointment</button>
+          <button hlmBtn type="submit" variant="default" size="sm" [disabled]="!newApt.reason || !newApt.appointmentDate">Confirm & Schedule Match</button>
         </hlm-dialog-footer>
       </form>
     </hlm-dialog-content>

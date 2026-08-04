@@ -9,6 +9,10 @@ public class RegisterRequest {
     private String fullName;
     private String specialization;
     private String department;
+    private String licenseNumber;
+    private String qualifications;
+    private Integer yearsOfExperience;
+    private String medicalBoardState;
     private Set<String> roles;
 
     public RegisterRequest() {}
@@ -59,6 +63,38 @@ public class RegisterRequest {
 
     public void setDepartment(String department) {
         this.department = department;
+    }
+
+    public String getLicenseNumber() {
+        return licenseNumber;
+    }
+
+    public void setLicenseNumber(String licenseNumber) {
+        this.licenseNumber = licenseNumber;
+    }
+
+    public String getQualifications() {
+        return qualifications;
+    }
+
+    public void setQualifications(String qualifications) {
+        this.qualifications = qualifications;
+    }
+
+    public Integer getYearsOfExperience() {
+        return yearsOfExperience;
+    }
+
+    public void setYearsOfExperience(Integer yearsOfExperience) {
+        this.yearsOfExperience = yearsOfExperience;
+    }
+
+    public String getMedicalBoardState() {
+        return medicalBoardState;
+    }
+
+    public void setMedicalBoardState(String medicalBoardState) {
+        this.medicalBoardState = medicalBoardState;
     }
 
     public Set<String> getRoles() {

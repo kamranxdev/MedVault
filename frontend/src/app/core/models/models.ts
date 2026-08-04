@@ -5,6 +5,11 @@ export interface User {
   email?: string;
   specialization?: string;
   department?: string;
+  licenseNumber?: string;
+  qualifications?: string;
+  yearsOfExperience?: number;
+  medicalBoardState?: string;
+  verificationStatus?: string;
   roles: string[];
 }
 
@@ -35,8 +40,30 @@ export interface Patient {
   insuranceGroupNumber?: string;
   coveragePlan?: string;
   medicalAlerts?: string;
+  dietaryHabits?: string;
+  smokingStatus?: string;
+  alcoholConsumption?: string;
+  exerciseRoutine?: string;
+  foodAllergies?: string;
+  pastMedicalHistory?: string;
+  seriousConditions?: string;
+  surgeriesAndProcedures?: string;
+  familyMedicalHistory?: string;
   user?: User;
   createdAt?: string;
+}
+
+export interface PatientClinicalHistoryDTO {
+  patient: Patient;
+  pastIllnesses: Diagnosis[];
+  allergies: Allergy[];
+  prescriptions: Prescription[];
+  vitals: Vitals[];
+  medicalRecords: MedicalRecord[];
+  habitsSummary?: string;
+  foodAllergiesSummary?: string;
+  seriousConditionsSummary?: string;
+  surgeriesSummary?: string;
 }
 
 export interface Encounter {
@@ -126,6 +153,15 @@ export interface SafetyCheckResult {
   severity: string;
   conflictingAllergen?: string;
   message: string;
+  alertType?: string;
+}
+
+export interface DoctorRecommendationDTO {
+  doctor: User;
+  matchScore: number;
+  recommendedSpecialty: string;
+  matchReason: string;
+  verifiedLicense: boolean;
 }
 
 export interface Appointment {

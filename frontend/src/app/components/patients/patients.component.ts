@@ -111,9 +111,29 @@ export class PatientsComponent implements OnInit {
   showEncounterModal = signal(false);
   showVitalsModal = signal(false);
 
-  safetyAlert = signal<SafetyCheckResult | null>(null);
+  clinicalHistory = signal<any | null>(null);
+  showEditPatientModal = signal(false);
 
-  newPatient: Partial<Patient> = { fullName: '', ssn: '', dateOfBirth: '1990-01-01', gender: 'Male', bloodType: 'O+', phone: '', email: '', insuranceProvider: 'BlueCross BlueShield', insurancePolicyNumber: 'BCBS-98741' };
+  newPatient: Partial<Patient> = {
+    fullName: '',
+    ssn: '',
+    dateOfBirth: '1990-01-01',
+    gender: 'Male',
+    bloodType: 'O+',
+    phone: '',
+    email: '',
+    insuranceProvider: 'BlueCross BlueShield',
+    insurancePolicyNumber: 'BCBS-98741',
+    dietaryHabits: 'Low Sodium, Vegetarian',
+    smokingStatus: 'NEVER',
+    alcoholConsumption: 'OCCASIONAL',
+    exerciseRoutine: 'MODERATE',
+    foodAllergies: 'Peanuts, Shellfish',
+    pastMedicalHistory: 'Primary Hypertension, Mild Childhood Asthma',
+    seriousConditions: 'High Blood Pressure Alert',
+    surgeriesAndProcedures: 'Appendectomy (2018)',
+    familyMedicalHistory: 'Father: Type 2 Diabetes, Mother: Hypertension'
+  };
   newAllergyInput: any = { allergenName: '', category: 'DRUG', severity: 'SEVERE', reactionDescription: '', status: 'ACTIVE' };
   newDiagnosisInput: any = { conditionName: '', icdCode: '', onsetDate: '2026-01-01', notes: '', status: 'ACTIVE' };
   newRxInput: any = { medicationName: '', dosage: '500mg', route: 'Oral', frequency: 'Twice daily', durationDays: 7, refills: 1, status: 'ACTIVE' };
@@ -225,11 +245,61 @@ export class PatientsComponent implements OnInit {
   selectPatient(patient: Patient): void {
     this.selectedPatient.set(patient);
     this.patientContext.setActivePatient(patient);
+    this.apiService.getPatientClinicalHistory(patient.id).subscribe(h => this.clinicalHistory.set(h));
     this.apiService.getEncountersByPatient(patient.id).subscribe(e => this.patientEncounters.set(e));
     this.apiService.getAllergiesByPatient(patient.id).subscribe(a => this.patientAllergies.set(a));
     this.apiService.getDiagnosesByPatient(patient.id).subscribe(d => this.patientDiagnoses.set(d));
     this.apiService.getVitalsByPatient(patient.id).subscribe(v => this.patientVitals.set(v));
     this.apiService.getPrescriptionsByPatient(patient.id).subscribe(rx => this.patientRx.set(rx));
+  }
+
+  editPatientInput: Partial<Patient> = {};
+
+  openIntakeModal(): void {
+    this.newPatient = {
+      fullName: '',
+      ssn: '',
+      dateOfBirth: '',
+      gender: 'Male',
+      bloodType: 'O+',
+      phone: '',
+      email: '',
+      address: '',
+      emergencyContact: '',
+      insuranceProvider: '',
+      insurancePolicyNumber: '',
+      dietaryHabits: '',
+      smokingStatus: 'NEVER',
+      alcoholConsumption: 'NONE',
+      exerciseRoutine: 'MODERATE',
+      foodAllergies: '',
+      pastMedicalHistory: '',
+      seriousConditions: '',
+      surgeriesAndProcedures: '',
+      familyMedicalHistory: ''
+    };
+    this.showIntakeModal.set(true);
+  }
+
+  openEditPatientModal(): void {
+    const p = this.selectedPatient();
+    if (!p) return;
+    this.editPatientInput = { ...p };
+    this.showEditPatientModal.set(true);
+  }
+
+  updatePatientHealthProfile(): void {
+    const p = this.selectedPatient();
+    if (!p || !p.id) return;
+
+    this.apiService.updatePatient(p.id, this.editPatientInput).subscribe({
+      next: (updated) => {
+        this.selectedPatient.set(updated);
+        this.patientContext.setActivePatient(updated);
+        this.showEditPatientModal.set(false);
+        this.selectPatient(updated);
+      }
+    });
   }
 
   savePatient(): void {
