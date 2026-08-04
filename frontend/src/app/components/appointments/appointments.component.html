@@ -49,12 +49,12 @@
           <tr *ngFor="let apt of appointments()" class="hover:bg-muted/30 transition-colors">
             <td class="px-4 py-3 font-mono font-semibold text-primary">#AP-10{{ apt.id }}</td>
             <td class="px-4 py-3">
-              <div class="font-semibold text-foreground">{{ apt.patient?.fullName || 'N/A' }}</div>
-              <div class="text-[10px] text-muted-foreground">{{ apt.patient?.patientCode }}</div>
+              <div class="font-semibold text-foreground">{{ apt.patient.fullName || 'N/A' }}</div>
+              <div class="text-[10px] text-muted-foreground">{{ apt.patient.patientCode }}</div>
             </td>
             <td class="px-4 py-3">
-              <div class="font-medium text-foreground">{{ apt.doctor?.fullName || 'N/A' }}</div>
-              <div class="text-[10px] text-muted-foreground">{{ apt.doctor?.specialization || 'General Physician' }}</div>
+              <div class="font-medium text-foreground">{{ apt.doctor.fullName || 'N/A' }}</div>
+              <div class="text-[10px] text-muted-foreground">{{ apt.doctor.specialization || 'General Physician' }}</div>
             </td>
             <td class="px-4 py-3">
               <div class="font-medium text-foreground">{{ apt.appointmentDate | date:'mediumDate' }}</div>
