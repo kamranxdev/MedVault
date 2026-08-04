@@ -52,16 +52,16 @@
         <tbody hlmTableBody>
           <tr hlmTableRow *ngFor="let apt of appointments()">
             <td hlmTableCell class="font-mono text-muted-foreground">{{ apt.appointmentDate | date:'medium' }}</td>
-            <td hlmTableCell class="font-semibold text-foreground">{{ apt.patient?.fullName || 'Patient' }}</td>
+            <td hlmTableCell class="font-semibold text-foreground">{{ apt.patient.fullName || 'Patient' }}</td>
             <td hlmTableCell class="text-foreground font-semibold">
-              {{ apt.doctor?.fullName || 'Physician' }}
+              {{ apt.doctor.fullName || 'Physician' }}
             </td>
             <td hlmTableCell>
               <span hlmBadge variant="outline" class="font-mono text-[10px] bg-primary/5 text-primary border-primary/20">
-                {{ apt.doctor?.specialization || 'General Practice' }}
+                {{ apt.doctor.specialization || 'General Practice' }}
               </span>
-              <span *ngIf="apt.doctor?.licenseNumber" class="text-[10px] text-muted-foreground block mt-0.5">
-                License: {{ apt.doctor?.licenseNumber }}
+              <span *ngIf="apt.doctor.licenseNumber" class="text-[10px] text-muted-foreground block mt-0.5">
+                License: {{ apt.doctor.licenseNumber }}
               </span>
             </td>
             <td hlmTableCell class="text-foreground">{{ apt.reason }}</td>

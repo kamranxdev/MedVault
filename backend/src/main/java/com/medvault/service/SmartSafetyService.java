@@ -8,6 +8,7 @@ import com.medvault.repository.AllergyRepository;
 import com.medvault.repository.DiagnosisRepository;
 import com.medvault.repository.PatientRepository;
 import com.medvault.repository.PrescriptionRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -48,6 +49,7 @@ public class SmartSafetyService {
         this(allergyRepository, null, null, null, auditService);
     }
 
+    @Autowired
     public SmartSafetyService(AllergyRepository allergyRepository,
                                PrescriptionRepository prescriptionRepository,
                                DiagnosisRepository diagnosisRepository,

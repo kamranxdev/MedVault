@@ -50,7 +50,7 @@
   </div>
 
   <!-- Patient Chart Details -->
-  <div *ngIf="selectedPatient() as p; else noPatientSelected" class="space-y-6">
+  <div *ngIf="selectedPatient() as p" class="space-y-6">
     <div class="p-6 rounded-xl border border-border bg-card space-y-4">
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div class="flex items-center gap-4">
@@ -503,7 +503,7 @@
     </div>
   </div>
 
-  <ng-template #noPatientSelected>
+  <div *ngIf="!selectedPatient()">
     <div class="flex flex-col items-center justify-center p-12 text-center border border-border rounded-xl bg-card space-y-3">
       <ng-icon name="lucideUsers" size="32" class="text-muted-foreground" />
       <h3 class="text-base font-semibold text-foreground">
@@ -518,7 +518,7 @@
         </ng-container>
       </p>
     </div>
-  </ng-template>
+  </div>
 </div>
 
 <!-- MODALS -->

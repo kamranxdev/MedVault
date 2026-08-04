@@ -113,6 +113,7 @@ export class PatientsComponent implements OnInit {
 
   clinicalHistory = signal<any | null>(null);
   showEditPatientModal = signal(false);
+  safetyAlert = signal<SafetyCheckResult | null>(null);
 
   newPatient: Partial<Patient> = {
     fullName: '',
