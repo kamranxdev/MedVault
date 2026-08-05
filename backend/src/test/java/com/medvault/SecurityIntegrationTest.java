@@ -57,6 +57,35 @@ public class SecurityIntegrationTest {
         assertFalse(user.getRoles().stream().anyMatch(r -> r.getName().equals("ROLE_ADMIN")), "Self-registration must block ROLE_ADMIN escalation");
     }
 
+    @Autowired
+    private com.medvault.repository.PatientRepository patientRepository;
+
+    @Test
+    public void testPublicRegistrationCreatesLinkedPatientProfile() throws Exception {
+        String username = "test_onboard_" + System.currentTimeMillis();
+        RegisterRequest request = new RegisterRequest();
+        request.setUsername(username);
+        request.setPassword("Password123!");
+        request.setEmail(username + "@medvault.org");
+        request.setFullName("Test Patient Onboard");
+
+        mockMvc.perform(post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+
+        Optional<User> userOpt = userRepository.findByUsername(username);
+        assertTrue(userOpt.isPresent());
+        User user = userOpt.get();
+
+        Optional<com.medvault.model.Patient> patientOpt = patientRepository.findByUserId(user.getId());
+        assertTrue(patientOpt.isPresent(), "Self-registration must automatically instantiate a linked Patient profile");
+        com.medvault.model.Patient patient = patientOpt.get();
+        assertNotNull(patient.getPatientCode());
+        assertTrue(patient.getPatientCode().startsWith("PAT-"));
+        assertEquals("Test Patient Onboard", patient.getFullName());
+    }
+
     @Test
     public void testUnauthenticatedAdminCreateUserFails() throws Exception {
         RegisterRequest request = new RegisterRequest();

@@ -86,7 +86,23 @@ export class AllergiesComponent implements OnInit {
   }
 
   canAddAllergy(): boolean {
-    return this.authService.hasAnyRole(['ROLE_DOCTOR', 'ROLE_NURSE']);
+    return this.authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE']);
+  }
+
+  openModal(): void {
+    if (this.selectedPatientId === 0) {
+      const active = this.patientContext.activePatient();
+      const list = this.patientContext.patientList();
+      if (active) {
+        this.selectedPatientId = active.id;
+      } else if (list.length > 0) {
+        this.selectedPatientId = list[0].id;
+      }
+      if (this.selectedPatientId > 0) {
+        this.loadAllergies();
+      }
+    }
+    this.showModal.set(true);
   }
 
   ngOnInit(): void {
@@ -102,8 +118,12 @@ export class AllergiesComponent implements OnInit {
       }
     } else {
       const active = this.patientContext.activePatient();
+      const list = this.patientContext.patientList();
       if (active) {
         this.selectedPatientId = active.id;
+        this.loadAllergies();
+      } else if (list.length > 0) {
+        this.selectedPatientId = list[0].id;
         this.loadAllergies();
       }
     }

@@ -279,7 +279,12 @@ export class AppointmentsComponent implements OnInit {
       this.newApt.patientId = this.currentPatientId;
     } else {
       const active = this.patientContext.activePatient();
-      if (active) this.newApt.patientId = active.id;
+      const list = this.patientContext.patientList();
+      if (active) {
+        this.newApt.patientId = active.id;
+      } else if (list.length > 0) {
+        this.newApt.patientId = list[0].id;
+      }
     }
     this.showModal.set(true);
     this.fetchDoctorRecommendations();

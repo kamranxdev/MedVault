@@ -4,8 +4,10 @@ import com.medvault.dto.JwtAuthResponse;
 import com.medvault.dto.LoginRequest;
 import com.medvault.dto.RegisterRequest;
 import com.medvault.exception.ResourceNotFoundException;
+import com.medvault.model.Patient;
 import com.medvault.model.Role;
 import com.medvault.model.User;
+import com.medvault.repository.PatientRepository;
 import com.medvault.repository.RoleRepository;
 import com.medvault.repository.UserRepository;
 import com.medvault.security.JwtTokenProvider;
@@ -32,6 +34,7 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final PatientRepository patientRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider tokenProvider;
     private final AuditService auditService;
@@ -39,12 +42,14 @@ public class AuthController {
     public AuthController(AuthenticationManager authenticationManager,
                           UserRepository userRepository,
                           RoleRepository roleRepository,
+                          PatientRepository patientRepository,
                           PasswordEncoder passwordEncoder,
                           JwtTokenProvider tokenProvider,
                           AuditService auditService) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
+        this.patientRepository = patientRepository;
         this.passwordEncoder = passwordEncoder;
         this.tokenProvider = tokenProvider;
         this.auditService = auditService;
@@ -116,9 +121,17 @@ public class AuthController {
         user.setRoles(roles);
         User saved = userRepository.save(user);
 
-        auditService.logAction(saved.getUsername(), "ROLE_PATIENT", "REGISTER", "USER", String.valueOf(saved.getId()), "Public user self-registered as ROLE_PATIENT");
+        // Automatically instantiate linked Patient profile for self-registered patient user
+        Patient patient = new Patient();
+        patient.setPatientCode("PAT-" + (1000 + (System.currentTimeMillis() % 9000)));
+        patient.setFullName(saved.getFullName());
+        patient.setEmail(saved.getEmail());
+        patient.setUser(saved);
+        patientRepository.save(patient);
 
-        return ResponseEntity.ok(Map.of("message", "User registered successfully!", "userId", saved.getId()));
+        auditService.logAction(saved.getUsername(), "ROLE_PATIENT", "REGISTER", "USER", String.valueOf(saved.getId()), "Public user self-registered as ROLE_PATIENT with linked patient profile MRN: " + patient.getPatientCode());
+
+        return ResponseEntity.ok(Map.of("message", "User registered successfully!", "userId", saved.getId(), "patientId", patient.getId()));
     }
 
     @PostMapping("/admin/create-user")

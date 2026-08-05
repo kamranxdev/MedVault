@@ -31,9 +31,8 @@
         hlmBtn
         variant="default"
         size="sm"
-        (click)="showModal.set(true)"
-        [disabled]="selectedPatientId === 0"
-        class="gap-1.5">
+        (click)="openModal()"
+        class="gap-1.5 font-semibold">
         <ng-icon name="lucidePlus" size="15" />
         <span>Add Diagnosis</span>
       </button>

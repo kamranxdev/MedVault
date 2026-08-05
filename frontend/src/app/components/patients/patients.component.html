@@ -51,6 +51,23 @@
 
   <!-- Patient Chart Details -->
   <div *ngIf="selectedPatient() as p" class="space-y-6">
+    <!-- Patient Onboarding Completeness Alert Banner -->
+    <div *ngIf="authService.hasRole('ROLE_PATIENT') && (!p.phone || !p.address || !p.emergencyContact || !p.insuranceProvider)" 
+         class="p-4 rounded-xl border border-primary/30 bg-primary/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="size-9 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0">
+          <ng-icon name="lucideUserRound" size="18" />
+        </div>
+        <div class="space-y-0.5 text-xs">
+          <span class="font-semibold text-primary block text-sm">Welcome to MedVault Patient Portal!</span>
+          <span class="text-muted-foreground block">Your profile is missing basic contact, emergency contact, or insurance details. Complete your profile onboarding below.</span>
+        </div>
+      </div>
+      <button hlmBtn variant="default" size="sm" (click)="openEditPatientModal()" class="shrink-0 gap-1.5 text-xs">
+        <ng-icon name="lucideUserPlus" size="14" /> Complete Onboarding Profile
+      </button>
+    </div>
+
     <div class="p-6 rounded-xl border border-border bg-card space-y-4">
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div class="flex items-center gap-4">
@@ -169,13 +186,13 @@
             </h3>
             <div class="flex items-center gap-2">
               <button
-                *ngIf="authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE'])"
+                *ngIf="authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE', 'ROLE_PATIENT'])"
                 hlmBtn
                 variant="outline"
                 size="sm"
                 (click)="openEditPatientModal()"
                 class="h-6 text-[10px] px-2 gap-1 border-primary/30 text-primary hover:bg-primary/10">
-                Edit Health Profile
+                Edit Profile & Habits
               </button>
               <span hlmBadge variant="outline" class="text-[10px] bg-background">EHR Verified Profile</span>
             </div>
@@ -224,7 +241,7 @@
         <div class="p-4 rounded-lg border border-border bg-card space-y-3">
           <div class="flex justify-between items-center border-b border-border pb-2">
             <h3 class="text-xs font-semibold text-foreground uppercase tracking-wide">Active Problem List</h3>
-            <button *ngIf="authService.hasRole('ROLE_DOCTOR')" hlmBtn variant="ghost" size="sm" class="h-6 text-[11px] px-2" (click)="showDiagnosisModal.set(true)">
+            <button *ngIf="authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_DOCTOR'])" hlmBtn variant="ghost" size="sm" class="h-6 text-[11px] px-2" (click)="showDiagnosisModal.set(true)">
               + Add Problem
             </button>
           </div>
@@ -243,7 +260,7 @@
         <div class="p-4 rounded-lg border border-border bg-card space-y-3">
           <div class="flex justify-between items-center border-b border-border pb-2">
             <h3 class="text-xs font-semibold text-foreground uppercase tracking-wide">Active eRx Prescriptions</h3>
-            <button *ngIf="authService.hasRole('ROLE_DOCTOR')" hlmBtn variant="ghost" size="sm" class="h-6 text-[11px] px-2" (click)="showRxModal.set(true)">
+            <button *ngIf="authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_DOCTOR'])" hlmBtn variant="ghost" size="sm" class="h-6 text-[11px] px-2" (click)="showRxModal.set(true)">
               + Order eRx
             </button>
           </div>
@@ -262,7 +279,7 @@
         <div class="p-4 rounded-lg border border-border bg-card space-y-3">
           <div class="flex justify-between items-center border-b border-border pb-2">
             <h3 class="text-xs font-semibold text-foreground uppercase tracking-wide">Bedside Vitals Summary</h3>
-            <button *ngIf="authService.hasAnyRole(['ROLE_NURSE', 'ROLE_DOCTOR'])" hlmBtn variant="ghost" size="sm" class="h-6 text-[11px] px-2" (click)="showVitalsModal.set(true)">
+            <button *ngIf="authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE'])" hlmBtn variant="ghost" size="sm" class="h-6 text-[11px] px-2" (click)="showVitalsModal.set(true)">
               + Log Vitals
             </button>
           </div>
@@ -286,7 +303,7 @@
         <div class="p-4 rounded-lg border border-border bg-card space-y-3">
           <div class="flex justify-between items-center border-b border-border pb-2">
             <h3 class="text-xs font-semibold text-foreground uppercase tracking-wide">Recent Encounters</h3>
-            <button *ngIf="authService.hasRole('ROLE_DOCTOR')" hlmBtn variant="ghost" size="sm" class="h-6 text-[11px] px-2" (click)="showEncounterModal.set(true)">
+            <button *ngIf="authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE'])" hlmBtn variant="ghost" size="sm" class="h-6 text-[11px] px-2" (click)="showEncounterModal.set(true)">
               + Log Visit
             </button>
           </div>
@@ -307,7 +324,7 @@
       <div *ngIf="chartTab() === 'encounters'" class="space-y-4">
         <div class="flex justify-between items-center">
           <h3 class="text-sm font-semibold text-foreground">Encounter Timeline</h3>
-          <button *ngIf="authService.hasRole('ROLE_DOCTOR')" hlmBtn variant="default" size="sm" (click)="showEncounterModal.set(true)">
+          <button *ngIf="authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE'])" hlmBtn variant="default" size="sm" (click)="showEncounterModal.set(true)">
             + Log Visit
           </button>
         </div>
@@ -386,7 +403,7 @@
       <div *ngIf="chartTab() === 'diagnoses'" class="space-y-4">
         <div class="flex justify-between items-center">
           <h3 class="text-sm font-semibold text-foreground">Active Problem List</h3>
-          <button *ngIf="authService.hasRole('ROLE_DOCTOR')" hlmBtn variant="default" size="sm" (click)="showDiagnosisModal.set(true)">
+          <button *ngIf="authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_DOCTOR'])" hlmBtn variant="default" size="sm" (click)="showDiagnosisModal.set(true)">
             + Add Diagnosis
           </button>
         </div>
@@ -426,7 +443,7 @@
       <div *ngIf="chartTab() === 'rx'" class="space-y-4">
         <div class="flex justify-between items-center">
           <h3 class="text-sm font-semibold text-foreground">Medication Orders</h3>
-          <button *ngIf="authService.hasRole('ROLE_DOCTOR')" hlmBtn variant="default" size="sm" (click)="showRxModal.set(true)">
+          <button *ngIf="authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_DOCTOR'])" hlmBtn variant="default" size="sm" (click)="showRxModal.set(true)">
             + Issue eRx
           </button>
         </div>
@@ -464,7 +481,7 @@
       <div *ngIf="chartTab() === 'vitals'" class="space-y-4">
         <div class="flex justify-between items-center">
           <h3 class="text-sm font-semibold text-foreground">Vitals & Observations</h3>
-          <button *ngIf="authService.hasAnyRole(['ROLE_NURSE', 'ROLE_DOCTOR'])" hlmBtn variant="default" size="sm" (click)="showVitalsModal.set(true)">
+          <button *ngIf="authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE'])" hlmBtn variant="default" size="sm" (click)="showVitalsModal.set(true)">
             + Record Vitals
           </button>
         </div>
@@ -807,12 +824,63 @@
 
 <!-- Edit Health Profile & Habits Modal -->
 <hlm-dialog *ngIf="showEditPatientModal()" (closed)="showEditPatientModal.set(false)">
-  <hlm-dialog-content class="sm:max-w-[550px]">
+  <hlm-dialog-content class="sm:max-w-[650px] max-h-[85vh] overflow-y-auto">
     <hlm-dialog-header>
-      <h3 hlmDialogTitle class="text-base font-semibold">Update Patient Health Profile, Habits & Food Allergies</h3>
+      <h3 hlmDialogTitle class="text-base font-semibold">Update Patient Demographics, Insurance & Health Profile</h3>
     </hlm-dialog-header>
 
     <form (ngSubmit)="updatePatientHealthProfile()" class="space-y-4 my-2 text-xs">
+      <!-- Contact & Emergency Info Section -->
+      <div class="p-3 border border-border bg-card rounded-lg space-y-3">
+        <span class="font-semibold text-foreground block text-[11px] uppercase tracking-wide">Demographics & Emergency Contact</span>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="space-y-1">
+            <label class="font-medium text-foreground block">Phone Number</label>
+            <input hlmInput [(ngModel)]="editPatientInput.phone" name="phone" placeholder="(555) 000-0000" class="w-full h-8 text-xs" />
+          </div>
+          <div class="space-y-1">
+            <label class="font-medium text-foreground block">Email Address</label>
+            <input hlmInput [(ngModel)]="editPatientInput.email" name="email" placeholder="patient@example.com" class="w-full h-8 text-xs" />
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="space-y-1">
+            <label class="font-medium text-foreground block">Mailing Address</label>
+            <input hlmInput [(ngModel)]="editPatientInput.address" name="address" placeholder="123 Health Ave, Suite 4" class="w-full h-8 text-xs" />
+          </div>
+          <div class="space-y-1">
+            <label class="font-medium text-foreground block">Emergency Contact (Name & Phone)</label>
+            <input hlmInput [(ngModel)]="editPatientInput.emergencyContact" name="emergencyContact" placeholder="Jane Doe (Spouse) - (555) 999-8888" class="w-full h-8 text-xs" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Insurance Information Section -->
+      <div class="p-3 border border-border bg-card rounded-lg space-y-3">
+        <span class="font-semibold text-foreground block text-[11px] uppercase tracking-wide">Insurance Information</span>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="space-y-1">
+            <label class="font-medium text-foreground block">Insurance Provider</label>
+            <input hlmInput [(ngModel)]="editPatientInput.insuranceProvider" name="insuranceProvider" placeholder="BlueCross BlueShield" class="w-full h-8 text-xs" />
+          </div>
+          <div class="space-y-1">
+            <label class="font-medium text-foreground block">Policy Number</label>
+            <input hlmInput [(ngModel)]="editPatientInput.insurancePolicyNumber" name="insurancePolicyNumber" placeholder="BCBS-98741" class="w-full h-8 text-xs" />
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="space-y-1">
+            <label class="font-medium text-foreground block">Group Number</label>
+            <input hlmInput [(ngModel)]="editPatientInput.insuranceGroupNumber" name="insuranceGroupNumber" placeholder="GRP-12345" class="w-full h-8 text-xs" />
+          </div>
+          <div class="space-y-1">
+            <label class="font-medium text-foreground block">Coverage Plan</label>
+            <input hlmInput [(ngModel)]="editPatientInput.coveragePlan" name="coveragePlan" placeholder="Preferred Provider Organization (PPO)" class="w-full h-8 text-xs" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Lifestyle & Dietary Habits Section -->
       <div class="p-3 border border-primary/20 bg-primary/5 rounded-lg space-y-3">
         <span class="font-semibold text-primary block text-[11px] uppercase tracking-wide">Lifestyle & Dietary Habits Profile</span>
 
@@ -857,34 +925,40 @@
         </div>
       </div>
 
-      <div class="space-y-3">
-        <span class="font-semibold text-foreground block text-[11px] uppercase tracking-wide">Longitudinal Medical History</span>
+      <!-- Medical History Section (Clinical Staff Only) -->
+      <div class="space-y-3 border-t border-border pt-3">
+        <div class="flex justify-between items-center">
+          <span class="font-semibold text-foreground block text-[11px] uppercase tracking-wide">Longitudinal Medical History</span>
+          <span *ngIf="authService.hasRole('ROLE_PATIENT')" class="text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded border border-border">
+            Clinician Verified • Read Only for Patients
+          </span>
+        </div>
 
         <div class="space-y-1">
           <label class="font-medium text-foreground block">Previous Illnesses & Chronic History</label>
-          <textarea hlmTextarea [(ngModel)]="editPatientInput.pastMedicalHistory" name="pastMedicalHistory" rows="2" placeholder="Childhood asthma, hypertension, seasonal allergies..." class="w-full text-xs"></textarea>
+          <textarea hlmTextarea [(ngModel)]="editPatientInput.pastMedicalHistory" [disabled]="authService.hasRole('ROLE_PATIENT')" name="pastMedicalHistory" rows="2" placeholder="Childhood asthma, hypertension, seasonal allergies..." class="w-full text-xs"></textarea>
         </div>
 
         <div class="space-y-1">
           <label class="font-medium text-foreground block">Serious Conditions & Critical Medical Alerts</label>
-          <textarea hlmTextarea [(ngModel)]="editPatientInput.seriousConditions" name="seriousConditions" rows="2" placeholder="Severe Penicillin Anaphylaxis, Pacemaker..." class="w-full text-xs"></textarea>
+          <textarea hlmTextarea [(ngModel)]="editPatientInput.seriousConditions" [disabled]="authService.hasRole('ROLE_PATIENT')" name="seriousConditions" rows="2" placeholder="Severe Penicillin Anaphylaxis, Pacemaker..." class="w-full text-xs"></textarea>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div class="space-y-1">
             <label class="font-medium text-foreground block">Past Surgeries & Procedures</label>
-            <textarea hlmTextarea [(ngModel)]="editPatientInput.surgeriesAndProcedures" name="surgeriesAndProcedures" rows="2" placeholder="Appendectomy (2018), Knee Arthroscopy (2021)..." class="w-full text-xs"></textarea>
+            <textarea hlmTextarea [(ngModel)]="editPatientInput.surgeriesAndProcedures" [disabled]="authService.hasRole('ROLE_PATIENT')" name="surgeriesAndProcedures" rows="2" placeholder="Appendectomy (2018), Knee Arthroscopy (2021)..." class="w-full text-xs"></textarea>
           </div>
           <div class="space-y-1">
             <label class="font-medium text-foreground block">Family Medical History</label>
-            <textarea hlmTextarea [(ngModel)]="editPatientInput.familyMedicalHistory" name="familyMedicalHistory" rows="2" placeholder="Father: Type 2 Diabetes; Mother: Hypertension..." class="w-full text-xs"></textarea>
+            <textarea hlmTextarea [(ngModel)]="editPatientInput.familyMedicalHistory" [disabled]="authService.hasRole('ROLE_PATIENT')" name="familyMedicalHistory" rows="2" placeholder="Father: Type 2 Diabetes; Mother: Hypertension..." class="w-full text-xs"></textarea>
           </div>
         </div>
       </div>
 
       <hlm-dialog-footer class="mt-4 flex justify-end gap-2">
         <button hlmBtn type="button" variant="ghost" size="sm" (click)="showEditPatientModal.set(false)">Cancel</button>
-        <button hlmBtn type="submit" variant="default" size="sm">Save Health Profile</button>
+        <button hlmBtn type="submit" variant="default" size="sm">Save Profile Changes</button>
       </hlm-dialog-footer>
     </form>
   </hlm-dialog-content>

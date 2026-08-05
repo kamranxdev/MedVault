@@ -112,21 +112,21 @@ public class PatientController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR', 'NURSE')")
+    @PreAuthorize("@patientSecurityService.canAccessPatient(authentication, #id)")
     public ResponseEntity<Patient> updatePatient(@PathVariable Long id, @RequestBody Patient updated, Authentication auth) {
         Patient patient = patientRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Patient record with ID " + id + " not found"));
 
-        patient.setFullName(updated.getFullName());
-        if (updated.getSsn() != null) patient.setSsn(updated.getSsn());
-        patient.setDateOfBirth(updated.getDateOfBirth());
-        patient.setGender(updated.getGender());
-        patient.setPhone(updated.getPhone());
-        patient.setEmail(updated.getEmail());
-        patient.setAddress(updated.getAddress());
-        patient.setEmergencyContact(updated.getEmergencyContact());
-        patient.setMedicalAlerts(updated.getMedicalAlerts());
-        patient.setBloodType(updated.getBloodType());
+        boolean isPatientOnly = auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_PATIENT"))
+                && auth.getAuthorities().stream()
+                .noneMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_DOCTOR") || a.getAuthority().equals("ROLE_NURSE"));
+
+        if (updated.getFullName() != null) patient.setFullName(updated.getFullName());
+        if (updated.getPhone() != null) patient.setPhone(updated.getPhone());
+        if (updated.getEmail() != null) patient.setEmail(updated.getEmail());
+        if (updated.getAddress() != null) patient.setAddress(updated.getAddress());
+        if (updated.getEmergencyContact() != null) patient.setEmergencyContact(updated.getEmergencyContact());
 
         if (updated.getDietaryHabits() != null) patient.setDietaryHabits(updated.getDietaryHabits());
         if (updated.getSmokingStatus() != null) patient.setSmokingStatus(updated.getSmokingStatus());
@@ -134,18 +134,30 @@ public class PatientController {
         if (updated.getExerciseRoutine() != null) patient.setExerciseRoutine(updated.getExerciseRoutine());
         if (updated.getFoodAllergies() != null) patient.setFoodAllergies(updated.getFoodAllergies());
 
-        if (updated.getPastMedicalHistory() != null) patient.setPastMedicalHistory(updated.getPastMedicalHistory());
-        if (updated.getSeriousConditions() != null) patient.setSeriousConditions(updated.getSeriousConditions());
-        if (updated.getSurgeriesAndProcedures() != null) patient.setSurgeriesAndProcedures(updated.getSurgeriesAndProcedures());
-        if (updated.getFamilyMedicalHistory() != null) patient.setFamilyMedicalHistory(updated.getFamilyMedicalHistory());
-
         if (updated.getInsuranceProvider() != null) patient.setInsuranceProvider(updated.getInsuranceProvider());
         if (updated.getInsurancePolicyNumber() != null) patient.setInsurancePolicyNumber(updated.getInsurancePolicyNumber());
         if (updated.getInsuranceGroupNumber() != null) patient.setInsuranceGroupNumber(updated.getInsuranceGroupNumber());
         if (updated.getCoveragePlan() != null) patient.setCoveragePlan(updated.getCoveragePlan());
 
+        // Clinical fields can only be modified by clinical staff (ADMIN, DOCTOR, NURSE)
+        if (!isPatientOnly) {
+            if (updated.getSsn() != null) patient.setSsn(updated.getSsn());
+            if (updated.getDateOfBirth() != null) patient.setDateOfBirth(updated.getDateOfBirth());
+            if (updated.getGender() != null) patient.setGender(updated.getGender());
+            if (updated.getBloodType() != null) patient.setBloodType(updated.getBloodType());
+            if (updated.getMedicalAlerts() != null) patient.setMedicalAlerts(updated.getMedicalAlerts());
+
+            if (updated.getPastMedicalHistory() != null) patient.setPastMedicalHistory(updated.getPastMedicalHistory());
+            if (updated.getSeriousConditions() != null) patient.setSeriousConditions(updated.getSeriousConditions());
+            if (updated.getSurgeriesAndProcedures() != null) patient.setSurgeriesAndProcedures(updated.getSurgeriesAndProcedures());
+            if (updated.getFamilyMedicalHistory() != null) patient.setFamilyMedicalHistory(updated.getFamilyMedicalHistory());
+        }
+
         Patient saved = patientRepository.save(patient);
-        auditService.logAction(auth, "UPDATE", "PATIENT", String.valueOf(id), "Updated demographic, habits, & clinical profile for patient ID: " + id);
+        String auditMsg = isPatientOnly
+                ? "Patient self-updated contact, insurance, & lifestyle details for patient ID: " + id
+                : "Updated demographic, habits, & clinical profile for patient ID: " + id;
+        auditService.logAction(auth, "UPDATE", "PATIENT", String.valueOf(id), auditMsg);
 
         return ResponseEntity.ok(saved);
     }

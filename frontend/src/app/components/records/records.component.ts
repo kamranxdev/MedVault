@@ -84,6 +84,26 @@ export class RecordsComponent implements OnInit {
     return this.authService.hasRole('ROLE_PATIENT');
   }
 
+  canAddRecord(): boolean {
+    return this.authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE']);
+  }
+
+  openModal(): void {
+    if (this.selectedPatientId === 0) {
+      const active = this.patientContext.activePatient();
+      const list = this.patientContext.patientList();
+      if (active) {
+        this.selectedPatientId = active.id;
+      } else if (list.length > 0) {
+        this.selectedPatientId = list[0].id;
+      }
+      if (this.selectedPatientId > 0) {
+        this.loadRecords(this.selectedPatientId);
+      }
+    }
+    this.showModal.set(true);
+  }
+
   ngOnInit(): void {
     if (this.isPatient()) {
       const u = this.authService.currentUser();
@@ -97,9 +117,13 @@ export class RecordsComponent implements OnInit {
       }
     } else {
       const active = this.patientContext.activePatient();
+      const list = this.patientContext.patientList();
       if (active) {
         this.selectedPatientId = active.id;
         this.loadRecords(active.id);
+      } else if (list.length > 0) {
+        this.selectedPatientId = list[0].id;
+        this.loadRecords(list[0].id);
       }
     }
   }
