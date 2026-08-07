@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule, Router, ActivatedRoute, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
@@ -95,19 +96,31 @@ interface PatientOption {
 export class App implements OnInit, OnDestroy {
   isMobile = signal(false);
   sidebarOpen = signal(true);
+  isStandalonePage = signal(false);
+
+  showDashboardLayout = computed(() => {
+    return this.authService.isLoggedIn() && !this.isStandalonePage();
+  });
 
   private mql?: MediaQueryList;
   private mqlListener?: (e: MediaQueryListEvent) => void;
+  private routerSub?: any;
 
   constructor(
     public authService: AuthService,
     public patientContext: PatientContextService,
     public theme: ThemeService,
     private router: Router,
+    private activatedRoute: ActivatedRoute,
   ) {
+    this.routerSub = this.router.events
+      .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
+      .subscribe(() => {
+        this.updateStandaloneStatus();
+      });
+
     effect(() => {
-      const user = this.authService.currentUser();
-      if (user) {
+      if (this.authService.isLoggedIn()) {
         this.patientContext.loadContext();
       } else {
         this.patientContext.clear();
@@ -117,6 +130,8 @@ export class App implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     if (typeof window === 'undefined') return;
+
+    this.updateStandaloneStatus();
 
     this.mql = window.matchMedia('(max-width: 1023px)');
     this.isMobile.set(this.mql.matches);
@@ -132,6 +147,18 @@ export class App implements OnInit, OnDestroy {
     if (this.mql && this.mqlListener) {
       this.mql.removeEventListener('change', this.mqlListener);
     }
+    if (this.routerSub) {
+      this.routerSub.unsubscribe();
+    }
+  }
+
+  private updateStandaloneStatus(): void {
+    let route = this.activatedRoute;
+    while (route.firstChild) {
+      route = route.firstChild;
+    }
+    const isStandalone = !!route.snapshot.data['standalone'];
+    this.isStandalonePage.set(isStandalone);
   }
 
   toggleSidebar(): void {

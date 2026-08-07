@@ -13,6 +13,42 @@ export class AuthService {
 
   constructor(private http: HttpClient) {}
 
+  isTokenExpired(token: string | null, offsetSeconds = 5): boolean {
+    if (!token) return true;
+    try {
+      const parts = token.split('.');
+      if (parts.length !== 3) return true;
+      const base64Url = parts[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      const payload = JSON.parse(jsonPayload);
+      if (payload && payload.exp) {
+        const now = Math.floor(Date.now() / 1000);
+        return payload.exp < (now + offsetSeconds);
+      }
+      return false;
+    } catch (e) {
+      return true;
+    }
+  }
+
+  isLoggedIn(): boolean {
+    const user = this.currentUser();
+    const token = localStorage.getItem('medvault_token');
+    if (!user || !token || this.isTokenExpired(token)) {
+      if (user || token) {
+        this.logout();
+      }
+      return false;
+    }
+    return true;
+  }
+
   login(credentials: { username: string; password: string }): Observable<JwtAuthResponse> {
     return this.http.post<JwtAuthResponse>(`${this.apiUrl}/login`, credentials).pipe(
       tap((res) => {
@@ -31,18 +67,35 @@ export class AuthService {
   }
 
   getToken(): string | null {
-    return localStorage.getItem('medvault_token');
+    const token = localStorage.getItem('medvault_token');
+    if (this.isTokenExpired(token)) {
+      this.logout();
+      return null;
+    }
+    return token;
   }
 
   getStoredUser(): JwtAuthResponse | null {
+    const token = localStorage.getItem('medvault_token');
+    if (this.isTokenExpired(token)) {
+      localStorage.removeItem('medvault_token');
+      localStorage.removeItem('medvault_user');
+      return null;
+    }
     const data = localStorage.getItem('medvault_user');
     if (!data) return null;
-    const user = JSON.parse(data);
-    if (user && !user.id && user.userId) user.id = user.userId;
-    return user;
+    try {
+      const user = JSON.parse(data);
+      if (user && !user.id && user.userId) user.id = user.userId;
+      return user;
+    } catch (e) {
+      this.logout();
+      return null;
+    }
   }
 
   hasRole(role: string): boolean {
+    if (!this.isLoggedIn()) return false;
     const user = this.currentUser();
     if (!user) return false;
     const target = role.startsWith('ROLE_') ? role : 'ROLE_' + role.toUpperCase();

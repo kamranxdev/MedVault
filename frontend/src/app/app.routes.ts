@@ -7,10 +7,12 @@ export const routes: Routes = [
     path: '',
     loadComponent: () =>
       import('./components/landing/landing.component').then((m) => m.LandingComponent),
+    data: { standalone: true },
   },
   {
     path: 'login',
     loadComponent: () => import('./components/login/login.component').then((m) => m.LoginComponent),
+    data: { standalone: true },
   },
   {
     path: 'dashboard',
@@ -107,6 +109,7 @@ export const routes: Routes = [
       import('./components/privacy-policy/privacy-policy.component').then(
         (m) => m.PrivacyPolicyComponent,
       ),
+    data: { standalone: true },
   },
   {
     path: 'terms-of-service',
@@ -114,6 +117,7 @@ export const routes: Routes = [
       import('./components/terms-of-service/terms-of-service.component').then(
         (m) => m.TermsOfServiceComponent,
       ),
+    data: { standalone: true },
   },
   { path: '**', redirectTo: '' },
 ];

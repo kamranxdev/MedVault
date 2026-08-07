@@ -1,5 +1,5 @@
 <div class="min-h-screen bg-background text-foreground flex flex-col lg:flex-row relative overflow-x-hidden"
-  *ngIf="authService.currentUser(); else unauth">
+  *ngIf="showDashboardLayout(); else standaloneLayout">
   <!-- Mobile sidebar backdrop -->
   <div *ngIf="isMobile() && sidebarOpen()" (click)="closeMobileSidebar()"
     class="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity"></div>
@@ -131,6 +131,6 @@
   </main>
 </div>
 
-<ng-template #unauth>
+<ng-template #standaloneLayout>
   <router-outlet></router-outlet>
 </ng-template>
