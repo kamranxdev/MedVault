@@ -31,13 +31,11 @@ import { lucidePlus, lucideHospital, lucideAlertCircle } from '@ng-icons/lucide'
     HlmInputImports,
     HlmSelectImports,
     HlmTextareaImports,
-    NgIcon
+    NgIcon,
   ],
-  providers: [
-    provideIcons({ lucidePlus, lucideHospital, lucideAlertCircle })
-  ],
+  providers: [provideIcons({ lucidePlus, lucideHospital, lucideAlertCircle })],
   templateUrl: './encounters.component.html',
-  styleUrl: './encounters.component.css'
+  styleUrl: './encounters.component.css',
 })
 export class EncountersComponent implements OnInit {
   encounters = signal<Encounter[]>([]);
@@ -49,20 +47,20 @@ export class EncountersComponent implements OnInit {
     chiefComplaint: '',
     clinicalNotes: '',
     dischargeSummary: '',
-    status: 'COMPLETED'
+    status: 'COMPLETED',
   };
 
   encounterTypeOptions = [
     { label: 'Outpatient Consultation', value: 'OUTPATIENT' },
     { label: 'Inpatient Admission', value: 'INPATIENT' },
     { label: 'Emergency Department (ED)', value: 'EMERGENCY' },
-    { label: 'Telehealth Consultation', value: 'TELEHEALTH' }
+    { label: 'Telehealth Consultation', value: 'TELEHEALTH' },
   ];
 
   constructor(
     private apiService: ApiService,
     public authService: AuthService,
-    public patientContext: PatientContextService
+    public patientContext: PatientContextService,
   ) {
     effect(() => {
       const active = this.patientContext.activePatient();
@@ -76,10 +74,10 @@ export class EncountersComponent implements OnInit {
   get patientOptions() {
     return [
       { label: 'Select Patient Profile...', value: 0 },
-      ...this.patientContext.patientList().map(p => ({
+      ...this.patientContext.patientList().map((p) => ({
         label: `${p.fullName} (MRN: ${p.patientCode})`,
-        value: p.id
-      }))
+        value: p.id,
+      })),
     ];
   }
 
@@ -111,7 +109,7 @@ export class EncountersComponent implements OnInit {
     if (this.isPatient()) {
       const u = this.authService.currentUser();
       if (u) {
-        this.apiService.getPatientByUserId(u.userId).subscribe(p => {
+        this.apiService.getPatientByUserId(u.userId).subscribe((p) => {
           if (p) {
             this.selectedPatientId = p.id;
             this.loadEncounters(p.id);
@@ -142,24 +140,32 @@ export class EncountersComponent implements OnInit {
   }
 
   loadEncounters(patientId: number): void {
-    this.apiService.getEncountersByPatient(patientId).subscribe(e => this.encounters.set(e));
+    this.apiService.getEncountersByPatient(patientId).subscribe((e) => this.encounters.set(e));
   }
 
   saveEncounter(): void {
     if (this.selectedPatientId === 0 || !this.newEncounter.chiefComplaint) return;
-    this.apiService.createEncounter({
-      patient: { id: Number(this.selectedPatientId) } as Patient,
-      encounterType: this.newEncounter.encounterType,
-      chiefComplaint: this.newEncounter.chiefComplaint,
-      clinicalNotes: this.newEncounter.clinicalNotes,
-      dischargeSummary: this.newEncounter.dischargeSummary,
-      status: this.newEncounter.status
-    }).subscribe({
-      next: () => {
-        this.showModal.set(false);
-        this.newEncounter = { encounterType: 'OUTPATIENT', chiefComplaint: '', clinicalNotes: '', dischargeSummary: '', status: 'COMPLETED' };
-        this.loadEncounters(this.selectedPatientId);
-      }
-    });
+    this.apiService
+      .createEncounter({
+        patient: { id: Number(this.selectedPatientId) } as Patient,
+        encounterType: this.newEncounter.encounterType,
+        chiefComplaint: this.newEncounter.chiefComplaint,
+        clinicalNotes: this.newEncounter.clinicalNotes,
+        dischargeSummary: this.newEncounter.dischargeSummary,
+        status: this.newEncounter.status,
+      })
+      .subscribe({
+        next: () => {
+          this.showModal.set(false);
+          this.newEncounter = {
+            encounterType: 'OUTPATIENT',
+            chiefComplaint: '',
+            clinicalNotes: '',
+            dischargeSummary: '',
+            status: 'COMPLETED',
+          };
+          this.loadEncounters(this.selectedPatientId);
+        },
+      });
   }
 }

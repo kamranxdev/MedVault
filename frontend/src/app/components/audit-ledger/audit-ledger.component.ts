@@ -24,13 +24,11 @@ import { lucideShieldCheck, lucideDownload, lucideSearch, lucideLoader2 } from '
     HlmBadgeImports,
     HlmButtonImports,
     HlmInputImports,
-    NgIcon
+    NgIcon,
   ],
-  providers: [
-    provideIcons({ lucideShieldCheck, lucideDownload, lucideSearch, lucideLoader2 })
-  ],
+  providers: [provideIcons({ lucideShieldCheck, lucideDownload, lucideSearch, lucideLoader2 })],
   templateUrl: './audit-ledger.component.html',
-  styleUrl: './audit-ledger.component.css'
+  styleUrl: './audit-ledger.component.css',
 })
 export class AuditLedgerComponent implements OnInit {
   auditLogs = signal<AuditLog[]>([]);
@@ -40,7 +38,7 @@ export class AuditLedgerComponent implements OnInit {
 
   constructor(
     private apiService: ApiService,
-    public authService: AuthService
+    public authService: AuthService,
   ) {}
 
   ngOnInit(): void {
@@ -55,7 +53,7 @@ export class AuditLedgerComponent implements OnInit {
         this.filterLogs();
         this.loading.set(false);
       },
-      error: () => this.loading.set(false)
+      error: () => this.loading.set(false),
     });
   }
 
@@ -64,20 +62,28 @@ export class AuditLedgerComponent implements OnInit {
       this.filteredLogs.set(this.auditLogs());
     } else {
       const q = this.searchQuery.toLowerCase();
-      this.filteredLogs.set(this.auditLogs().filter(l =>
-        l.username?.toLowerCase().includes(q) ||
-        l.action?.toLowerCase().includes(q) ||
-        l.details?.toLowerCase().includes(q) ||
-        l.entityName?.toLowerCase().includes(q)
-      ));
+      this.filteredLogs.set(
+        this.auditLogs().filter(
+          (l) =>
+            l.username?.toLowerCase().includes(q) ||
+            l.action?.toLowerCase().includes(q) ||
+            l.details?.toLowerCase().includes(q) ||
+            l.entityName?.toLowerCase().includes(q),
+        ),
+      );
     }
   }
 
   exportAuditLedger(): void {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.auditLogs(), null, 2));
+    const dataStr =
+      'data:text/json;charset=utf-8,' +
+      encodeURIComponent(JSON.stringify(this.auditLogs(), null, 2));
     const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", `MedVault_Audit_Report_${new Date().toISOString().split('T')[0]}.json`);
+    downloadAnchor.setAttribute('href', dataStr);
+    downloadAnchor.setAttribute(
+      'download',
+      `MedVault_Audit_Report_${new Date().toISOString().split('T')[0]}.json`,
+    );
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();

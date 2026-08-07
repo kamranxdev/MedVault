@@ -13,7 +13,7 @@ import {
   lucideChevronLeft,
   lucideLock,
   lucideHeartPulse,
-  lucideBan
+  lucideBan,
 } from '@ng-icons/lucide';
 
 @Component({
@@ -32,10 +32,10 @@ import {
       lucideChevronLeft,
       lucideLock,
       lucideHeartPulse,
-      lucideBan
-    })
+      lucideBan,
+    }),
   ],
-  templateUrl: './terms-of-service.component.html'
+  templateUrl: './terms-of-service.component.html',
 })
 export class TermsOfServiceComponent implements OnInit {
   lastUpdated = 'August 2, 2026';

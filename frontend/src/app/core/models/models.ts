@@ -187,7 +187,8 @@ export interface AppointmentNote {
   authorId?: number;
   authorName: string;
   authorRole: string;
-  noteType: 'RECEPTIONIST_ADMIN' | 'NURSE_OBSERVATION' | 'DOCTOR_CLINICAL' | 'PATIENT_REMARK' | string;
+  noteType:
+    'RECEPTIONIST_ADMIN' | 'NURSE_OBSERVATION' | 'DOCTOR_CLINICAL' | 'PATIENT_REMARK' | string;
   content: string;
   createdAt?: string;
   updatedAt?: string;
@@ -241,4 +242,3 @@ export interface AuditLog {
   details: string;
   timestamp: string;
 }
-

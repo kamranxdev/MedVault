@@ -5,7 +5,15 @@ import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { PatientContextService } from '../../core/services/patient-context.service';
 import { HasRoleDirective, HasAnyRoleDirective } from '../../core/directives/has-role.directive';
-import { Patient, Vitals, Prescription, Encounter, Allergy, Diagnosis, SafetyCheckResult } from '../../core/models/models';
+import {
+  Patient,
+  Vitals,
+  Prescription,
+  Encounter,
+  Allergy,
+  Diagnosis,
+  SafetyCheckResult,
+} from '../../core/models/models';
 
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmTableImports } from '@spartan-ng/helm/table';
@@ -36,7 +44,7 @@ import {
   lucideFileText,
   lucideStethoscope,
   lucideShieldCheck,
-  lucideUserRound
+  lucideUserRound,
 } from '@ng-icons/lucide';
 
 @Component({
@@ -56,7 +64,7 @@ import {
     HlmTabsImports,
     HasRoleDirective,
     HasAnyRoleDirective,
-    NgIcon
+    NgIcon,
   ],
   providers: [
     provideIcons({
@@ -78,11 +86,11 @@ import {
       lucideFileText,
       lucideStethoscope,
       lucideShieldCheck,
-      lucideUserRound
-    })
+      lucideUserRound,
+    }),
   ],
   templateUrl: './patients.component.html',
-  styleUrl: './patients.component.css'
+  styleUrl: './patients.component.css',
 })
 export class PatientsComponent implements OnInit {
   patients = signal<Patient[]>([]);
@@ -96,7 +104,9 @@ export class PatientsComponent implements OnInit {
   patientVitals = signal<Vitals[]>([]);
   patientRx = signal<Prescription[]>([]);
 
-  chartTab = signal<'summary' | 'encounters' | 'allergies' | 'diagnoses' | 'rx' | 'vitals'>('summary');
+  chartTab = signal<'summary' | 'encounters' | 'allergies' | 'diagnoses' | 'rx' | 'vitals'>(
+    'summary',
+  );
 
   setChartTab(val: any): void {
     if (val) {
@@ -133,55 +143,94 @@ export class PatientsComponent implements OnInit {
     pastMedicalHistory: 'Primary Hypertension, Mild Childhood Asthma',
     seriousConditions: 'High Blood Pressure Alert',
     surgeriesAndProcedures: 'Appendectomy (2018)',
-    familyMedicalHistory: 'Father: Type 2 Diabetes, Mother: Hypertension'
+    familyMedicalHistory: 'Father: Type 2 Diabetes, Mother: Hypertension',
   };
-  newAllergyInput: any = { allergenName: '', category: 'DRUG', severity: 'SEVERE', reactionDescription: '', status: 'ACTIVE' };
-  newDiagnosisInput: any = { conditionName: '', icdCode: '', onsetDate: '2026-01-01', notes: '', status: 'ACTIVE' };
-  newRxInput: any = { medicationName: '', dosage: '500mg', route: 'Oral', frequency: 'Twice daily', durationDays: 7, refills: 1, status: 'ACTIVE' };
-  newEncounterInput: any = { encounterType: 'OUTPATIENT', chiefComplaint: '', clinicalNotes: '', status: 'COMPLETED' };
-  newVitalsInput: any = { bloodPressure: '120/80', heartRate: 72, temperature: 36.8, oxygenSaturation: 98, heightCm: 175, weightKg: 70, bloodGlucose: 95 };
+  newAllergyInput: any = {
+    allergenName: '',
+    category: 'DRUG',
+    severity: 'SEVERE',
+    reactionDescription: '',
+    status: 'ACTIVE',
+  };
+  newDiagnosisInput: any = {
+    conditionName: '',
+    icdCode: '',
+    onsetDate: '2026-01-01',
+    notes: '',
+    status: 'ACTIVE',
+  };
+  newRxInput: any = {
+    medicationName: '',
+    dosage: '500mg',
+    route: 'Oral',
+    frequency: 'Twice daily',
+    durationDays: 7,
+    refills: 1,
+    status: 'ACTIVE',
+  };
+  newEncounterInput: any = {
+    encounterType: 'OUTPATIENT',
+    chiefComplaint: '',
+    clinicalNotes: '',
+    status: 'COMPLETED',
+  };
+  newVitalsInput: any = {
+    bloodPressure: '120/80',
+    heartRate: 72,
+    temperature: 36.8,
+    oxygenSaturation: 98,
+    heightCm: 175,
+    weightKg: 70,
+    bloodGlucose: 95,
+  };
 
   genderOptions = [
     { label: 'Male', value: 'Male' },
     { label: 'Female', value: 'Female' },
-    { label: 'Other', value: 'Other' }
+    { label: 'Other', value: 'Other' },
   ];
 
   bloodTypeOptions = [
-    { label: 'O+', value: 'O+' }, { label: 'A+', value: 'A+' }, { label: 'B+', value: 'B+' }, { label: 'AB+', value: 'AB+' },
-    { label: 'O-', value: 'O-' }, { label: 'A-', value: 'A-' }, { label: 'B-', value: 'B-' }, { label: 'AB-', value: 'AB-' }
+    { label: 'O+', value: 'O+' },
+    { label: 'A+', value: 'A+' },
+    { label: 'B+', value: 'B+' },
+    { label: 'AB+', value: 'AB+' },
+    { label: 'O-', value: 'O-' },
+    { label: 'A-', value: 'A-' },
+    { label: 'B-', value: 'B-' },
+    { label: 'AB-', value: 'AB-' },
   ];
 
   allergyCategoryOptions = [
     { label: 'Medication', value: 'MEDICATION' },
     { label: 'Food', value: 'FOOD' },
-    { label: 'Environmental', value: 'ENVIRONMENTAL' }
+    { label: 'Environmental', value: 'ENVIRONMENTAL' },
   ];
 
   severityOptions = [
     { label: 'Mild', value: 'MILD' },
     { label: 'Moderate', value: 'MODERATE' },
     { label: 'Severe', value: 'SEVERE' },
-    { label: 'Life-Threatening', value: 'LIFE_THREATENING' }
+    { label: 'Life-Threatening', value: 'LIFE_THREATENING' },
   ];
 
   routeOptions = [
     { label: 'Oral', value: 'Oral' },
     { label: 'IV', value: 'IV' },
     { label: 'Subcutaneous', value: 'Subcutaneous' },
-    { label: 'Topical', value: 'Topical' }
+    { label: 'Topical', value: 'Topical' },
   ];
 
   encounterTypeOptions = [
     { label: 'Outpatient', value: 'OUTPATIENT' },
     { label: 'Inpatient', value: 'INPATIENT' },
     { label: 'Emergency', value: 'EMERGENCY' },
-    { label: 'Telehealth', value: 'TELEHEALTH' }
+    { label: 'Telehealth', value: 'TELEHEALTH' },
   ];
 
   statusOptions = [
     { label: 'Active', value: 'ACTIVE' },
-    { label: 'Completed', value: 'COMPLETED' }
+    { label: 'Completed', value: 'COMPLETED' },
   ];
 
   constructor(
@@ -207,7 +256,7 @@ export class PatientsComponent implements OnInit {
       } else {
         const u = this.authService.currentUser();
         if (u) {
-          this.apiService.getPatientByUserId(u.userId).subscribe(p => {
+          this.apiService.getPatientByUserId(u.userId).subscribe((p) => {
             if (p) this.selectPatient(p);
           });
         }
@@ -228,7 +277,7 @@ export class PatientsComponent implements OnInit {
         } else if (data.length > 0) {
           this.selectPatient(data[0]);
         }
-      }
+      },
     });
   }
 
@@ -239,19 +288,27 @@ export class PatientsComponent implements OnInit {
     }
 
     this.apiService.searchPatients(this.searchQuery).subscribe({
-      next: (data) => this.filteredPatients.set(data)
+      next: (data) => this.filteredPatients.set(data),
     });
   }
 
   selectPatient(patient: Patient): void {
     this.selectedPatient.set(patient);
     this.patientContext.setActivePatient(patient);
-    this.apiService.getPatientClinicalHistory(patient.id).subscribe(h => this.clinicalHistory.set(h));
-    this.apiService.getEncountersByPatient(patient.id).subscribe(e => this.patientEncounters.set(e));
-    this.apiService.getAllergiesByPatient(patient.id).subscribe(a => this.patientAllergies.set(a));
-    this.apiService.getDiagnosesByPatient(patient.id).subscribe(d => this.patientDiagnoses.set(d));
-    this.apiService.getVitalsByPatient(patient.id).subscribe(v => this.patientVitals.set(v));
-    this.apiService.getPrescriptionsByPatient(patient.id).subscribe(rx => this.patientRx.set(rx));
+    this.apiService
+      .getPatientClinicalHistory(patient.id)
+      .subscribe((h) => this.clinicalHistory.set(h));
+    this.apiService
+      .getEncountersByPatient(patient.id)
+      .subscribe((e) => this.patientEncounters.set(e));
+    this.apiService
+      .getAllergiesByPatient(patient.id)
+      .subscribe((a) => this.patientAllergies.set(a));
+    this.apiService
+      .getDiagnosesByPatient(patient.id)
+      .subscribe((d) => this.patientDiagnoses.set(d));
+    this.apiService.getVitalsByPatient(patient.id).subscribe((v) => this.patientVitals.set(v));
+    this.apiService.getPrescriptionsByPatient(patient.id).subscribe((rx) => this.patientRx.set(rx));
   }
 
   editPatientInput: Partial<Patient> = {};
@@ -277,7 +334,7 @@ export class PatientsComponent implements OnInit {
       pastMedicalHistory: '',
       seriousConditions: '',
       surgeriesAndProcedures: '',
-      familyMedicalHistory: ''
+      familyMedicalHistory: '',
     };
     this.showIntakeModal.set(true);
   }
@@ -299,7 +356,7 @@ export class PatientsComponent implements OnInit {
         this.patientContext.setActivePatient(updated);
         this.showEditPatientModal.set(false);
         this.selectPatient(updated);
-      }
+      },
     });
   }
 
@@ -307,7 +364,9 @@ export class PatientsComponent implements OnInit {
     if (!this.newPatient.fullName) return;
 
     if ((this.newPatient.dateOfBirth as any) instanceof Date) {
-      this.newPatient.dateOfBirth = (this.newPatient.dateOfBirth as any).toISOString().split('T')[0];
+      this.newPatient.dateOfBirth = (this.newPatient.dateOfBirth as any)
+        .toISOString()
+        .split('T')[0];
     }
 
     this.apiService.createPatient(this.newPatient).subscribe({
@@ -315,7 +374,7 @@ export class PatientsComponent implements OnInit {
         this.showIntakeModal.set(false);
         this.loadPatients();
         this.selectPatient(p);
-      }
+      },
     });
   }
 
@@ -327,7 +386,7 @@ export class PatientsComponent implements OnInit {
       next: () => {
         this.showAllergyModal.set(false);
         this.selectPatient(p);
-      }
+      },
     });
   }
 
@@ -345,7 +404,7 @@ export class PatientsComponent implements OnInit {
       next: () => {
         this.showDiagnosisModal.set(false);
         this.selectPatient(p);
-      }
+      },
     });
   }
 
@@ -360,7 +419,7 @@ export class PatientsComponent implements OnInit {
         } else {
           this.confirmSaveRx();
         }
-      }
+      },
     });
   }
 
@@ -377,7 +436,7 @@ export class PatientsComponent implements OnInit {
         this.safetyAlert.set(null);
         this.showRxModal.set(false);
         this.selectPatient(p);
-      }
+      },
     });
   }
 
@@ -389,7 +448,7 @@ export class PatientsComponent implements OnInit {
       next: () => {
         this.showEncounterModal.set(false);
         this.selectPatient(p);
-      }
+      },
     });
   }
 
@@ -401,7 +460,7 @@ export class PatientsComponent implements OnInit {
       next: () => {
         this.showVitalsModal.set(false);
         this.selectPatient(p);
-      }
+      },
     });
   }
 
@@ -416,7 +475,7 @@ export class PatientsComponent implements OnInit {
         a.download = `FHIR_R4_Bundle_${fullName.replace(/\s+/g, '_')}_ID${patientId}.json`;
         a.click();
         window.URL.revokeObjectURL(url);
-      }
+      },
     });
   }
 }

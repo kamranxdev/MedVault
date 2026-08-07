@@ -7,7 +7,7 @@ const tableVariants = cva('w-full caption-bottom text-sm border-collapse');
   selector: '[hlmTable],table[hlmTable]',
   host: { 'data-slot': 'table' },
 })
-export class HlmTableDirective {
+export class HlmTable {
   constructor() {
     classes(() => tableVariants());
   }
@@ -18,7 +18,7 @@ const headerVariants = cva('[&_tr]:border-b');
   selector: '[hlmTableHeader],thead[hlmTableHeader]',
   host: { 'data-slot': 'table-header' },
 })
-export class HlmTableHeaderDirective {
+export class HlmTableHeader {
   constructor() {
     classes(() => headerVariants());
   }
@@ -29,40 +29,46 @@ const bodyVariants = cva('[&_tr:last-child]:border-0');
   selector: '[hlmTableBody],tbody[hlmTableBody]',
   host: { 'data-slot': 'table-body' },
 })
-export class HlmTableBodyDirective {
+export class HlmTableBody {
   constructor() {
     classes(() => bodyVariants());
   }
 }
 
-const trVariants = cva('border-b border-border/50 transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted');
+const trVariants = cva(
+  'border-b border-border/50 transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted',
+);
 @Directive({
   selector: '[hlmTableRow],tr[hlmTableRow]',
   host: { 'data-slot': 'table-row' },
 })
-export class HlmTableRowDirective {
+export class HlmTableRow {
   constructor() {
     classes(() => trVariants());
   }
 }
 
-const thVariants = cva('h-10 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]');
+const thVariants = cva(
+  'h-10 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
+);
 @Directive({
   selector: '[hlmTableHead],th[hlmTableHead]',
   host: { 'data-slot': 'table-head' },
 })
-export class HlmTableHeadDirective {
+export class HlmTableHead {
   constructor() {
     classes(() => thVariants());
   }
 }
 
-const tdVariants = cva('p-4 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]');
+const tdVariants = cva(
+  'p-4 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
+);
 @Directive({
   selector: '[hlmTableCell],td[hlmTableCell]',
   host: { 'data-slot': 'table-cell' },
 })
-export class HlmTableCellDirective {
+export class HlmTableCell {
   constructor() {
     classes(() => tdVariants());
   }

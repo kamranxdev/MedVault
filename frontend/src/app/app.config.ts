@@ -11,11 +11,10 @@ export const appConfig: ApplicationConfig = {
       routes,
       withInMemoryScrolling({
         scrollPositionRestoration: 'enabled',
-        anchorScrolling: 'enabled'
-      })
+        anchorScrolling: 'enabled',
+      }),
     ),
     provideHttpClient(withInterceptors([jwtInterceptor])),
     provideAnimationsAsync(),
-  ]
+  ],
 };
-

@@ -4,23 +4,23 @@ import { Observable, tap } from 'rxjs';
 import { JwtAuthResponse } from '../models/models';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
   private apiUrl = 'http://localhost:8080/api/auth';
-  
+
   currentUser = signal<JwtAuthResponse | null>(this.getStoredUser());
 
   constructor(private http: HttpClient) {}
 
   login(credentials: { username: string; password: string }): Observable<JwtAuthResponse> {
     return this.http.post<JwtAuthResponse>(`${this.apiUrl}/login`, credentials).pipe(
-      tap(res => {
+      tap((res) => {
         res.id = res.userId;
         localStorage.setItem('medvault_token', res.accessToken);
         localStorage.setItem('medvault_user', JSON.stringify(res));
         this.currentUser.set(res);
-      })
+      }),
     );
   }
 
@@ -50,7 +50,7 @@ export class AuthService {
   }
 
   hasAnyRole(roles: string[]): boolean {
-    return roles.some(r => this.hasRole(r));
+    return roles.some((r) => this.hasRole(r));
   }
 
   isReceptionist(): boolean {
@@ -85,4 +85,3 @@ export class AuthService {
     return this.http.post<any>(`${this.apiUrl}/admin/create-user`, payload);
   }
 }
-

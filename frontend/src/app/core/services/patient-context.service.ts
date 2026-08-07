@@ -4,14 +4,17 @@ import { AuthService } from './auth.service';
 import { Patient } from '../models/models';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class PatientContextService {
   activePatient = signal<Patient | null>(null);
   loading = signal<boolean>(false);
   patientList = signal<Patient[]>([]);
 
-  constructor(private apiService: ApiService, private authService: AuthService) {}
+  constructor(
+    private apiService: ApiService,
+    private authService: AuthService,
+  ) {}
 
   loadContext(): void {
     const user = this.authService.currentUser();
@@ -35,7 +38,7 @@ export class PatientContextService {
           console.error('Failed to load patient profile for user', err);
           this.activePatient.set(null);
           this.loading.set(false);
-        }
+        },
       });
     } else {
       // Clinician / Staff user: load Master Patient Index
@@ -45,7 +48,7 @@ export class PatientContextService {
           const current = this.activePatient();
           // Retain currently selected patient if still in list, else default to first
           if (current) {
-            const found = patients.find(p => p.id === current.id);
+            const found = patients.find((p) => p.id === current.id);
             if (found) {
               this.activePatient.set(found);
             } else if (patients.length > 0) {
@@ -59,7 +62,7 @@ export class PatientContextService {
         error: (err) => {
           console.error('Failed to load patient index', err);
           this.loading.set(false);
-        }
+        },
       });
     }
   }
@@ -69,11 +72,11 @@ export class PatientContextService {
   }
 
   selectPatientById(id: number): void {
-    const found = this.patientList().find(p => p.id === Number(id));
+    const found = this.patientList().find((p) => p.id === Number(id));
     if (found) {
       this.activePatient.set(found);
     } else {
-      this.apiService.getPatientById(id).subscribe(p => this.activePatient.set(p));
+      this.apiService.getPatientById(id).subscribe((p) => this.activePatient.set(p));
     }
   }
 

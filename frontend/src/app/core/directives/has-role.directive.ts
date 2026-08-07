@@ -3,7 +3,7 @@ import { AuthService } from '../services/auth.service';
 
 @Directive({
   selector: '[hasRole]',
-  standalone: true
+  standalone: true,
 })
 export class HasRoleDirective {
   private authService = inject(AuthService);
@@ -39,7 +39,7 @@ export class HasRoleDirective {
 
 @Directive({
   selector: '[hasAnyRole]',
-  standalone: true
+  standalone: true,
 })
 export class HasAnyRoleDirective {
   private authService = inject(AuthService);

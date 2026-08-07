@@ -17,7 +17,7 @@ import {
   lucideHeartPulse,
   lucideShieldCheck,
   lucideHome,
-  lucideKeyRound
+  lucideKeyRound,
 } from '@ng-icons/lucide';
 
 @Component({
@@ -31,7 +31,7 @@ import {
     HlmInputImports,
     HlmCardImports,
     HlmBadgeImports,
-    NgIcon
+    NgIcon,
   ],
   providers: [
     provideIcons({
@@ -41,11 +41,11 @@ import {
       lucideHeartPulse,
       lucideShieldCheck,
       lucideHome,
-      lucideKeyRound
-    })
+      lucideKeyRound,
+    }),
   ],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.css'
+  styleUrl: './login.component.css',
 })
 export class LoginComponent {
   username = '';
@@ -56,7 +56,7 @@ export class LoginComponent {
   constructor(
     private authService: AuthService,
     private patientContext: PatientContextService,
-    private router: Router
+    private router: Router,
   ) {}
 
   fillDemoCredentials(u: string, p: string): void {
@@ -79,13 +79,15 @@ export class LoginComponent {
       error: (err) => {
         this.loading.set(false);
         if (err.status === 0) {
-          this.errorMessage.set('Cannot connect to backend server. Please verify Spring Boot server is running on http://localhost:8080.');
+          this.errorMessage.set(
+            'Cannot connect to backend server. Please verify Spring Boot server is running on http://localhost:8080.',
+          );
         } else if (typeof err.error === 'string') {
           this.errorMessage.set(err.error);
         } else {
           this.errorMessage.set('Invalid username or password.');
         }
-      }
+      },
     });
   }
 }

@@ -15,7 +15,13 @@ import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { HlmTextareaImports } from '@spartan-ng/helm/textarea';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucidePlus, lucideFileText, lucideAlertCircle, lucideChevronDown, lucideChevronRight } from '@ng-icons/lucide';
+import {
+  lucidePlus,
+  lucideFileText,
+  lucideAlertCircle,
+  lucideChevronDown,
+  lucideChevronRight,
+} from '@ng-icons/lucide';
 
 @Component({
   selector: 'app-records',
@@ -31,13 +37,19 @@ import { lucidePlus, lucideFileText, lucideAlertCircle, lucideChevronDown, lucid
     HlmInputImports,
     HlmSelectImports,
     HlmTextareaImports,
-    NgIcon
+    NgIcon,
   ],
   providers: [
-    provideIcons({ lucidePlus, lucideFileText, lucideAlertCircle, lucideChevronDown, lucideChevronRight })
+    provideIcons({
+      lucidePlus,
+      lucideFileText,
+      lucideAlertCircle,
+      lucideChevronDown,
+      lucideChevronRight,
+    }),
   ],
   templateUrl: './records.component.html',
-  styleUrl: './records.component.css'
+  styleUrl: './records.component.css',
 })
 export class RecordsComponent implements OnInit {
   records = signal<MedicalRecord[]>([]);
@@ -50,7 +62,7 @@ export class RecordsComponent implements OnInit {
     icdCode: '',
     symptoms: '',
     treatmentPlan: '',
-    notes: ''
+    notes: '',
   };
 
   constructor(
@@ -108,7 +120,7 @@ export class RecordsComponent implements OnInit {
     if (this.isPatient()) {
       const u = this.authService.currentUser();
       if (u) {
-        this.apiService.getPatientByUserId(u.userId).subscribe(p => {
+        this.apiService.getPatientByUserId(u.userId).subscribe((p) => {
           if (p) {
             this.selectedPatientId = p.id;
             this.loadRecords(p.id);
@@ -139,24 +151,32 @@ export class RecordsComponent implements OnInit {
   }
 
   loadRecords(patientId: number): void {
-    this.apiService.getRecordsByPatient(patientId).subscribe(r => this.records.set(r));
+    this.apiService.getRecordsByPatient(patientId).subscribe((r) => this.records.set(r));
   }
 
   saveRecord(): void {
     if (this.selectedPatientId === 0 || !this.newRecord.diagnosis) return;
-    this.apiService.createRecord({
-      patient: { id: Number(this.selectedPatientId) } as Patient,
-      diagnosis: this.newRecord.diagnosis,
-      icdCode: this.newRecord.icdCode,
-      symptoms: this.newRecord.symptoms,
-      treatmentPlan: this.newRecord.treatmentPlan,
-      notes: this.newRecord.notes
-    }).subscribe({
-      next: () => {
-        this.showModal.set(false);
-        this.newRecord = { diagnosis: '', icdCode: '', symptoms: '', treatmentPlan: '', notes: '' };
-        this.loadRecords(this.selectedPatientId);
-      }
-    });
+    this.apiService
+      .createRecord({
+        patient: { id: Number(this.selectedPatientId) } as Patient,
+        diagnosis: this.newRecord.diagnosis,
+        icdCode: this.newRecord.icdCode,
+        symptoms: this.newRecord.symptoms,
+        treatmentPlan: this.newRecord.treatmentPlan,
+        notes: this.newRecord.notes,
+      })
+      .subscribe({
+        next: () => {
+          this.showModal.set(false);
+          this.newRecord = {
+            diagnosis: '',
+            icdCode: '',
+            symptoms: '',
+            treatmentPlan: '',
+            notes: '',
+          };
+          this.loadRecords(this.selectedPatientId);
+        },
+      });
   }
 }

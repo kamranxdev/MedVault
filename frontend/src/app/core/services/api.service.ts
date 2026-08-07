@@ -1,26 +1,26 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { 
-  Allergy, 
-  Appointment, 
+import {
+  Allergy,
+  Appointment,
   AppointmentBilling,
   AppointmentCancellation,
   AppointmentLabOrder,
   AppointmentNote,
-  AuditLog, 
-  Diagnosis, 
-  Encounter, 
-  MedicalRecord, 
-  Patient, 
-  Prescription, 
-  SafetyCheckResult, 
-  User, 
-  Vitals 
+  AuditLog,
+  Diagnosis,
+  Encounter,
+  MedicalRecord,
+  Patient,
+  Prescription,
+  SafetyCheckResult,
+  User,
+  Vitals,
 } from '../models/models';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ApiService {
   private baseUrl = 'http://localhost:8080/api';
@@ -33,7 +33,9 @@ export class ApiService {
   }
 
   searchPatients(query: string): Observable<Patient[]> {
-    return this.http.get<Patient[]>(`${this.baseUrl}/patients/search?query=${encodeURIComponent(query)}`);
+    return this.http.get<Patient[]>(
+      `${this.baseUrl}/patients/search?query=${encodeURIComponent(query)}`,
+    );
   }
 
   getPatientById(id: number): Observable<Patient> {
@@ -118,28 +120,45 @@ export class ApiService {
     return this.http.get<Prescription[]>(`${this.baseUrl}/prescriptions/patient/${patientId}`);
   }
 
-  checkPrescriptionSafety(patientId: number, medicationName: string): Observable<SafetyCheckResult> {
+  checkPrescriptionSafety(
+    patientId: number,
+    medicationName: string,
+  ): Observable<SafetyCheckResult> {
     return this.http.post<SafetyCheckResult>(`${this.baseUrl}/prescriptions/safety-check`, {
       patientId,
-      medicationName
+      medicationName,
     });
   }
 
-  validatePrescriptionSafety(patientId: number, medicationName: string, dosage?: string, instructions?: string): Observable<SafetyCheckResult> {
+  validatePrescriptionSafety(
+    patientId: number,
+    medicationName: string,
+    dosage?: string,
+    instructions?: string,
+  ): Observable<SafetyCheckResult> {
     return this.http.post<SafetyCheckResult>(`${this.baseUrl}/prescriptions/validate-safety`, {
       patientId,
       medicationName,
       dosage,
-      instructions
+      instructions,
     });
   }
 
-  createPrescription(prescription: Partial<Prescription>, overrideWarning = false): Observable<Prescription> {
-    return this.http.post<Prescription>(`${this.baseUrl}/prescriptions?overrideWarning=${overrideWarning}`, prescription);
+  createPrescription(
+    prescription: Partial<Prescription>,
+    overrideWarning = false,
+  ): Observable<Prescription> {
+    return this.http.post<Prescription>(
+      `${this.baseUrl}/prescriptions?overrideWarning=${overrideWarning}`,
+      prescription,
+    );
   }
 
   updatePrescriptionStatus(id: number, status: string): Observable<Prescription> {
-    return this.http.put<Prescription>(`${this.baseUrl}/prescriptions/${id}/status?status=${status}`, {});
+    return this.http.put<Prescription>(
+      `${this.baseUrl}/prescriptions/${id}/status?status=${status}`,
+      {},
+    );
   }
 
   // Appointments & Collaborative Workflow
@@ -169,10 +188,21 @@ export class ApiService {
   }
 
   updateAppointmentStatus(id: number, status: string): Observable<Appointment> {
-    return this.http.put<Appointment>(`${this.baseUrl}/appointments/${id}/status?status=${status}`, {});
+    return this.http.put<Appointment>(
+      `${this.baseUrl}/appointments/${id}/status?status=${status}`,
+      {},
+    );
   }
 
-  checkInPatient(id: number, payload: { insuranceVerified?: boolean; insuranceDetails?: string; reportsUploaded?: string; note?: string }): Observable<Appointment> {
+  checkInPatient(
+    id: number,
+    payload: {
+      insuranceVerified?: boolean;
+      insuranceDetails?: string;
+      reportsUploaded?: string;
+      note?: string;
+    },
+  ): Observable<Appointment> {
     return this.http.post<Appointment>(`${this.baseUrl}/appointments/${id}/check-in`, payload);
   }
 
@@ -181,7 +211,10 @@ export class ApiService {
   }
 
   recordDoctorConsultation(id: number, payload: any): Observable<Appointment> {
-    return this.http.post<Appointment>(`${this.baseUrl}/appointments/${id}/doctor-consultation`, payload);
+    return this.http.post<Appointment>(
+      `${this.baseUrl}/appointments/${id}/doctor-consultation`,
+      payload,
+    );
   }
 
   getAppointmentNotes(id: number): Observable<AppointmentNote[]> {
@@ -189,23 +222,40 @@ export class ApiService {
   }
 
   addAppointmentNote(id: number, noteType: string, content: string): Observable<AppointmentNote> {
-    return this.http.post<AppointmentNote>(`${this.baseUrl}/appointments/${id}/notes`, { noteType, content });
+    return this.http.post<AppointmentNote>(`${this.baseUrl}/appointments/${id}/notes`, {
+      noteType,
+      content,
+    });
   }
 
   editAppointmentNote(noteId: number, content: string): Observable<AppointmentNote> {
-    return this.http.put<AppointmentNote>(`${this.baseUrl}/appointments/notes/${noteId}`, { content });
+    return this.http.put<AppointmentNote>(`${this.baseUrl}/appointments/notes/${noteId}`, {
+      content,
+    });
   }
 
-  cancelAppointment(id: number, reason: string, comment?: string): Observable<AppointmentCancellation> {
-    return this.http.post<AppointmentCancellation>(`${this.baseUrl}/appointments/${id}/cancel`, { reason, comment });
+  cancelAppointment(
+    id: number,
+    reason: string,
+    comment?: string,
+  ): Observable<AppointmentCancellation> {
+    return this.http.post<AppointmentCancellation>(`${this.baseUrl}/appointments/${id}/cancel`, {
+      reason,
+      comment,
+    });
   }
 
   getCancellationDetails(id: number): Observable<AppointmentCancellation> {
-    return this.http.get<AppointmentCancellation>(`${this.baseUrl}/appointments/${id}/cancellation`);
+    return this.http.get<AppointmentCancellation>(
+      `${this.baseUrl}/appointments/${id}/cancellation`,
+    );
   }
 
   generateBilling(id: number, payload: any): Observable<AppointmentBilling> {
-    return this.http.post<AppointmentBilling>(`${this.baseUrl}/appointments/${id}/billing`, payload);
+    return this.http.post<AppointmentBilling>(
+      `${this.baseUrl}/appointments/${id}/billing`,
+      payload,
+    );
   }
 
   getBillingDetails(id: number): Observable<AppointmentBilling> {
@@ -231,7 +281,7 @@ export class ApiService {
 
   ingestSyntheaBundle(bundleJson: string): Observable<any> {
     return this.http.post<any>(`${this.baseUrl}/synthetic/ingest-bundle`, bundleJson, {
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
     });
   }
 
@@ -245,7 +295,9 @@ export class ApiService {
   }
 
   getAuditLogs(search?: string): Observable<AuditLog[]> {
-    const url = search ? `${this.baseUrl}/admin/audit-logs?search=${encodeURIComponent(search)}` : `${this.baseUrl}/admin/audit-logs`;
+    const url = search
+      ? `${this.baseUrl}/admin/audit-logs?search=${encodeURIComponent(search)}`
+      : `${this.baseUrl}/admin/audit-logs`;
     return this.http.get<AuditLog[]>(url);
   }
 

@@ -15,7 +15,12 @@ import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { HlmTextareaImports } from '@spartan-ng/helm/textarea';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucidePlus, lucideLoader2, lucideAlertCircle, lucideTriangleAlert } from '@ng-icons/lucide';
+import {
+  lucidePlus,
+  lucideLoader2,
+  lucideAlertCircle,
+  lucideTriangleAlert,
+} from '@ng-icons/lucide';
 
 @Component({
   selector: 'app-allergies',
@@ -31,13 +36,11 @@ import { lucidePlus, lucideLoader2, lucideAlertCircle, lucideTriangleAlert } fro
     HlmInputImports,
     HlmSelectImports,
     HlmTextareaImports,
-    NgIcon
+    NgIcon,
   ],
-  providers: [
-    provideIcons({ lucidePlus, lucideLoader2, lucideAlertCircle, lucideTriangleAlert })
-  ],
+  providers: [provideIcons({ lucidePlus, lucideLoader2, lucideAlertCircle, lucideTriangleAlert })],
   templateUrl: './allergies.component.html',
-  styleUrl: './allergies.component.css'
+  styleUrl: './allergies.component.css',
 })
 export class AllergiesComponent implements OnInit {
   allergies = signal<Allergy[]>([]);
@@ -50,27 +53,27 @@ export class AllergiesComponent implements OnInit {
     category: 'DRUG',
     severity: 'SEVERE',
     reactionDescription: '',
-    status: 'ACTIVE'
+    status: 'ACTIVE',
   };
 
   categories = [
     { label: 'Drug / Medication', value: 'DRUG' },
     { label: 'Food Allergy', value: 'FOOD' },
     { label: 'Environmental', value: 'ENVIRONMENTAL' },
-    { label: 'Other Allergen', value: 'OTHER' }
+    { label: 'Other Allergen', value: 'OTHER' },
   ];
 
   severities = [
     { label: 'Mild', value: 'MILD' },
     { label: 'Moderate', value: 'MODERATE' },
     { label: 'Severe', value: 'SEVERE' },
-    { label: 'Life Threatening', value: 'LIFE_THREATENING' }
+    { label: 'Life Threatening', value: 'LIFE_THREATENING' },
   ];
 
   constructor(
     private apiService: ApiService,
     public authService: AuthService,
-    public patientContext: PatientContextService
+    public patientContext: PatientContextService,
   ) {
     effect(() => {
       const active = this.patientContext.activePatient();
@@ -109,7 +112,7 @@ export class AllergiesComponent implements OnInit {
     if (this.isPatient()) {
       const u = this.authService.currentUser();
       if (u) {
-        this.apiService.getPatientByUserId(u.userId).subscribe(p => {
+        this.apiService.getPatientByUserId(u.userId).subscribe((p) => {
           if (p) {
             this.selectedPatientId = p.id;
             this.loadAllergies();
@@ -147,23 +150,31 @@ export class AllergiesComponent implements OnInit {
         this.allergies.set(res);
         this.loading.set(false);
       },
-      error: () => this.loading.set(false)
+      error: () => this.loading.set(false),
     });
   }
 
   saveAllergy(): void {
     if (this.selectedPatientId === 0 || !this.newAllergy.allergenName) return;
-    this.apiService.createAllergy({
-      patient: { id: Number(this.selectedPatientId) } as Patient,
-      allergenName: this.newAllergy.allergenName,
-      category: this.newAllergy.category,
-      severity: this.newAllergy.severity,
-      reactionDescription: this.newAllergy.reactionDescription,
-      status: this.newAllergy.status
-    }).subscribe(() => {
-      this.showModal.set(false);
-      this.newAllergy = { allergenName: '', category: 'DRUG', severity: 'SEVERE', reactionDescription: '', status: 'ACTIVE' };
-      this.loadAllergies();
-    });
+    this.apiService
+      .createAllergy({
+        patient: { id: Number(this.selectedPatientId) } as Patient,
+        allergenName: this.newAllergy.allergenName,
+        category: this.newAllergy.category,
+        severity: this.newAllergy.severity,
+        reactionDescription: this.newAllergy.reactionDescription,
+        status: this.newAllergy.status,
+      })
+      .subscribe(() => {
+        this.showModal.set(false);
+        this.newAllergy = {
+          allergenName: '',
+          category: 'DRUG',
+          severity: 'SEVERE',
+          reactionDescription: '',
+          status: 'ACTIVE',
+        };
+        this.loadAllergies();
+      });
   }
 }

@@ -14,7 +14,7 @@ export const textareaVariants = cva(
     defaultVariants: {
       error: false,
     },
-  }
+  },
 );
 
 export type TextareaVariants = VariantProps<typeof textareaVariants>;

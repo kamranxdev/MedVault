@@ -29,7 +29,7 @@ import {
   lucideSparkles,
   lucideLoader2,
   lucideHeartPulse,
-  lucideChevronRight
+  lucideChevronRight,
 } from '@ng-icons/lucide';
 
 @Component({
@@ -43,7 +43,7 @@ import {
     HlmBadgeImports,
     HasRoleDirective,
     HasAnyRoleDirective,
-    NgIcon
+    NgIcon,
   ],
   providers: [
     provideIcons({
@@ -64,11 +64,11 @@ import {
       lucideSparkles,
       lucideLoader2,
       lucideHeartPulse,
-      lucideChevronRight
-    })
+      lucideChevronRight,
+    }),
   ],
   templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.css'
+  styleUrl: './dashboard.component.css',
 })
 export class DashboardComponent implements OnInit {
   patientCount = signal(0);
@@ -82,7 +82,7 @@ export class DashboardComponent implements OnInit {
   constructor(
     public authService: AuthService,
     private apiService: ApiService,
-    public patientContext: PatientContextService
+    public patientContext: PatientContextService,
   ) {
     effect(() => {
       const active = this.patientContext.activePatient();
@@ -93,8 +93,10 @@ export class DashboardComponent implements OnInit {
   }
 
   private loadPatientMetrics(patientId: number): void {
-    this.apiService.getPrescriptionsByPatient(patientId).subscribe(rx => this.activeRxCount.set(rx.length));
-    this.apiService.getVitalsByPatient(patientId).subscribe(v => {
+    this.apiService
+      .getPrescriptionsByPatient(patientId)
+      .subscribe((rx) => this.activeRxCount.set(rx.length));
+    this.apiService.getVitalsByPatient(patientId).subscribe((v) => {
       if (v.length > 0) this.latestVitals.set(v[v.length - 1]);
       else this.latestVitals.set(null);
     });
@@ -108,11 +110,13 @@ export class DashboardComponent implements OnInit {
     if (this.authService.hasRole('ROLE_PATIENT')) {
       const u = this.currentUser;
       if (u) {
-        this.apiService.getPatientByUserId(u.userId).subscribe(p => {
+        this.apiService.getPatientByUserId(u.userId).subscribe((p) => {
           this.patient.set(p);
           if (p) {
-            this.apiService.getPrescriptionsByPatient(p.id).subscribe(rx => this.activeRxCount.set(rx.length));
-            this.apiService.getVitalsByPatient(p.id).subscribe(v => {
+            this.apiService
+              .getPrescriptionsByPatient(p.id)
+              .subscribe((rx) => this.activeRxCount.set(rx.length));
+            this.apiService.getVitalsByPatient(p.id).subscribe((v) => {
               if (v.length > 0) this.latestVitals.set(v[v.length - 1]);
             });
           }
@@ -128,7 +132,7 @@ export class DashboardComponent implements OnInit {
       next: (pts) => {
         this.patientCount.set(pts.length);
         this.recentPatients.set(pts);
-      }
+      },
     });
   }
 
@@ -144,7 +148,7 @@ export class DashboardComponent implements OnInit {
         this.loadClinicianData();
         this.patientContext.loadContext();
       },
-      error: () => this.generating.set(false)
+      error: () => this.generating.set(false),
     });
   }
 

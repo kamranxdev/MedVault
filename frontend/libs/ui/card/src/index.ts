@@ -1,19 +1,19 @@
 import {
-  HlmCardContentDirective,
-  HlmCardDescriptionDirective,
-  HlmCardDirective,
-  HlmCardFooterDirective,
-  HlmCardHeaderDirective,
-  HlmCardTitleDirective,
+  HlmCardContent,
+  HlmCardDescription,
+  HlmCard,
+  HlmCardFooter,
+  HlmCardHeader,
+  HlmCardTitle,
 } from './lib/hlm-card.directives';
 
 export * from './lib/hlm-card.directives';
 
 export const HlmCardImports = [
-  HlmCardDirective,
-  HlmCardHeaderDirective,
-  HlmCardTitleDirective,
-  HlmCardDescriptionDirective,
-  HlmCardContentDirective,
-  HlmCardFooterDirective,
+  HlmCard,
+  HlmCardHeader,
+  HlmCardTitle,
+  HlmCardDescription,
+  HlmCardContent,
+  HlmCardFooter,
 ] as const;

@@ -1,10 +1,10 @@
 import { BrnDialogImports } from '@spartan-ng/brain/dialog';
-import { HlmDialogContentComponent } from './lib/hlm-dialog-content.component';
+import { HlmDialogContent } from './lib/hlm-dialog-content.component';
 import {
-  HlmDialogDirective,
-  HlmDialogFooterDirective,
-  HlmDialogHeaderDirective,
-  HlmDialogTitleDirective,
+  HlmDialog,
+  HlmDialogFooter,
+  HlmDialogHeader,
+  HlmDialogTitle,
 } from './lib/hlm-dialog.directives';
 
 export * from './lib/hlm-dialog-content.component';
@@ -12,9 +12,9 @@ export * from './lib/hlm-dialog.directives';
 
 export const HlmDialogImports = [
   ...BrnDialogImports,
-  HlmDialogDirective,
-  HlmDialogContentComponent,
-  HlmDialogHeaderDirective,
-  HlmDialogTitleDirective,
-  HlmDialogFooterDirective,
+  HlmDialog,
+  HlmDialogContent,
+  HlmDialogHeader,
+  HlmDialogTitle,
+  HlmDialogFooter,
 ] as const;

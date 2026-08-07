@@ -36,7 +36,7 @@ import {
   lucidePill,
   lucideInfo,
   lucideUser,
-  lucideClock
+  lucideClock,
 } from '@ng-icons/lucide';
 import {
   Appointment,
@@ -50,7 +50,7 @@ import {
   Vitals,
   Diagnosis,
   Prescription,
-  SafetyCheckResult
+  SafetyCheckResult,
 } from '../../core/models/models';
 
 @Component({
@@ -67,7 +67,7 @@ import {
     HlmInputImports,
     HlmSelectImports,
     HlmTextareaImports,
-    NgIcon
+    NgIcon,
   ],
   providers: [
     provideIcons({
@@ -92,18 +92,18 @@ import {
       lucidePill,
       lucideInfo,
       lucideUser,
-      lucideClock
-    })
+      lucideClock,
+    }),
   ],
   templateUrl: './appointments.component.html',
-  styleUrl: './appointments.component.css'
+  styleUrl: './appointments.component.css',
 })
 export class AppointmentsComponent implements OnInit {
   appointments = signal<Appointment[]>([]);
   doctors = signal<User[]>([]);
   recommendedDoctors = signal<DoctorRecommendationDTO[]>([]);
   loading = signal(false);
-  
+
   // Modals
   showModal = signal(false);
   showWorkspaceModal = signal(false);
@@ -121,7 +121,7 @@ export class AppointmentsComponent implements OnInit {
     doctorId: 0,
     appointmentDate: '',
     reason: '',
-    notes: ''
+    notes: '',
   };
 
   currentPatientId = 0;
@@ -131,7 +131,7 @@ export class AppointmentsComponent implements OnInit {
     insuranceVerified: true,
     insuranceDetails: 'Star Health Premier Gold • Policy #STAR-9874102',
     reportsUploaded: 'Blood_Test_Report_July2026.pdf, ECG_Graph_Recent.png',
-    note: ''
+    note: '',
   };
 
   // --- NURSE TRIAGE STATE ---
@@ -144,7 +144,7 @@ export class AppointmentsComponent implements OnInit {
     heightCm: 170,
     weightKg: 70,
     bloodGlucose: 110,
-    nursingNotes: 'Patient appears well-hydrated. Vitals stable at pre-consultation intake.'
+    nursingNotes: 'Patient appears well-hydrated. Vitals stable at pre-consultation intake.',
   };
 
   // --- DOCTOR CONSULTATION STATE ---
@@ -166,7 +166,7 @@ export class AppointmentsComponent implements OnInit {
     labIndications: 'Routine 6-month cardiovascular panel review.',
 
     doctorNotes: 'Patient reports no adverse side-effects. Advised diet sodium restriction.',
-    followUpDate: ''
+    followUpDate: '',
   };
 
   // Safety alert during doctor consultation
@@ -183,7 +183,9 @@ export class AppointmentsComponent implements OnInit {
   editingNoteText = '';
 
   // History modal view for edits
-  selectedNoteHistory = signal<{ editedBy: string; editedAt: string; previousContent: string }[] | null>(null);
+  selectedNoteHistory = signal<
+    { editedBy: string; editedAt: string; previousContent: string }[] | null
+  >(null);
 
   // --- CANCELLATION MODAL STATE ---
   cancelAptTarget = signal<Appointment | null>(null);
@@ -199,13 +201,13 @@ export class AppointmentsComponent implements OnInit {
     triageFee: 30.0,
     labFee: 50.0,
     pharmacyFee: 40.0,
-    insuranceCoverage: 100.0
+    insuranceCoverage: 100.0,
   };
 
   constructor(
     private apiService: ApiService,
     public authService: AuthService,
-    public patientContext: PatientContextService
+    public patientContext: PatientContextService,
   ) {}
 
   isPatient(): boolean {
@@ -234,12 +236,12 @@ export class AppointmentsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.apiService.getDoctors().subscribe(d => this.doctors.set(d));
+    this.apiService.getDoctors().subscribe((d) => this.doctors.set(d));
 
     if (this.isPatient()) {
       const u = this.authService.currentUser();
       if (u) {
-        this.apiService.getPatientByUserId(u.userId).subscribe(p => {
+        this.apiService.getPatientByUserId(u.userId).subscribe((p) => {
           if (p) {
             this.currentPatientId = p.id;
             this.newApt.patientId = p.id;
@@ -259,7 +261,7 @@ export class AppointmentsComponent implements OnInit {
         this.appointments.set(apts);
         this.loading.set(false);
       },
-      error: () => this.loading.set(false)
+      error: () => this.loading.set(false),
     });
   }
 
@@ -270,7 +272,7 @@ export class AppointmentsComponent implements OnInit {
         this.appointments.set(apts);
         this.loading.set(false);
       },
-      error: () => this.loading.set(false)
+      error: () => this.loading.set(false),
     });
   }
 
@@ -295,14 +297,16 @@ export class AppointmentsComponent implements OnInit {
   }
 
   fetchDoctorRecommendations(): void {
-    this.apiService.getRecommendedDoctors(this.newApt.patientId || undefined, this.newApt.reason || undefined).subscribe({
-      next: (recs) => {
-        this.recommendedDoctors.set(recs);
-        if (recs && recs.length > 0 && (!this.newApt.doctorId || this.newApt.doctorId === 0)) {
-          this.newApt.doctorId = recs[0].doctor.id;
-        }
-      }
-    });
+    this.apiService
+      .getRecommendedDoctors(this.newApt.patientId || undefined, this.newApt.reason || undefined)
+      .subscribe({
+        next: (recs) => {
+          this.recommendedDoctors.set(recs);
+          if (recs && recs.length > 0 && (!this.newApt.doctorId || this.newApt.doctorId === 0)) {
+            this.newApt.doctorId = recs[0].doctor.id;
+          }
+        },
+      });
   }
 
   selectRecommendedDoctor(docId: number): void {
@@ -310,23 +314,31 @@ export class AppointmentsComponent implements OnInit {
   }
 
   saveAppointment(): void {
-    if (!this.newApt.patientId || !this.newApt.doctorId || !this.newApt.reason || !this.newApt.appointmentDate) return;
+    if (
+      !this.newApt.patientId ||
+      !this.newApt.doctorId ||
+      !this.newApt.reason ||
+      !this.newApt.appointmentDate
+    )
+      return;
 
-    this.apiService.scheduleAppointment({
-      patient: { id: Number(this.newApt.patientId) } as Patient,
-      doctor: { id: Number(this.newApt.doctorId) } as User,
-      appointmentDate: this.newApt.appointmentDate as any,
-      reason: this.newApt.reason,
-      notes: this.newApt.notes,
-      status: 'SCHEDULED',
-      stage: 'SCHEDULED'
-    }).subscribe({
-      next: () => {
-        this.showModal.set(false);
-        this.newApt = { patientId: 0, doctorId: 0, appointmentDate: '', reason: '', notes: '' };
-        this.refreshList();
-      }
-    });
+    this.apiService
+      .scheduleAppointment({
+        patient: { id: Number(this.newApt.patientId) } as Patient,
+        doctor: { id: Number(this.newApt.doctorId) } as User,
+        appointmentDate: this.newApt.appointmentDate as any,
+        reason: this.newApt.reason,
+        notes: this.newApt.notes,
+        status: 'SCHEDULED',
+        stage: 'SCHEDULED',
+      })
+      .subscribe({
+        next: () => {
+          this.showModal.set(false);
+          this.newApt = { patientId: 0, doctorId: 0, appointmentDate: '', reason: '', notes: '' };
+          this.refreshList();
+        },
+      });
   }
 
   refreshList(): void {
@@ -361,9 +373,9 @@ export class AppointmentsComponent implements OnInit {
   }
 
   loadWorkspaceData(aptId: number): void {
-    this.apiService.getAppointmentNotes(aptId).subscribe(n => this.appointmentNotes.set(n));
-    this.apiService.getLabOrders(aptId).subscribe(l => this.labOrdersList.set(l));
-    this.apiService.getBillingDetails(aptId).subscribe(b => this.appointmentBilling.set(b));
+    this.apiService.getAppointmentNotes(aptId).subscribe((n) => this.appointmentNotes.set(n));
+    this.apiService.getLabOrders(aptId).subscribe((l) => this.labOrdersList.set(l));
+    this.apiService.getBillingDetails(aptId).subscribe((b) => this.appointmentBilling.set(b));
   }
 
   // --- RECEPTIONIST CHECK-IN SUBMIT ---
@@ -371,17 +383,19 @@ export class AppointmentsComponent implements OnInit {
     const apt = this.activeAppointment();
     if (!apt || !apt.id) return;
 
-    this.apiService.checkInPatient(apt.id, {
-      insuranceVerified: this.receptionistForm.insuranceVerified,
-      insuranceDetails: this.receptionistForm.insuranceDetails,
-      reportsUploaded: this.receptionistForm.reportsUploaded,
-      note: this.receptionistForm.note
-    }).subscribe(updated => {
-      this.activeAppointment.set(updated);
-      this.loadWorkspaceData(updated.id!);
-      this.refreshList();
-      this.receptionistForm.note = '';
-    });
+    this.apiService
+      .checkInPatient(apt.id, {
+        insuranceVerified: this.receptionistForm.insuranceVerified,
+        insuranceDetails: this.receptionistForm.insuranceDetails,
+        reportsUploaded: this.receptionistForm.reportsUploaded,
+        note: this.receptionistForm.note,
+      })
+      .subscribe((updated) => {
+        this.activeAppointment.set(updated);
+        this.loadWorkspaceData(updated.id!);
+        this.refreshList();
+        this.receptionistForm.note = '';
+      });
   }
 
   // --- NURSE TRIAGE SUBMIT ---
@@ -389,7 +403,7 @@ export class AppointmentsComponent implements OnInit {
     const apt = this.activeAppointment();
     if (!apt || !apt.id) return;
 
-    this.apiService.recordTriageVitals(apt.id, this.nurseVitalsForm).subscribe(updated => {
+    this.apiService.recordTriageVitals(apt.id, this.nurseVitalsForm).subscribe((updated) => {
       this.activeAppointment.set(updated);
       this.loadWorkspaceData(updated.id!);
       this.refreshList();
@@ -409,12 +423,15 @@ export class AppointmentsComponent implements OnInit {
   addDiagnosisToDraft(): void {
     if (!this.doctorForm.diagnosisName) return;
     const current = this.diagnosesList();
-    this.diagnosesList.set([...current, {
-      conditionName: this.doctorForm.diagnosisName,
-      icdCode: this.doctorForm.icdCode,
-      snomedCode: this.doctorForm.snomedCode,
-      notes: this.doctorForm.diagnosisNotes
-    }]);
+    this.diagnosesList.set([
+      ...current,
+      {
+        conditionName: this.doctorForm.diagnosisName,
+        icdCode: this.doctorForm.icdCode,
+        snomedCode: this.doctorForm.snomedCode,
+        notes: this.doctorForm.diagnosisNotes,
+      },
+    ]);
     this.doctorForm.diagnosisName = '';
     this.doctorForm.icdCode = '';
   }
@@ -423,22 +440,27 @@ export class AppointmentsComponent implements OnInit {
     const apt = this.activeAppointment();
     if (!apt || !this.doctorForm.medicationName) return;
 
-    this.apiService.checkPrescriptionSafety(apt.patient.id, this.doctorForm.medicationName).subscribe(res => {
-      this.safetyAlert.set(res);
-    });
+    this.apiService
+      .checkPrescriptionSafety(apt.patient.id, this.doctorForm.medicationName)
+      .subscribe((res) => {
+        this.safetyAlert.set(res);
+      });
   }
 
   addPrescriptionToDraft(): void {
     if (!this.doctorForm.medicationName) return;
     const current = this.prescriptionsList();
-    this.prescriptionsList.set([...current, {
-      medicationName: this.doctorForm.medicationName,
-      rxNormCode: this.doctorForm.rxNormCode,
-      dosage: this.doctorForm.dosage,
-      frequency: this.doctorForm.frequency,
-      durationDays: this.doctorForm.durationDays,
-      instructions: this.doctorForm.instructions
-    }]);
+    this.prescriptionsList.set([
+      ...current,
+      {
+        medicationName: this.doctorForm.medicationName,
+        rxNormCode: this.doctorForm.rxNormCode,
+        dosage: this.doctorForm.dosage,
+        frequency: this.doctorForm.frequency,
+        durationDays: this.doctorForm.durationDays,
+        instructions: this.doctorForm.instructions,
+      },
+    ]);
     this.doctorForm.medicationName = '';
     this.safetyAlert.set(null);
   }
@@ -446,11 +468,14 @@ export class AppointmentsComponent implements OnInit {
   addLabOrderToDraft(): void {
     if (!this.doctorForm.labTestName) return;
     const current = this.labOrdersList();
-    this.labOrdersList.set([...current, {
-      testName: this.doctorForm.labTestName,
-      priority: this.doctorForm.labPriority,
-      clinicalIndications: this.doctorForm.labIndications
-    } as any]);
+    this.labOrdersList.set([
+      ...current,
+      {
+        testName: this.doctorForm.labTestName,
+        priority: this.doctorForm.labPriority,
+        clinicalIndications: this.doctorForm.labIndications,
+      } as any,
+    ]);
     this.doctorForm.labTestName = '';
   }
 
@@ -463,10 +488,10 @@ export class AppointmentsComponent implements OnInit {
       followUpDate: this.doctorForm.followUpDate,
       diagnoses: this.diagnosesList(),
       prescriptions: this.prescriptionsList(),
-      labOrders: this.labOrdersList()
+      labOrders: this.labOrdersList(),
     };
 
-    this.apiService.recordDoctorConsultation(apt.id, payload).subscribe(updated => {
+    this.apiService.recordDoctorConsultation(apt.id, payload).subscribe((updated) => {
       this.activeAppointment.set(updated);
       this.loadWorkspaceData(updated.id!);
       this.refreshList();
@@ -478,7 +503,7 @@ export class AppointmentsComponent implements OnInit {
     const apt = this.activeAppointment();
     if (!apt || !apt.id) return;
 
-    this.apiService.generateBilling(apt.id, this.billingForm).subscribe(b => {
+    this.apiService.generateBilling(apt.id, this.billingForm).subscribe((b) => {
       this.appointmentBilling.set(b);
       this.loadWorkspaceData(apt.id!);
       this.refreshList();
@@ -486,7 +511,11 @@ export class AppointmentsComponent implements OnInit {
   }
 
   calculateNetPayable(): number {
-    const total = this.billingForm.consultationFee + this.billingForm.triageFee + this.billingForm.labFee + this.billingForm.pharmacyFee;
+    const total =
+      this.billingForm.consultationFee +
+      this.billingForm.triageFee +
+      this.billingForm.labFee +
+      this.billingForm.pharmacyFee;
     return Math.max(0, total - this.billingForm.insuranceCoverage);
   }
 
@@ -495,9 +524,13 @@ export class AppointmentsComponent implements OnInit {
     const apt = this.activeAppointment();
     if (!apt || !apt.id || !this.newNoteText.trim()) return;
 
-    const noteType = this.isReceptionist() ? 'RECEPTIONIST_ADMIN' :
-                     this.isNurse() ? 'NURSE_OBSERVATION' :
-                     this.isDoctor() ? 'DOCTOR_CLINICAL' : 'PATIENT_REMARK';
+    const noteType = this.isReceptionist()
+      ? 'RECEPTIONIST_ADMIN'
+      : this.isNurse()
+        ? 'NURSE_OBSERVATION'
+        : this.isDoctor()
+          ? 'DOCTOR_CLINICAL'
+          : 'PATIENT_REMARK';
 
     this.apiService.addAppointmentNote(apt.id, noteType, this.newNoteText).subscribe(() => {
       this.newNoteText = '';
@@ -530,7 +563,11 @@ export class AppointmentsComponent implements OnInit {
   canEditNote(note: AppointmentNote): boolean {
     const user = this.authService.currentUser();
     if (!user) return false;
-    return user.userId === note.authorId || user.fullName === note.authorName || this.authService.isAdmin();
+    return (
+      user.userId === note.authorId ||
+      user.fullName === note.authorName ||
+      this.authService.isAdmin()
+    );
   }
 
   openNoteHistory(note: AppointmentNote): void {
@@ -574,7 +611,7 @@ export class AppointmentsComponent implements OnInit {
         'Booked by mistake',
         'Financial reason',
         'Going to another doctor',
-        'Other'
+        'Other',
       ];
     } else if (role === 'Doctor') {
       return [
@@ -584,7 +621,7 @@ export class AppointmentsComponent implements OnInit {
         'Leave',
         'Hospital emergency',
         'Schedule conflict',
-        'Other'
+        'Other',
       ];
     } else {
       // Receptionist / Admin
@@ -595,14 +632,17 @@ export class AppointmentsComponent implements OnInit {
         'Patient requested cancellation',
         'Payment issue',
         'Administrative reason',
-        'Other'
+        'Other',
       ];
     }
   }
 
   isCancellationSubmitDisabled(): boolean {
     if (!this.cancellationReason) return true;
-    if (this.cancellationReason === 'Other' && (!this.cancellationComment || !this.cancellationComment.trim())) {
+    if (
+      this.cancellationReason === 'Other' &&
+      (!this.cancellationComment || !this.cancellationComment.trim())
+    ) {
       return true;
     }
     return false;
@@ -612,29 +652,36 @@ export class AppointmentsComponent implements OnInit {
     const apt = this.cancelAptTarget();
     if (!apt || !apt.id) return;
 
-    if (this.cancellationReason === 'Other' && (!this.cancellationComment || !this.cancellationComment.trim())) {
-      this.cancellationError.set('Additional comments are mandatory when "Other" is selected as the cancellation reason.');
+    if (
+      this.cancellationReason === 'Other' &&
+      (!this.cancellationComment || !this.cancellationComment.trim())
+    ) {
+      this.cancellationError.set(
+        'Additional comments are mandatory when "Other" is selected as the cancellation reason.',
+      );
       return;
     }
 
-    this.apiService.cancelAppointment(apt.id, this.cancellationReason, this.cancellationComment).subscribe({
-      next: () => {
-        this.showCancelModal.set(false);
-        this.cancelAptTarget.set(null);
-        this.cancellationReason = '';
-        this.cancellationComment = '';
-        this.cancellationError.set(null);
-        this.refreshList();
-      },
-      error: (err) => {
-        this.cancellationError.set(err.error?.message || 'Failed to submit cancellation.');
-      }
-    });
+    this.apiService
+      .cancelAppointment(apt.id, this.cancellationReason, this.cancellationComment)
+      .subscribe({
+        next: () => {
+          this.showCancelModal.set(false);
+          this.cancelAptTarget.set(null);
+          this.cancellationReason = '';
+          this.cancellationComment = '';
+          this.cancellationError.set(null);
+          this.refreshList();
+        },
+        error: (err) => {
+          this.cancellationError.set(err.error?.message || 'Failed to submit cancellation.');
+        },
+      });
   }
 
   openCancellationDetailModal(apt: Appointment): void {
     if (!apt.id) return;
-    this.apiService.getCancellationDetails(apt.id).subscribe(c => {
+    this.apiService.getCancellationDetails(apt.id).subscribe((c) => {
       this.cancellationDetail.set(c);
       this.showCancellationDetailModal.set(true);
     });

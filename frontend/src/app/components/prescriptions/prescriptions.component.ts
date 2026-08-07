@@ -31,13 +31,11 @@ import { lucidePlus, lucidePill, lucideAlertCircle } from '@ng-icons/lucide';
     HlmInputImports,
     HlmSelectImports,
     HlmTextareaImports,
-    NgIcon
+    NgIcon,
   ],
-  providers: [
-    provideIcons({ lucidePlus, lucidePill, lucideAlertCircle })
-  ],
+  providers: [provideIcons({ lucidePlus, lucidePill, lucideAlertCircle })],
   templateUrl: './prescriptions.component.html',
-  styleUrl: './prescriptions.component.css'
+  styleUrl: './prescriptions.component.css',
 })
 export class PrescriptionsComponent implements OnInit {
   prescriptions = signal<Prescription[]>([]);
@@ -56,7 +54,7 @@ export class PrescriptionsComponent implements OnInit {
     frequency: 'Twice Daily',
     durationDays: 30,
     refills: 2,
-    instructions: ''
+    instructions: '',
   };
 
   routes = [
@@ -64,7 +62,7 @@ export class PrescriptionsComponent implements OnInit {
     { label: 'Intravenous (IV)', value: 'IV' },
     { label: 'Subcutaneous (SC)', value: 'Subcutaneous' },
     { label: 'Topical', value: 'Topical' },
-    { label: 'Inhalation', value: 'Inhalation' }
+    { label: 'Inhalation', value: 'Inhalation' },
   ];
 
   constructor(
@@ -109,7 +107,7 @@ export class PrescriptionsComponent implements OnInit {
     if (this.isPatient()) {
       const u = this.authService.currentUser();
       if (u) {
-        this.apiService.getPatientByUserId(u.userId).subscribe(p => {
+        this.apiService.getPatientByUserId(u.userId).subscribe((p) => {
           if (p) {
             this.selectedPatientId = p.id;
             this.loadRx(p.id);
@@ -140,35 +138,45 @@ export class PrescriptionsComponent implements OnInit {
   }
 
   loadRx(patientId: number): void {
-    this.apiService.getPrescriptionsByPatient(patientId).subscribe(rx => this.prescriptions.set(rx));
+    this.apiService
+      .getPrescriptionsByPatient(patientId)
+      .subscribe((rx) => this.prescriptions.set(rx));
   }
 
   onMedicationInputChange(): void {
-    if (!this.newRx.medicationName || this.newRx.medicationName.trim().length < 3 || this.selectedPatientId === 0) {
+    if (
+      !this.newRx.medicationName ||
+      this.newRx.medicationName.trim().length < 3 ||
+      this.selectedPatientId === 0
+    ) {
       this.inlineSafetyCheck.set(null);
       return;
     }
 
-    this.apiService.validatePrescriptionSafety(this.selectedPatientId, this.newRx.medicationName).subscribe({
-      next: (res) => this.inlineSafetyCheck.set(res),
-      error: () => this.inlineSafetyCheck.set(null)
-    });
+    this.apiService
+      .validatePrescriptionSafety(this.selectedPatientId, this.newRx.medicationName)
+      .subscribe({
+        next: (res) => this.inlineSafetyCheck.set(res),
+        error: () => this.inlineSafetyCheck.set(null),
+      });
   }
 
   handlePrescriptionSubmit(): void {
     if (!this.newRx.medicationName || this.selectedPatientId === 0) return;
 
-    this.apiService.checkPrescriptionSafety(this.selectedPatientId, this.newRx.medicationName).subscribe({
-      next: (safety) => {
-        if (!safety.safe) {
-          this.safetyAlert.set(safety);
-          this.showSafetyModal.set(true);
-        } else {
-          this.executeSave(false);
-        }
-      },
-      error: () => this.executeSave(false)
-    });
+    this.apiService
+      .checkPrescriptionSafety(this.selectedPatientId, this.newRx.medicationName)
+      .subscribe({
+        next: (safety) => {
+          if (!safety.safe) {
+            this.safetyAlert.set(safety);
+            this.showSafetyModal.set(true);
+          } else {
+            this.executeSave(false);
+          }
+        },
+        error: () => this.executeSave(false),
+      });
   }
 
   forceSavePrescription(): void {
@@ -183,29 +191,42 @@ export class PrescriptionsComponent implements OnInit {
   private executeSave(overrideWarning: boolean): void {
     let finalInstructions = this.newRx.instructions;
     if (overrideWarning && this.overrideJustification) {
-      finalInstructions += " [CLINICAL OVERRIDE RATIONALE: " + this.overrideJustification + "]";
+      finalInstructions += ' [CLINICAL OVERRIDE RATIONALE: ' + this.overrideJustification + ']';
     }
 
-    this.apiService.createPrescription({
-      patient: { id: Number(this.selectedPatientId) } as Patient,
-      medicationName: this.newRx.medicationName,
-      dosage: this.newRx.dosage,
-      route: this.newRx.route,
-      frequency: this.newRx.frequency,
-      durationDays: Number(this.newRx.durationDays),
-      refills: Number(this.newRx.refills),
-      instructions: finalInstructions,
-      status: 'ACTIVE'
-    }, overrideWarning).subscribe({
-      next: () => {
-        this.showModal.set(false);
-        this.showSafetyModal.set(false);
-        this.safetyAlert.set(null);
-        this.inlineSafetyCheck.set(null);
-        this.overrideJustification = '';
-        this.newRx = { medicationName: '', dosage: '500 mg', route: 'Oral', frequency: 'Twice Daily', durationDays: 30, refills: 2, instructions: '' };
-        this.loadRx(this.selectedPatientId);
-      }
-    });
+    this.apiService
+      .createPrescription(
+        {
+          patient: { id: Number(this.selectedPatientId) } as Patient,
+          medicationName: this.newRx.medicationName,
+          dosage: this.newRx.dosage,
+          route: this.newRx.route,
+          frequency: this.newRx.frequency,
+          durationDays: Number(this.newRx.durationDays),
+          refills: Number(this.newRx.refills),
+          instructions: finalInstructions,
+          status: 'ACTIVE',
+        },
+        overrideWarning,
+      )
+      .subscribe({
+        next: () => {
+          this.showModal.set(false);
+          this.showSafetyModal.set(false);
+          this.safetyAlert.set(null);
+          this.inlineSafetyCheck.set(null);
+          this.overrideJustification = '';
+          this.newRx = {
+            medicationName: '',
+            dosage: '500 mg',
+            route: 'Oral',
+            frequency: 'Twice Daily',
+            durationDays: 30,
+            refills: 2,
+            instructions: '',
+          };
+          this.loadRx(this.selectedPatientId);
+        },
+      });
   }
 }

@@ -20,22 +20,20 @@ import { lucidePlus, lucideActivity, lucideAlertCircle } from '@ng-icons/lucide'
   selector: 'app-vitals',
   standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
-    HlmCardImports, 
-    HlmTableImports, 
-    HlmBadgeImports, 
-    HlmButtonImports, 
-    HlmDialogImports, 
-    HlmInputImports, 
-    HlmSelectImports, 
-    NgIcon
+    CommonModule,
+    FormsModule,
+    HlmCardImports,
+    HlmTableImports,
+    HlmBadgeImports,
+    HlmButtonImports,
+    HlmDialogImports,
+    HlmInputImports,
+    HlmSelectImports,
+    NgIcon,
   ],
-  providers: [
-    provideIcons({ lucidePlus, lucideActivity, lucideAlertCircle })
-  ],
+  providers: [provideIcons({ lucidePlus, lucideActivity, lucideAlertCircle })],
   templateUrl: './vitals.component.html',
-  styleUrl: './vitals.component.css'
+  styleUrl: './vitals.component.css',
 })
 export class VitalsComponent implements OnInit {
   vitalsList = signal<Vitals[]>([]);
@@ -50,13 +48,13 @@ export class VitalsComponent implements OnInit {
     oxygenSaturation: 98,
     bloodGlucose: 115,
     heightCm: 170,
-    weightKg: 70
+    weightKg: 70,
   };
 
   constructor(
-    private apiService: ApiService, 
+    private apiService: ApiService,
     public authService: AuthService,
-    public patientContext: PatientContextService
+    public patientContext: PatientContextService,
   ) {
     effect(() => {
       const active = this.patientContext.activePatient();
@@ -95,7 +93,7 @@ export class VitalsComponent implements OnInit {
     if (this.isPatient()) {
       const u = this.authService.currentUser();
       if (u) {
-        this.apiService.getPatientByUserId(u.userId).subscribe(p => {
+        this.apiService.getPatientByUserId(u.userId).subscribe((p) => {
           if (p) {
             this.selectedPatientId = p.id;
             this.loadVitals(p.id);
@@ -127,7 +125,7 @@ export class VitalsComponent implements OnInit {
   }
 
   loadVitals(patientId: number): void {
-    this.apiService.getVitalsByPatient(patientId).subscribe(v => {
+    this.apiService.getVitalsByPatient(patientId).subscribe((v) => {
       this.vitalsList.set(v);
       if (v.length > 0) {
         this.latestVitals.set(v[0]);
@@ -139,20 +137,22 @@ export class VitalsComponent implements OnInit {
 
   saveVitals(): void {
     if (this.selectedPatientId === 0) return;
-    this.apiService.recordVitals({
-      patient: { id: Number(this.selectedPatientId) } as Patient,
-      bloodPressure: this.newVitals.bloodPressure,
-      heartRate: Number(this.newVitals.heartRate),
-      temperature: Number(this.newVitals.temperature),
-      oxygenSaturation: Number(this.newVitals.oxygenSaturation),
-      bloodGlucose: Number(this.newVitals.bloodGlucose),
-      heightCm: Number(this.newVitals.heightCm),
-      weightKg: Number(this.newVitals.weightKg)
-    }).subscribe({
-      next: () => {
-        this.showModal.set(false);
-        this.loadVitals(Number(this.selectedPatientId));
-      }
-    });
+    this.apiService
+      .recordVitals({
+        patient: { id: Number(this.selectedPatientId) } as Patient,
+        bloodPressure: this.newVitals.bloodPressure,
+        heartRate: Number(this.newVitals.heartRate),
+        temperature: Number(this.newVitals.temperature),
+        oxygenSaturation: Number(this.newVitals.oxygenSaturation),
+        bloodGlucose: Number(this.newVitals.bloodGlucose),
+        heightCm: Number(this.newVitals.heightCm),
+        weightKg: Number(this.newVitals.weightKg),
+      })
+      .subscribe({
+        next: () => {
+          this.showModal.set(false);
+          this.loadVitals(Number(this.selectedPatientId));
+        },
+      });
   }
 }

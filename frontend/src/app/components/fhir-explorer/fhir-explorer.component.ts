@@ -7,7 +7,7 @@ import { ApiService } from '../../core/services/api.service';
   selector: 'app-fhir-explorer',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './fhir-explorer.component.html'
+  templateUrl: './fhir-explorer.component.html',
 })
 export class FhirExplorerComponent implements OnInit {
   activeTab: 'query' | 'conformance' | 'ingest' = 'query';
@@ -17,7 +17,7 @@ export class FhirExplorerComponent implements OnInit {
   selectedResourceId = '';
   patientIdFilter = '';
   isEverythingQuery = false;
-  
+
   // Results state
   jsonResult: string = '';
   rawResult: any = null;
@@ -28,25 +28,25 @@ export class FhirExplorerComponent implements OnInit {
   copied = false;
 
   // Ingest tab state
-  sampleIngestPayload = JSON.stringify({
-    resourceType: "Patient",
-    identifier: [
-      { use: "official", system: "urn:oid:2.16.840.1.113883.4.1", value: "MRN-FHIR-99" },
-      { use: "secondary", system: "urn:oid:2.16.840.1.113883.4.1.ssn", value: "999-00-1234" }
-    ],
-    name: [
-      { use: "official", text: "Eleanor Vance", family: "Vance", given: ["Eleanor"] }
-    ],
-    gender: "female",
-    birthDate: "1990-03-15",
-    telecom: [
-      { system: "phone", value: "+1-555-0199", use: "mobile" },
-      { system: "email", value: "eleanor.vance@example.com", use: "home" }
-    ],
-    address: [
-      { use: "home", text: "742 Evergreen Terrace, Springfield, OR" }
-    ]
-  }, null, 2);
+  sampleIngestPayload = JSON.stringify(
+    {
+      resourceType: 'Patient',
+      identifier: [
+        { use: 'official', system: 'urn:oid:2.16.840.1.113883.4.1', value: 'MRN-FHIR-99' },
+        { use: 'secondary', system: 'urn:oid:2.16.840.1.113883.4.1.ssn', value: '999-00-1234' },
+      ],
+      name: [{ use: 'official', text: 'Eleanor Vance', family: 'Vance', given: ['Eleanor'] }],
+      gender: 'female',
+      birthDate: '1990-03-15',
+      telecom: [
+        { system: 'phone', value: '+1-555-0199', use: 'mobile' },
+        { system: 'email', value: 'eleanor.vance@example.com', use: 'home' },
+      ],
+      address: [{ use: 'home', text: '742 Evergreen Terrace, Springfield, OR' }],
+    },
+    null,
+    2,
+  );
 
   ingestStatus = '';
   ingestLoading = false;
@@ -80,7 +80,7 @@ export class FhirExplorerComponent implements OnInit {
         this.errorMsg = err.error?.message || 'Failed to fetch FHIR CapabilityStatement metadata';
         this.jsonResult = JSON.stringify(err.error || { status: err.status }, null, 2);
         this.httpStatus = err.status || 500;
-      }
+      },
     });
   }
 
@@ -96,22 +96,24 @@ export class FhirExplorerComponent implements OnInit {
     if (this.isEverythingQuery && patientId) {
       this.apiService.getFhirPatientEverything(patientId).subscribe({
         next: (res) => this.handleSuccess(res),
-        error: (err) => this.handleError(err)
+        error: (err) => this.handleError(err),
       });
       return;
     }
 
     if (this.selectedResourceId.trim()) {
-      this.apiService.getFhirResourceById(this.selectedResource, this.selectedResourceId.trim()).subscribe({
-        next: (res) => this.handleSuccess(res),
-        error: (err) => this.handleError(err)
-      });
+      this.apiService
+        .getFhirResourceById(this.selectedResource, this.selectedResourceId.trim())
+        .subscribe({
+          next: (res) => this.handleSuccess(res),
+          error: (err) => this.handleError(err),
+        });
       return;
     }
 
     this.apiService.getFhirResource(this.selectedResource, patientId).subscribe({
       next: (res) => this.handleSuccess(res),
-      error: (err) => this.handleError(err)
+      error: (err) => this.handleError(err),
     });
   }
 
@@ -132,13 +134,17 @@ export class FhirExplorerComponent implements OnInit {
     this.httpStatus = err.status || 500;
     this.rawResult = err.error;
     this.jsonResult = JSON.stringify(err.error || { error: 'Unknown Error' }, null, 2);
-    this.errorMsg = 'FHIR Error (' + this.httpStatus + '): ' + (err.error?.issue?.[0]?.diagnostics || err.message);
+    this.errorMsg =
+      'FHIR Error (' +
+      this.httpStatus +
+      '): ' +
+      (err.error?.issue?.[0]?.diagnostics || err.message);
   }
 
   copyJson() {
     navigator.clipboard.writeText(this.jsonResult);
     this.copied = true;
-    setTimeout(() => this.copied = false, 2000);
+    setTimeout(() => (this.copied = false), 2000);
   }
 
   submitIngest() {
@@ -159,7 +165,7 @@ export class FhirExplorerComponent implements OnInit {
         error: (err) => {
           this.ingestLoading = false;
           this.ingestStatus = 'FAILED: ' + (err.error?.issue?.[0]?.diagnostics || err.message);
-        }
+        },
       });
     } catch (e: any) {
       this.ingestStatus = 'INVALID JSON: ' + e.message;

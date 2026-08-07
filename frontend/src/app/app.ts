@@ -157,11 +157,21 @@ export class App implements OnInit, OnDestroy {
     return patient ? `${patient.fullName} (MRN: ${patient.patientCode})` : '';
   };
 
-  isDoctor(): boolean { return this.authService.hasRole('ROLE_DOCTOR'); }
-  isNurse(): boolean { return this.authService.hasRole('ROLE_NURSE'); }
-  isAdmin(): boolean { return this.authService.hasRole('ROLE_ADMIN'); }
-  isAuditor(): boolean { return this.authService.hasRole('ROLE_AUDITOR'); }
-  isPatient(): boolean { return this.authService.hasRole('ROLE_PATIENT'); }
+  isDoctor(): boolean {
+    return this.authService.hasRole('ROLE_DOCTOR');
+  }
+  isNurse(): boolean {
+    return this.authService.hasRole('ROLE_NURSE');
+  }
+  isAdmin(): boolean {
+    return this.authService.hasRole('ROLE_ADMIN');
+  }
+  isAuditor(): boolean {
+    return this.authService.hasRole('ROLE_AUDITOR');
+  }
+  isPatient(): boolean {
+    return this.authService.hasRole('ROLE_PATIENT');
+  }
 
   primaryRole(): string {
     const roles = this.authService.currentUser()?.roles || [];
@@ -174,41 +184,80 @@ export class App implements OnInit, OnDestroy {
 
   userInitials(): string {
     const name = this.authService.currentUser()?.fullName || 'User';
-    return name.split(' ').map((n) => n[0]).join('').substring(0, 2).toUpperCase();
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .substring(0, 2)
+      .toUpperCase();
   }
 
   navGroups = computed<NavGroup[]>(() => {
     if (this.isDoctor()) {
-      return [{
-        label: 'Physician Desk Workspace',
-        items: [
-          { icon: 'lucideLayoutDashboard', label: 'Clinician Dashboard', routerLink: '/dashboard' },
-          { icon: 'lucideHeartPulse', label: 'Patient Charts (MPI)', routerLink: '/patients' },
-          { icon: 'lucideFileText', label: 'SOAP Progress Notes', routerLink: '/records' },
-          { icon: 'lucideHospital', label: 'Visits & Consultations', routerLink: '/encounters' },
-          { icon: 'lucidePill', label: 'Pharmacy & eRx Orders', routerLink: '/prescriptions' },
-          { icon: 'lucideListChecks', label: 'Problem List (ICD-10)', routerLink: '/diagnoses' },
-          { icon: 'lucideTriangleAlert', label: 'Allergies & Risk Register', routerLink: '/allergies' },
-          { icon: 'lucideActivity', label: 'Bedside Vitals', routerLink: '/vitals' },
-          { icon: 'lucideCalendarClock', label: 'Consultation Schedule', routerLink: '/appointments' },
-          { icon: 'lucideShieldCheck', label: 'FHIR R4 Explorer', routerLink: '/fhir-explorer', badge: 'R4 API' },
-        ],
-      }];
+      return [
+        {
+          label: 'Physician Desk Workspace',
+          items: [
+            {
+              icon: 'lucideLayoutDashboard',
+              label: 'Clinician Dashboard',
+              routerLink: '/dashboard',
+            },
+            { icon: 'lucideHeartPulse', label: 'Patient Charts (MPI)', routerLink: '/patients' },
+            { icon: 'lucideFileText', label: 'SOAP Progress Notes', routerLink: '/records' },
+            { icon: 'lucideHospital', label: 'Visits & Consultations', routerLink: '/encounters' },
+            { icon: 'lucidePill', label: 'Pharmacy & eRx Orders', routerLink: '/prescriptions' },
+            { icon: 'lucideListChecks', label: 'Problem List (ICD-10)', routerLink: '/diagnoses' },
+            {
+              icon: 'lucideTriangleAlert',
+              label: 'Allergies & Risk Register',
+              routerLink: '/allergies',
+            },
+            { icon: 'lucideActivity', label: 'Bedside Vitals', routerLink: '/vitals' },
+            {
+              icon: 'lucideCalendarClock',
+              label: 'Consultation Schedule',
+              routerLink: '/appointments',
+            },
+            {
+              icon: 'lucideShieldCheck',
+              label: 'FHIR R4 Explorer',
+              routerLink: '/fhir-explorer',
+              badge: 'R4 API',
+            },
+          ],
+        },
+      ];
     }
     if (this.isNurse()) {
-      return [{
-        label: 'Nurse Station Workspace',
-        items: [
-          { icon: 'lucideLayoutDashboard', label: 'Nursing Station', routerLink: '/dashboard' },
-          { icon: 'lucideHeartPulse', label: 'Patient Care Charts', routerLink: '/patients' },
-          { icon: 'lucideActivity', label: 'Bedside Vitals Flowsheet', routerLink: '/vitals' },
-          { icon: 'lucideTriangleAlert', label: 'Coded Allergies & ADRs', routerLink: '/allergies' },
-          { icon: 'lucidePill', label: 'Medication Orders (MAR)', routerLink: '/prescriptions' },
-          { icon: 'lucideHospital', label: 'Patient Intake & Visits', routerLink: '/encounters' },
-          { icon: 'lucideCalendarClock', label: 'Unit Ward Schedule', routerLink: '/appointments' },
-          { icon: 'lucideShieldCheck', label: 'FHIR R4 Explorer', routerLink: '/fhir-explorer', badge: 'R4 API' },
-        ],
-      }];
+      return [
+        {
+          label: 'Nurse Station Workspace',
+          items: [
+            { icon: 'lucideLayoutDashboard', label: 'Nursing Station', routerLink: '/dashboard' },
+            { icon: 'lucideHeartPulse', label: 'Patient Care Charts', routerLink: '/patients' },
+            { icon: 'lucideActivity', label: 'Bedside Vitals Flowsheet', routerLink: '/vitals' },
+            {
+              icon: 'lucideTriangleAlert',
+              label: 'Coded Allergies & ADRs',
+              routerLink: '/allergies',
+            },
+            { icon: 'lucidePill', label: 'Medication Orders (MAR)', routerLink: '/prescriptions' },
+            { icon: 'lucideHospital', label: 'Patient Intake & Visits', routerLink: '/encounters' },
+            {
+              icon: 'lucideCalendarClock',
+              label: 'Unit Ward Schedule',
+              routerLink: '/appointments',
+            },
+            {
+              icon: 'lucideShieldCheck',
+              label: 'FHIR R4 Explorer',
+              routerLink: '/fhir-explorer',
+              badge: 'R4 API',
+            },
+          ],
+        },
+      ];
     }
     if (this.isAdmin()) {
       return [
@@ -216,47 +265,94 @@ export class App implements OnInit, OnDestroy {
           label: 'Hospital Admin & Intake',
           items: [
             { icon: 'lucideLayoutDashboard', label: 'Command Center', routerLink: '/dashboard' },
-            { icon: 'lucideHeartPulse', label: 'Master Patient Index (MPI)', routerLink: '/patients' },
-            { icon: 'lucideHospital', label: 'Intake Visits & Admissions', routerLink: '/encounters' },
-            { icon: 'lucideCalendarClock', label: 'Appointment Scheduling', routerLink: '/appointments' },
+            {
+              icon: 'lucideHeartPulse',
+              label: 'Master Patient Index (MPI)',
+              routerLink: '/patients',
+            },
+            {
+              icon: 'lucideHospital',
+              label: 'Intake Visits & Admissions',
+              routerLink: '/encounters',
+            },
+            {
+              icon: 'lucideCalendarClock',
+              label: 'Appointment Scheduling',
+              routerLink: '/appointments',
+            },
           ],
         },
         {
           label: 'System Administration',
           items: [
             { icon: 'lucideSettings', label: 'User RBAC Management', routerLink: '/admin' },
-            { icon: 'lucideShieldCheck', label: 'HIPAA Compliance Vault', routerLink: '/audit-ledger' },
-            { icon: 'lucideHeartPulse', label: 'FHIR R4 Interop Explorer', routerLink: '/fhir-explorer', badge: 'R4 API' },
+            {
+              icon: 'lucideShieldCheck',
+              label: 'HIPAA Compliance Vault',
+              routerLink: '/audit-ledger',
+            },
+            {
+              icon: 'lucideHeartPulse',
+              label: 'FHIR R4 Interop Explorer',
+              routerLink: '/fhir-explorer',
+              badge: 'R4 API',
+            },
           ],
         },
       ];
     }
     if (this.isAuditor()) {
-      return [{
-        label: 'Audit & Forensics Vault',
-        items: [
-          { icon: 'lucideLayoutDashboard', label: 'Compliance Overview', routerLink: '/dashboard' },
-          { icon: 'lucideShieldCheck', label: 'HIPAA WORM Audit Vault', routerLink: '/audit-ledger' },
-          { icon: 'lucideHeartPulse', label: 'Patient Access Audit Logs', routerLink: '/patients' },
-          { icon: 'lucideShieldCheck', label: 'FHIR R4 Interop Explorer', routerLink: '/fhir-explorer', badge: 'R4 API' },
-        ],
-      }];
+      return [
+        {
+          label: 'Audit & Forensics Vault',
+          items: [
+            {
+              icon: 'lucideLayoutDashboard',
+              label: 'Compliance Overview',
+              routerLink: '/dashboard',
+            },
+            {
+              icon: 'lucideShieldCheck',
+              label: 'HIPAA WORM Audit Vault',
+              routerLink: '/audit-ledger',
+            },
+            {
+              icon: 'lucideHeartPulse',
+              label: 'Patient Access Audit Logs',
+              routerLink: '/patients',
+            },
+            {
+              icon: 'lucideShieldCheck',
+              label: 'FHIR R4 Interop Explorer',
+              routerLink: '/fhir-explorer',
+              badge: 'R4 API',
+            },
+          ],
+        },
+      ];
     }
-    return [{
-      label: 'My Personal Health Record',
-      items: [
-        { icon: 'lucideLayoutDashboard', label: 'My Health Summary', routerLink: '/dashboard' },
-        { icon: 'lucideHeartPulse', label: 'My Patient Chart', routerLink: '/patients' },
-        { icon: 'lucidePill', label: 'My Prescriptions', routerLink: '/prescriptions' },
-        { icon: 'lucideActivity', label: 'My Vitals Trends', routerLink: '/vitals' },
-        { icon: 'lucideTriangleAlert', label: 'My Allergies', routerLink: '/allergies' },
-        { icon: 'lucideListChecks', label: 'My Problem List', routerLink: '/diagnoses' },
-        { icon: 'lucideFileText', label: 'My Progress Notes', routerLink: '/records' },
-        { icon: 'lucideHospital', label: 'My Visit History', routerLink: '/encounters' },
-        { icon: 'lucideCalendarClock', label: 'My Appointments', routerLink: '/appointments' },
-        { icon: 'lucideShieldCheck', label: 'FHIR R4 Interop Explorer', routerLink: '/fhir-explorer', badge: 'R4 API' },
-      ],
-    }];
+    return [
+      {
+        label: 'My Personal Health Record',
+        items: [
+          { icon: 'lucideLayoutDashboard', label: 'My Health Summary', routerLink: '/dashboard' },
+          { icon: 'lucideHeartPulse', label: 'My Patient Chart', routerLink: '/patients' },
+          { icon: 'lucidePill', label: 'My Prescriptions', routerLink: '/prescriptions' },
+          { icon: 'lucideActivity', label: 'My Vitals Trends', routerLink: '/vitals' },
+          { icon: 'lucideTriangleAlert', label: 'My Allergies', routerLink: '/allergies' },
+          { icon: 'lucideListChecks', label: 'My Problem List', routerLink: '/diagnoses' },
+          { icon: 'lucideFileText', label: 'My Progress Notes', routerLink: '/records' },
+          { icon: 'lucideHospital', label: 'My Visit History', routerLink: '/encounters' },
+          { icon: 'lucideCalendarClock', label: 'My Appointments', routerLink: '/appointments' },
+          {
+            icon: 'lucideShieldCheck',
+            label: 'FHIR R4 Interop Explorer',
+            routerLink: '/fhir-explorer',
+            badge: 'R4 API',
+          },
+        ],
+      },
+    ];
   });
 
   logout(): void {

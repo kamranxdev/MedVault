@@ -31,13 +31,11 @@ import { lucidePlus, lucideStethoscope, lucideLoader2, lucideAlertCircle } from 
     HlmInputImports,
     HlmSelectImports,
     HlmTextareaImports,
-    NgIcon
+    NgIcon,
   ],
-  providers: [
-    provideIcons({ lucidePlus, lucideStethoscope, lucideLoader2, lucideAlertCircle })
-  ],
+  providers: [provideIcons({ lucidePlus, lucideStethoscope, lucideLoader2, lucideAlertCircle })],
   templateUrl: './diagnoses.component.html',
-  styleUrl: './diagnoses.component.css'
+  styleUrl: './diagnoses.component.css',
 })
 export class DiagnosesComponent implements OnInit {
   diagnoses = signal<Diagnosis[]>([]);
@@ -50,13 +48,13 @@ export class DiagnosesComponent implements OnInit {
     icdCode: '',
     onsetDate: '',
     notes: '',
-    status: 'ACTIVE'
+    status: 'ACTIVE',
   };
 
   constructor(
     private apiService: ApiService,
     public authService: AuthService,
-    public patientContext: PatientContextService
+    public patientContext: PatientContextService,
   ) {
     effect(() => {
       const active = this.patientContext.activePatient();
@@ -95,7 +93,7 @@ export class DiagnosesComponent implements OnInit {
     if (this.isPatient()) {
       const u = this.authService.currentUser();
       if (u) {
-        this.apiService.getPatientByUserId(u.userId).subscribe(p => {
+        this.apiService.getPatientByUserId(u.userId).subscribe((p) => {
           if (p) {
             this.selectedPatientId = p.id;
             this.loadDiagnoses();
@@ -133,23 +131,31 @@ export class DiagnosesComponent implements OnInit {
         this.diagnoses.set(res);
         this.loading.set(false);
       },
-      error: () => this.loading.set(false)
+      error: () => this.loading.set(false),
     });
   }
 
   saveDiagnosis(): void {
     if (this.selectedPatientId === 0 || !this.newDiagnosis.conditionName) return;
-    this.apiService.createDiagnosis({
-      patient: { id: Number(this.selectedPatientId) } as Patient,
-      conditionName: this.newDiagnosis.conditionName,
-      icdCode: this.newDiagnosis.icdCode,
-      onsetDate: this.newDiagnosis.onsetDate || new Date().toISOString().split('T')[0],
-      status: this.newDiagnosis.status,
-      notes: this.newDiagnosis.notes
-    }).subscribe(() => {
-      this.showModal.set(false);
-      this.newDiagnosis = { conditionName: '', icdCode: '', onsetDate: '', notes: '', status: 'ACTIVE' };
-      this.loadDiagnoses();
-    });
+    this.apiService
+      .createDiagnosis({
+        patient: { id: Number(this.selectedPatientId) } as Patient,
+        conditionName: this.newDiagnosis.conditionName,
+        icdCode: this.newDiagnosis.icdCode,
+        onsetDate: this.newDiagnosis.onsetDate || new Date().toISOString().split('T')[0],
+        status: this.newDiagnosis.status,
+        notes: this.newDiagnosis.notes,
+      })
+      .subscribe(() => {
+        this.showModal.set(false);
+        this.newDiagnosis = {
+          conditionName: '',
+          icdCode: '',
+          onsetDate: '',
+          notes: '',
+          status: 'ACTIVE',
+        };
+        this.loadDiagnoses();
+      });
   }
 }

@@ -8,7 +8,7 @@ import { cva } from 'class-variance-authority';
   standalone: true,
   hostDirectives: [BrnDialog],
 })
-export class HlmDialogDirective {}
+export class HlmDialog {}
 
 const headerVariants = cva('flex flex-col space-y-1.5 text-center sm:text-left');
 @Directive({
@@ -16,7 +16,7 @@ const headerVariants = cva('flex flex-col space-y-1.5 text-center sm:text-left')
   standalone: true,
   host: { 'data-slot': 'dialog-header' },
 })
-export class HlmDialogHeaderDirective {
+export class HlmDialogHeader {
   constructor() {
     classes(() => headerVariants());
   }
@@ -28,7 +28,7 @@ const titleVariants = cva('text-lg font-semibold leading-none tracking-tight');
   standalone: true,
   host: { 'data-slot': 'dialog-title' },
 })
-export class HlmDialogTitleDirective {
+export class HlmDialogTitle {
   constructor() {
     classes(() => titleVariants());
   }
@@ -40,7 +40,7 @@ const footerVariants = cva('flex flex-col-reverse sm:flex-row sm:justify-end sm:
   standalone: true,
   host: { 'data-slot': 'dialog-footer' },
 })
-export class HlmDialogFooterDirective {
+export class HlmDialogFooter {
   constructor() {
     classes(() => footerVariants());
   }

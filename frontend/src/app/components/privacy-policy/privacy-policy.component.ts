@@ -14,7 +14,7 @@ import {
   lucideHeartPulse,
   lucideChevronLeft,
   lucideScale,
-  lucideAlertCircle
+  lucideAlertCircle,
 } from '@ng-icons/lucide';
 
 @Component({
@@ -34,10 +34,10 @@ import {
       lucideHeartPulse,
       lucideChevronLeft,
       lucideScale,
-      lucideAlertCircle
-    })
+      lucideAlertCircle,
+    }),
   ],
-  templateUrl: './privacy-policy.component.html'
+  templateUrl: './privacy-policy.component.html',
 })
 export class PrivacyPolicyComponent implements OnInit {
   lastUpdated = 'August 2, 2026';

@@ -1,19 +1,19 @@
 import {
-  HlmTableBodyDirective,
-  HlmTableCellDirective,
-  HlmTableDirective,
-  HlmTableHeadDirective,
-  HlmTableHeaderDirective,
-  HlmTableRowDirective,
+  HlmTableBody,
+  HlmTableCell,
+  HlmTable,
+  HlmTableHead,
+  HlmTableHeader,
+  HlmTableRow,
 } from './lib/hlm-table.directives';
 
 export * from './lib/hlm-table.directives';
 
 export const HlmTableImports = [
-  HlmTableDirective,
-  HlmTableHeaderDirective,
-  HlmTableBodyDirective,
-  HlmTableRowDirective,
-  HlmTableHeadDirective,
-  HlmTableCellDirective,
+  HlmTable,
+  HlmTableHeader,
+  HlmTableBody,
+  HlmTableRow,
+  HlmTableHead,
+  HlmTableCell,
 ] as const;

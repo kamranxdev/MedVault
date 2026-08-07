@@ -33,7 +33,7 @@ import {
   lucideFileCode,
   lucideDatabase,
   lucideSun,
-  lucideMoon
+  lucideMoon,
 } from '@ng-icons/lucide';
 
 @Component({
@@ -46,7 +46,7 @@ import {
     HlmBadgeImports,
     HlmCardImports,
     HlmTooltipImports,
-    NgIcon
+    NgIcon,
   ],
   providers: [
     provideIcons({
@@ -74,11 +74,11 @@ import {
       lucideFileCode,
       lucideDatabase,
       lucideSun,
-      lucideMoon
-    })
+      lucideMoon,
+    }),
   ],
   templateUrl: './landing.component.html',
-  styleUrl: './landing.component.css'
+  styleUrl: './landing.component.css',
 })
 export class LandingComponent {
   constructor(public theme: ThemeService) {}
