@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { PatientContextService } from '../../core/services/patient-context.service';
+import { toast } from '@spartan-ng/brain/sonner';
 
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmInputImports } from '@spartan-ng/helm/input';
@@ -18,6 +19,8 @@ import {
   lucideShieldCheck,
   lucideHome,
   lucideKeyRound,
+  lucideArrowRight,
+  lucideUserPlus,
 } from '@ng-icons/lucide';
 
 @Component({
@@ -42,6 +45,8 @@ import {
       lucideShieldCheck,
       lucideHome,
       lucideKeyRound,
+      lucideArrowRight,
+      lucideUserPlus,
     }),
   ],
   templateUrl: './login.component.html',
@@ -80,19 +85,18 @@ export class LoginComponent implements OnInit {
       next: () => {
         this.loading.set(false);
         this.patientContext.loadContext();
+        toast.success('Authenticated Successfully', {
+          description: 'Welcome back to your MedVault EHR Workspace.',
+        });
         this.router.navigate(['/dashboard']);
       },
       error: (err) => {
         this.loading.set(false);
-        if (err.status === 0) {
-          this.errorMessage.set(
-            'Cannot connect to backend server. Please verify Spring Boot server is running on http://localhost:8080.',
-          );
-        } else if (typeof err.error === 'string') {
-          this.errorMessage.set(err.error);
-        } else {
-          this.errorMessage.set('Invalid username or password.');
-        }
+        const msg = err.status === 0
+          ? 'Cannot connect to backend server. Please verify Spring Boot server is running on http://localhost:8080.'
+          : (typeof err.error === 'string' ? err.error : 'Invalid username or password.');
+        this.errorMessage.set(msg);
+        toast.error('Authentication Failed', { description: msg });
       },
     });
   }

@@ -61,6 +61,15 @@ export class AuthService {
     );
   }
 
+  register(userData: {
+    username: string;
+    password: string;
+    email: string;
+    fullName: string;
+  }): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/register`, userData);
+  }
+
   logout(): void {
     localStorage.removeItem('medvault_token');
     localStorage.removeItem('medvault_user');

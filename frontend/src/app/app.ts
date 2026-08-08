@@ -38,6 +38,7 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { HlmSeparatorImports } from '@spartan-ng/helm/separator';
 import { HlmTooltipImports } from '@spartan-ng/helm/tooltip';
+import { HlmToasterImports } from '@spartan-ng/helm/sonner';
 
 interface NavItem {
   icon: string;
@@ -71,6 +72,7 @@ interface PatientOption {
     HlmSelectImports,
     HlmSeparatorImports,
     HlmTooltipImports,
+    HlmToasterImports,
   ],
   providers: [
     provideIcons({

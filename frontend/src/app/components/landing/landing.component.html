@@ -22,9 +22,13 @@
       <button hlmBtn variant="ghost" size="icon" class="size-8 text-muted-foreground hover:text-foreground" hlmTooltip="Toggle theme" (click)="toggleTheme()">
         <ng-icon [name]="theme.mode() === 'dark' ? 'lucideSun' : 'lucideMoon'" size="16" />
       </button>
-      <a routerLink="/login" hlmBtn variant="default" size="sm" class="gap-2">
+      <a routerLink="/login" hlmBtn variant="outline" size="sm" class="gap-1.5 text-xs">
         <span>Sign In</span>
-        <ng-icon name="lucideLogIn" size="15" />
+        <ng-icon name="lucideLogIn" size="14" />
+      </a>
+      <a routerLink="/register" hlmBtn variant="default" size="sm" class="gap-1.5 text-xs font-bold shadow-xs">
+        <ng-icon name="lucideUserPlus" size="14" />
+        <span>Sign Up / Portal</span>
       </a>
     </div>
   </header>
@@ -49,13 +53,13 @@
         </p>
 
         <div class="flex items-center gap-3 pt-2">
-          <a routerLink="/login" hlmBtn variant="default" class="gap-2">
-            <span>Access Workspace</span>
-            <ng-icon name="lucideArrowRight" size="16" />
+          <a routerLink="/register" hlmBtn variant="default" class="gap-2 font-bold text-xs shadow-sm">
+            <ng-icon name="lucideUserPlus" size="16" />
+            <span>Create Patient Account</span>
           </a>
-          <a href="#features" hlmBtn variant="outline" class="gap-2">
-            <ng-icon name="lucideCompass" size="16" />
-            <span>Explore Platform</span>
+          <a routerLink="/login" hlmBtn variant="outline" class="gap-2 text-xs">
+            <span>Sign In to Workspace</span>
+            <ng-icon name="lucideArrowRight" size="15" />
           </a>
         </div>
 

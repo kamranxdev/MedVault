@@ -1,0 +1,418 @@
+<div class="min-h-screen bg-background text-foreground py-8 px-4 sm:px-6 lg:px-8">
+
+  <div class="max-w-4xl mx-auto space-y-8">
+
+    <!-- Header Banner -->
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-6 rounded-2xl bg-card border border-border shadow-sm">
+      <div class="flex items-center gap-3">
+        <div class="size-12 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-md shadow-primary/20 shrink-0">
+          <ng-icon name="lucideSparkles" size="24" />
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-xl font-bold tracking-tight text-foreground">Patient Health Onboarding</h1>
+            <span hlmBadge variant="outline" class="text-[10px] font-mono">Guided Setup</span>
+          </div>
+          <p class="text-xs text-muted-foreground mt-0.5">
+            Set up your clinical health record, emergency contacts, insurance coverage, and lifestyle preferences.
+          </p>
+        </div>
+      </div>
+
+      <a routerLink="/patient/dashboard" hlmBtn variant="ghost" size="sm" class="gap-1.5 text-xs text-muted-foreground hover:text-foreground">
+        <ng-icon name="lucideHome" size="14" />
+        <span>Skip to Dashboard</span>
+      </a>
+    </div>
+
+    <!-- Stepper Navigation Progress Bar -->
+    <div *ngIf="!saveSuccess()" class="p-4 rounded-xl border border-border bg-card shadow-xs">
+      <div class="grid grid-cols-5 gap-2 text-center text-xs">
+        <!-- Step 1 Button -->
+        <button
+          (click)="goToStep(1)"
+          class="flex flex-col items-center gap-1.5 p-2 rounded-lg transition-colors"
+          [class.bg-primary/10]="currentStep() === 1"
+          [class.text-primary]="currentStep() === 1"
+          [class.text-muted-foreground]="currentStep() !== 1">
+          <div class="size-7 rounded-full flex items-center justify-center font-bold text-xs"
+               [class.bg-primary]="currentStep() === 1"
+               [class.text-primary-foreground]="currentStep() === 1"
+               [class.bg-muted]="currentStep() !== 1">
+            <ng-icon *ngIf="currentStep() > 1" name="lucideCheck" size="14" />
+            <span *ngIf="currentStep() <= 1">1</span>
+          </div>
+          <span class="font-medium truncate text-[11px] hidden sm:inline">Demographics</span>
+        </button>
+
+        <!-- Step 2 Button -->
+        <button
+          (click)="goToStep(2)"
+          class="flex flex-col items-center gap-1.5 p-2 rounded-lg transition-colors"
+          [class.bg-primary/10]="currentStep() === 2"
+          [class.text-primary]="currentStep() === 2"
+          [class.text-muted-foreground]="currentStep() !== 2">
+          <div class="size-7 rounded-full flex items-center justify-center font-bold text-xs"
+               [class.bg-primary]="currentStep() === 2"
+               [class.text-primary-foreground]="currentStep() === 2"
+               [class.bg-muted]="currentStep() !== 2">
+            <ng-icon *ngIf="currentStep() > 2" name="lucideCheck" size="14" />
+            <span *ngIf="currentStep() <= 2">2</span>
+          </div>
+          <span class="font-medium truncate text-[11px] hidden sm:inline">Emergency</span>
+        </button>
+
+        <!-- Step 3 Button -->
+        <button
+          (click)="goToStep(3)"
+          class="flex flex-col items-center gap-1.5 p-2 rounded-lg transition-colors"
+          [class.bg-primary/10]="currentStep() === 3"
+          [class.text-primary]="currentStep() === 3"
+          [class.text-muted-foreground]="currentStep() !== 3">
+          <div class="size-7 rounded-full flex items-center justify-center font-bold text-xs"
+               [class.bg-primary]="currentStep() === 3"
+               [class.text-primary-foreground]="currentStep() === 3"
+               [class.bg-muted]="currentStep() !== 3">
+            <ng-icon *ngIf="currentStep() > 3" name="lucideCheck" size="14" />
+            <span *ngIf="currentStep() <= 3">3</span>
+          </div>
+          <span class="font-medium truncate text-[11px] hidden sm:inline">Insurance</span>
+        </button>
+
+        <!-- Step 4 Button -->
+        <button
+          (click)="goToStep(4)"
+          class="flex flex-col items-center gap-1.5 p-2 rounded-lg transition-colors"
+          [class.bg-primary/10]="currentStep() === 4"
+          [class.text-primary]="currentStep() === 4"
+          [class.text-muted-foreground]="currentStep() !== 4">
+          <div class="size-7 rounded-full flex items-center justify-center font-bold text-xs"
+               [class.bg-primary]="currentStep() === 4"
+               [class.text-primary-foreground]="currentStep() === 4"
+               [class.bg-muted]="currentStep() !== 4">
+            <ng-icon *ngIf="currentStep() > 4" name="lucideCheck" size="14" />
+            <span *ngIf="currentStep() <= 4">4</span>
+          </div>
+          <span class="font-medium truncate text-[11px] hidden sm:inline">Lifestyle</span>
+        </button>
+
+        <!-- Step 5 Button -->
+        <button
+          (click)="goToStep(5)"
+          class="flex flex-col items-center gap-1.5 p-2 rounded-lg transition-colors"
+          [class.bg-primary/10]="currentStep() === 5"
+          [class.text-primary]="currentStep() === 5"
+          [class.text-muted-foreground]="currentStep() !== 5">
+          <div class="size-7 rounded-full flex items-center justify-center font-bold text-xs"
+               [class.bg-primary]="currentStep() === 5"
+               [class.text-primary-foreground]="currentStep() === 5"
+               [class.bg-muted]="currentStep() !== 5">
+            <span>5</span>
+          </div>
+          <span class="font-medium truncate text-[11px] hidden sm:inline">Consents</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- SUCCESS SCREEN -->
+    <div *ngIf="saveSuccess()" class="p-8 sm:p-12 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 text-center space-y-6 animate-in fade-in duration-300">
+      <div class="size-16 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto ring-8 ring-emerald-500/10">
+        <ng-icon name="lucideCheckCircle2" size="36" />
+      </div>
+
+      <div class="space-y-2 max-w-md mx-auto">
+        <h2 class="text-2xl font-bold tracking-tight text-foreground">Health Onboarding Complete!</h2>
+        <p class="text-xs text-muted-foreground leading-relaxed">
+          Your personal health profile, emergency contacts, insurance coverage, and lifestyle preferences have been saved to your EHR record.
+        </p>
+      </div>
+
+      <div class="p-4 rounded-xl border border-border bg-card max-w-md mx-auto text-left text-xs space-y-2 font-mono">
+        <div class="flex justify-between">
+          <span class="text-muted-foreground">Patient Name:</span>
+          <strong class="text-foreground font-semibold">{{ profileForm.fullName }}</strong>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-muted-foreground">MRN Code:</span>
+          <span hlmBadge variant="outline" class="font-mono text-[10px]">{{ patient()?.patientCode || 'PAT-1001' }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-muted-foreground">Profile Status:</span>
+          <span hlmBadge variant="secondary" class="text-[10px] text-emerald-600 dark:text-emerald-400">100% EHR Verified</span>
+        </div>
+      </div>
+
+      <div class="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
+        <button
+          hlmBtn
+          variant="default"
+          size="lg"
+          (click)="finishAndNavigate()"
+          class="w-full sm:w-auto gap-2 font-bold text-xs shadow-sm">
+          <span>Go to Patient Dashboard</span>
+          <ng-icon name="lucideChevronRight" size="16" />
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 1: DEMOGRAPHICS -->
+    <div *ngIf="!saveSuccess() && currentStep() === 1" class="p-6 rounded-2xl border border-border bg-card space-y-6 shadow-xs">
+      <div class="border-b border-border pb-4">
+        <h2 class="text-base font-bold text-foreground flex items-center gap-2">
+          <ng-icon name="lucideUserRound" size="18" class="text-primary" />
+          <span>Step 1: Patient Demographics & Identification</span>
+        </h2>
+        <p class="text-xs text-muted-foreground mt-1">Provide your legal identity and contact information for your medical chart.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+        <div class="space-y-1.5">
+          <label class="font-semibold block text-foreground">Full Legal Name</label>
+          <input hlmInput type="text" [(ngModel)]="profileForm.fullName" placeholder="Full name..." class="w-full h-9 text-xs" />
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="font-semibold block text-foreground">Date of Birth</label>
+          <input hlmInput type="date" [(ngModel)]="profileForm.dateOfBirth" class="w-full h-9 text-xs" />
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="font-semibold block text-foreground">Biological Gender</label>
+          <select hlmInput [(ngModel)]="profileForm.gender" class="w-full h-9 text-xs bg-background">
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other / Non-Binary</option>
+          </select>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="font-semibold block text-foreground">Blood Type</label>
+          <select hlmInput [(ngModel)]="profileForm.bloodType" class="w-full h-9 text-xs bg-background">
+            <option value="O+">O+</option>
+            <option value="A+">A+</option>
+            <option value="B+">B+</option>
+            <option value="AB+">AB+</option>
+            <option value="O-">O-</option>
+            <option value="A-">A-</option>
+            <option value="B-">B-</option>
+            <option value="AB-">AB-</option>
+          </select>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="font-semibold block text-foreground">Primary Phone Number</label>
+          <input hlmInput type="text" [(ngModel)]="profileForm.phone" placeholder="+1 (555) 019-2834" class="w-full h-9 text-xs" />
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="font-semibold block text-foreground">Email Address</label>
+          <input hlmInput type="email" [(ngModel)]="profileForm.email" placeholder="patient@example.com" class="w-full h-9 text-xs" />
+        </div>
+
+        <div class="md:col-span-2 space-y-1.5">
+          <label class="font-semibold block text-foreground">Home Address</label>
+          <input hlmInput type="text" [(ngModel)]="profileForm.address" placeholder="123 Health Ave, Boston, MA 02108" class="w-full h-9 text-xs" />
+        </div>
+      </div>
+
+      <div class="pt-4 border-t border-border flex justify-end">
+        <button hlmBtn variant="default" size="sm" (click)="nextStep()" class="gap-1.5 text-xs font-semibold">
+          <span>Next: Emergency Contact</span>
+          <ng-icon name="lucideChevronRight" size="14" />
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 2: EMERGENCY CONTACT -->
+    <div *ngIf="!saveSuccess() && currentStep() === 2" class="p-6 rounded-2xl border border-border bg-card space-y-6 shadow-xs">
+      <div class="border-b border-border pb-4">
+        <h2 class="text-base font-bold text-foreground flex items-center gap-2">
+          <ng-icon name="lucidePhone" size="18" class="text-primary" />
+          <span>Step 2: Emergency Contact & Next of Kin</span>
+        </h2>
+        <p class="text-xs text-muted-foreground mt-1">Designate a primary contact person in case of medical emergency.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+        <div class="md:col-span-2 space-y-1.5">
+          <label class="font-semibold block text-foreground">Emergency Contact Name & Relationship</label>
+          <input hlmInput type="text" [(ngModel)]="profileForm.emergencyContact" placeholder="e.g. John Doe (Spouse) - +1 (555) 987-6543" class="w-full h-9 text-xs" />
+        </div>
+      </div>
+
+      <div class="p-4 rounded-xl bg-muted/40 border border-border text-xs text-muted-foreground leading-relaxed space-y-2">
+        <span class="font-semibold text-foreground block">Why is this required?</span>
+        <p>In accordance with clinical safety protocols, your emergency contact will be notified only during urgent inpatient admissions, critical lab results, or acute hospital events.</p>
+      </div>
+
+      <div class="pt-4 border-t border-border flex justify-between">
+        <button hlmBtn variant="outline" size="sm" (click)="prevStep()" class="gap-1.5 text-xs">
+          <ng-icon name="lucideChevronLeft" size="14" />
+          <span>Back</span>
+        </button>
+        <button hlmBtn variant="default" size="sm" (click)="nextStep()" class="gap-1.5 text-xs font-semibold">
+          <span>Next: Insurance Coverage</span>
+          <ng-icon name="lucideChevronRight" size="14" />
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 3: INSURANCE COVERAGE -->
+    <div *ngIf="!saveSuccess() && currentStep() === 3" class="p-6 rounded-2xl border border-border bg-card space-y-6 shadow-xs">
+      <div class="border-b border-border pb-4">
+        <h2 class="text-base font-bold text-foreground flex items-center gap-2">
+          <ng-icon name="lucideFileText" size="18" class="text-primary" />
+          <span>Step 3: Health Insurance & Financial Coverage</span>
+        </h2>
+        <p class="text-xs text-muted-foreground mt-1">Record your primary insurance carrier for seamless billing and prescription claims.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+        <div class="space-y-1.5">
+          <label class="font-semibold block text-foreground">Insurance Provider</label>
+          <input hlmInput type="text" [(ngModel)]="profileForm.insuranceProvider" placeholder="e.g. BlueCross BlueShield / Self-Pay" class="w-full h-9 text-xs" />
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="font-semibold block text-foreground">Policy / Member ID Number</label>
+          <input hlmInput type="text" [(ngModel)]="profileForm.insurancePolicyNumber" placeholder="e.g. BCBS-99182348" class="w-full h-9 text-xs font-mono" />
+        </div>
+      </div>
+
+      <div class="pt-4 border-t border-border flex justify-between">
+        <button hlmBtn variant="outline" size="sm" (click)="prevStep()" class="gap-1.5 text-xs">
+          <ng-icon name="lucideChevronLeft" size="14" />
+          <span>Back</span>
+        </button>
+        <button hlmBtn variant="default" size="sm" (click)="nextStep()" class="gap-1.5 text-xs font-semibold">
+          <span>Next: Health Habits & Allergies</span>
+          <ng-icon name="lucideChevronRight" size="14" />
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 4: LIFESTYLE & ALLERGIES -->
+    <div *ngIf="!saveSuccess() && currentStep() === 4" class="p-6 rounded-2xl border border-border bg-card space-y-6 shadow-xs">
+      <div class="border-b border-border pb-4">
+        <h2 class="text-base font-bold text-foreground flex items-center gap-2">
+          <ng-icon name="lucideActivity" size="18" class="text-primary" />
+          <span>Step 4: Clinical History, Allergies & Lifestyle</span>
+        </h2>
+        <p class="text-xs text-muted-foreground mt-1">Document food allergies, dietary habits, and past medical history for your doctor.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+        <div class="space-y-1.5">
+          <label class="font-semibold block text-destructive flex items-center gap-1">
+            <span>Food Allergies</span>
+            <span hlmBadge variant="destructive" class="text-[9px]">Critical Safety</span>
+          </label>
+          <input hlmInput type="text" [(ngModel)]="profileForm.foodAllergies" placeholder="Peanuts, Shellfish, Gluten, Dairy..." class="w-full h-9 text-xs" />
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="font-semibold block text-foreground">Dietary Habits</label>
+          <select hlmInput [(ngModel)]="profileForm.dietaryHabits" class="w-full h-9 text-xs bg-background">
+            <option value="Standard Diet">Standard Diet</option>
+            <option value="Low Sodium">Low Sodium (Hypertension)</option>
+            <option value="Diabetic / Low Carb">Diabetic / Low Carb</option>
+            <option value="Vegetarian">Vegetarian</option>
+            <option value="Vegan">Vegan</option>
+            <option value="Gluten-Free">Gluten-Free</option>
+          </select>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="font-semibold block text-foreground">Smoking Status</label>
+          <select hlmInput [(ngModel)]="profileForm.smokingStatus" class="w-full h-9 text-xs bg-background">
+            <option value="Never">Never</option>
+            <option value="Former Smoker">Former Smoker</option>
+            <option value="Current Smoker">Current Smoker</option>
+          </select>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="font-semibold block text-foreground">Alcohol Consumption</label>
+          <select hlmInput [(ngModel)]="profileForm.alcoholConsumption" class="w-full h-9 text-xs bg-background">
+            <option value="None/Occasional">None / Occasional</option>
+            <option value="Moderate (1-2 drinks/week)">Moderate (1-2 drinks/week)</option>
+            <option value="Frequent">Frequent</option>
+          </select>
+        </div>
+
+        <div class="md:col-span-2 space-y-1.5">
+          <label class="font-semibold block text-foreground">Previous Major Illnesses & Diagnoses</label>
+          <input hlmInput type="text" [(ngModel)]="profileForm.pastMedicalHistory" placeholder="e.g. Asthma in childhood, Hypertension diagnosed 2021..." class="w-full h-9 text-xs" />
+        </div>
+
+        <div class="md:col-span-2 space-y-1.5">
+          <label class="font-semibold block text-foreground">Serious Medical Conditions / Alerts</label>
+          <input hlmInput type="text" [(ngModel)]="profileForm.seriousConditions" placeholder="e.g. Type 2 Diabetes, Penicillin Anaphylaxis..." class="w-full h-9 text-xs" />
+        </div>
+      </div>
+
+      <div class="pt-4 border-t border-border flex justify-between">
+        <button hlmBtn variant="outline" size="sm" (click)="prevStep()" class="gap-1.5 text-xs">
+          <ng-icon name="lucideChevronLeft" size="14" />
+          <span>Back</span>
+        </button>
+        <button hlmBtn variant="default" size="sm" (click)="nextStep()" class="gap-1.5 text-xs font-semibold">
+          <span>Next: Consents & Complete</span>
+          <ng-icon name="lucideChevronRight" size="14" />
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 5: CONSENTS & FINISH -->
+    <div *ngIf="!saveSuccess() && currentStep() === 5" class="p-6 rounded-2xl border border-border bg-card space-y-6 shadow-xs">
+      <div class="border-b border-border pb-4">
+        <h2 class="text-base font-bold text-foreground flex items-center gap-2">
+          <ng-icon name="lucideShieldCheck" size="18" class="text-primary" />
+          <span>Step 5: Consents & Final Submission</span>
+        </h2>
+        <p class="text-xs text-muted-foreground mt-1">Review your authorizations and complete your MedVault profile onboarding.</p>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div class="p-4 rounded-xl border border-border bg-muted/30 flex items-start gap-3">
+          <input type="checkbox" [(ngModel)]="hipaaConsent" id="hipaa" class="mt-0.5 size-4 accent-primary rounded" />
+          <label for="hipaa" class="cursor-pointer space-y-1">
+            <span class="font-bold text-foreground block">HIPAA Digital Medical Record Storage Consent</span>
+            <span class="text-muted-foreground block text-[11px]">
+              I authorize MedVault Health System to store and process my electronic health record (EHR) data in compliance with HIPAA § 164.312 privacy and security rules.
+            </span>
+          </label>
+        </div>
+
+        <div class="p-4 rounded-xl border border-border bg-muted/30 flex items-start gap-3">
+          <input type="checkbox" [(ngModel)]="telehealthConsent" id="telehealth" class="mt-0.5 size-4 accent-primary rounded" />
+          <label for="telehealth" class="cursor-pointer space-y-1">
+            <span class="font-bold text-foreground block">Virtual Telehealth & Consultation Authorization</span>
+            <span class="text-muted-foreground block text-[11px]">
+              I consent to receive virtual consultations, eRx medication orders, and digital clinical communications from licensed physicians.
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <div class="pt-4 border-t border-border flex justify-between items-center">
+        <button hlmBtn variant="outline" size="sm" (click)="prevStep()" class="gap-1.5 text-xs">
+          <ng-icon name="lucideChevronLeft" size="14" />
+          <span>Back</span>
+        </button>
+
+        <app-action-button
+          variant="default"
+          size="lg"
+          [disabled]="!hipaaConsent || saving()"
+          [loading]="saving()"
+          (action)="completeOnboarding()"
+          customClass="gap-2 font-bold text-xs shadow-md">
+          <ng-icon name="lucideSave" size="16" />
+          <span>Complete Profile Onboarding</span>
+        </app-action-button>
+      </div>
+    </div>
+
+  </div>
+</div>

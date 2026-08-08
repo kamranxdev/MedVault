@@ -15,6 +15,25 @@ export const routes: Routes = [
     data: { standalone: true },
   },
   {
+    path: 'register',
+    loadComponent: () =>
+      import('./components/register/register.component').then((m) => m.RegisterComponent),
+    data: { standalone: true },
+  },
+  {
+    path: 'onboarding',
+    loadComponent: () =>
+      import('./workspaces/patient/patient-profile.component').then((m) => m.PatientProfileComponent),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'patient/onboarding',
+    loadComponent: () =>
+      import('./workspaces/patient/patient-profile.component').then((m) => m.PatientProfileComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ROLE_PATIENT'] },
+  },
+  {
     path: 'dashboard',
     loadComponent: () =>
       import('./components/dashboard/dashboard.component').then((m) => m.DashboardComponent),

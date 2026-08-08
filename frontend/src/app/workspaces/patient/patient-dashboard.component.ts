@@ -19,6 +19,8 @@ import {
   lucideActivity,
   lucideChevronRight,
   lucideHeartPulse,
+  lucideSparkles,
+  lucideShieldCheck,
 } from '@ng-icons/lucide';
 
 @Component({
@@ -41,6 +43,8 @@ import {
       lucideActivity,
       lucideChevronRight,
       lucideHeartPulse,
+      lucideSparkles,
+      lucideShieldCheck,
     }),
   ],
   template: `
@@ -48,7 +52,7 @@ import {
       <!-- Header Banner -->
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-4 border-b border-border">
         <div class="flex items-center gap-4">
-          <div class="size-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+          <div class="size-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
             <ng-icon name="lucideUserRound" size="24" />
           </div>
           <div class="space-y-1">
@@ -75,30 +79,53 @@ import {
         </div>
       </div>
 
+      <!-- INCOMPLETE ONBOARDING ALERT BANNER (Forced Onboarding Reminder) -->
+      <div *ngIf="isProfileIncomplete()" class="p-5 rounded-2xl border border-amber-500/40 bg-amber-500/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm animate-in fade-in duration-300">
+        <div class="flex items-center gap-3">
+          <div class="size-10 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+            <ng-icon name="lucideTriangleAlert" size="20" />
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-foreground flex items-center gap-2">
+              <span>Action Required: Complete Health Onboarding Profile</span>
+              <span hlmBadge variant="outline" class="text-[10px] border-amber-500/40 text-amber-600 dark:text-amber-400">Incomplete Profile</span>
+            </h3>
+            <p class="text-xs text-muted-foreground mt-0.5">
+              Your patient chart is missing key contact info, emergency contacts, or insurance details. Complete your guided health setup to ensure clinical continuity.
+            </p>
+          </div>
+        </div>
+
+        <a routerLink="/patient/profile" hlmBtn variant="default" size="sm" class="shrink-0 gap-1.5 font-bold text-xs shadow-sm bg-amber-600 hover:bg-amber-700 text-white border-0">
+          <ng-icon name="lucideSparkles" size="14" />
+          <span>Complete Profile Now</span>
+        </a>
+      </div>
+
       <!-- Quick Metrics Grid -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <!-- Active Alerts -->
-        <div class="p-5 rounded-xl border border-border bg-card space-y-3">
+        <div class="p-5 rounded-xl border border-border bg-card space-y-3 shadow-xs">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
               <ng-icon name="lucideTriangleAlert" size="16" class="text-destructive" />
               <h3 class="text-xs font-semibold text-foreground uppercase tracking-wide">Medical Alerts</h3>
             </div>
-            <a routerLink="/patient/my-chart" hlmBtn variant="ghost" size="sm" class="h-7 text-[11px] px-2">Details</a>
+            <a routerLink="/patient/profile" hlmBtn variant="ghost" size="sm" class="h-7 text-[11px] px-2">Details</a>
           </div>
           <div class="p-3 rounded-lg bg-muted/40 border border-border">
-            <p class="text-xs text-foreground">{{ patient()?.medicalAlerts || 'No documented critical allergy alerts.' }}</p>
+            <p class="text-xs text-foreground">{{ patient()?.medicalAlerts || patient()?.foodAllergies || 'No documented critical allergy alerts.' }}</p>
           </div>
         </div>
 
         <!-- Active Medications -->
-        <div class="p-5 rounded-xl border border-border bg-card space-y-3">
+        <div class="p-5 rounded-xl border border-border bg-card space-y-3 shadow-xs">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
               <ng-icon name="lucidePill" size="16" class="text-foreground" />
               <h3 class="text-xs font-semibold text-foreground uppercase tracking-wide">Active Medications</h3>
             </div>
-            <a routerLink="/patient/my-chart" hlmBtn variant="ghost" size="sm" class="h-7 text-[11px] px-2">View All</a>
+            <a routerLink="/patient/prescriptions" hlmBtn variant="ghost" size="sm" class="h-7 text-[11px] px-2">View All</a>
           </div>
           <div class="p-3 rounded-lg bg-muted/40 border border-border flex items-center justify-between">
             <div>
@@ -110,13 +137,13 @@ import {
         </div>
 
         <!-- Recent Vitals -->
-        <div class="p-5 rounded-xl border border-border bg-card space-y-3">
+        <div class="p-5 rounded-xl border border-border bg-card space-y-3 shadow-xs">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
               <ng-icon name="lucideActivity" size="16" class="text-foreground" />
               <h3 class="text-xs font-semibold text-foreground uppercase tracking-wide">Latest Vitals</h3>
             </div>
-            <a routerLink="/patient/my-chart" hlmBtn variant="ghost" size="sm" class="h-7 text-[11px] px-2">Flowsheet</a>
+            <a routerLink="/patient/vitals" hlmBtn variant="ghost" size="sm" class="h-7 text-[11px] px-2">Flowsheet</a>
           </div>
           <div *ngIf="latestVitals()" class="p-3 rounded-lg bg-muted/40 border border-border space-y-2 text-xs">
             <div class="flex justify-between items-center border-b border-border pb-1.5">
@@ -137,38 +164,38 @@ import {
       <!-- Patient Portal Nav Grid -->
       <div class="space-y-3 pt-2">
         <h2 class="text-sm font-semibold text-foreground">Portal Workspaces</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <a routerLink="/patient/profile" class="p-4 rounded-xl border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors flex items-center justify-between group">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <a routerLink="/patient/profile" class="p-5 rounded-2xl border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors flex items-center justify-between group shadow-xs">
             <div class="flex items-center gap-3">
-              <ng-icon name="lucideUserRound" size="18" class="text-primary" />
+              <ng-icon name="lucideUserRound" size="20" class="text-primary" />
               <div>
-                <span class="text-xs font-semibold text-primary block">My Health Profile</span>
-                <span class="text-[11px] text-muted-foreground block">Habits, allergies & info</span>
+                <span class="text-xs font-bold text-primary block">My Health Profile</span>
+                <span class="text-[11px] text-muted-foreground block">View & edit all 15+ health details</span>
               </div>
             </div>
-            <ng-icon name="lucideChevronRight" size="16" class="text-primary" />
+            <ng-icon name="lucideChevronRight" size="18" class="text-primary" />
           </a>
 
-          <a routerLink="/patient/my-chart" class="p-4 rounded-xl border border-border bg-card hover:bg-accent/40 transition-colors flex items-center justify-between group">
+          <a routerLink="/onboarding" class="p-5 rounded-2xl border border-border bg-card hover:bg-accent/40 transition-colors flex items-center justify-between group shadow-xs">
             <div class="flex items-center gap-3">
-              <ng-icon name="lucideHeartPulse" size="18" class="text-muted-foreground group-hover:text-foreground" />
+              <ng-icon name="lucideSparkles" size="20" class="text-muted-foreground group-hover:text-foreground" />
               <div>
-                <span class="text-xs font-semibold text-foreground block">My Patient Chart</span>
-                <span class="text-[11px] text-muted-foreground block">Demographics & records</span>
+                <span class="text-xs font-bold text-foreground block">Guided Onboarding Wizard</span>
+                <span class="text-[11px] text-muted-foreground block">Interactive setup workflow</span>
               </div>
             </div>
-            <ng-icon name="lucideChevronRight" size="16" class="text-muted-foreground" />
+            <ng-icon name="lucideChevronRight" size="18" class="text-muted-foreground" />
           </a>
 
-          <a routerLink="/patient/appointments" class="p-4 rounded-xl border border-border bg-card hover:bg-accent/40 transition-colors flex items-center justify-between group">
+          <a routerLink="/patient/appointments" class="p-5 rounded-2xl border border-border bg-card hover:bg-accent/40 transition-colors flex items-center justify-between group shadow-xs">
             <div class="flex items-center gap-3">
-              <ng-icon name="lucideCalendarClock" size="18" class="text-muted-foreground group-hover:text-foreground" />
+              <ng-icon name="lucideCalendarClock" size="20" class="text-muted-foreground group-hover:text-foreground" />
               <div>
-                <span class="text-xs font-semibold text-foreground block">Appointments</span>
-                <span class="text-[11px] text-muted-foreground block">Schedule & booking</span>
+                <span class="text-xs font-bold text-foreground block">Appointments & Telehealth</span>
+                <span class="text-[11px] text-muted-foreground block">Schedule & consultations</span>
               </div>
             </div>
-            <ng-icon name="lucideChevronRight" size="16" class="text-muted-foreground" />
+            <ng-icon name="lucideChevronRight" size="18" class="text-muted-foreground" />
           </a>
         </div>
       </div>
@@ -203,5 +230,11 @@ export class PatientDashboardComponent implements OnInit {
         }
       });
     }
+  }
+
+  isProfileIncomplete(): boolean {
+    const p = this.patient();
+    if (!p) return true;
+    return !p.phone || !p.address || !p.emergencyContact || !p.insuranceProvider;
   }
 }

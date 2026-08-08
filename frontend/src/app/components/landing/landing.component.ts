@@ -34,6 +34,7 @@ import {
   lucideDatabase,
   lucideSun,
   lucideMoon,
+  lucideUserPlus,
 } from '@ng-icons/lucide';
 
 @Component({
@@ -75,6 +76,7 @@ import {
       lucideDatabase,
       lucideSun,
       lucideMoon,
+      lucideUserPlus,
     }),
   ],
   templateUrl: './landing.component.html',
