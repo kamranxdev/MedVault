@@ -325,9 +325,10 @@ export class App implements OnInit, OnDestroy {
         {
           label: 'Reception Desk Workspace',
           items: [
-            { icon: 'lucideLayoutDashboard', label: 'Intake Hub', routerLink: '/receptionist/dashboard' },
+            { icon: 'lucideLayoutDashboard', label: 'Intake Hub Overview', routerLink: '/receptionist/dashboard' },
+            { icon: 'lucideCalendarClock', label: 'Appointment Desk & Check-in', routerLink: '/receptionist/appointments' },
+            { icon: 'lucideUserRound', label: 'Patient Demographic Intake', routerLink: '/receptionist/intake' },
             { icon: 'lucideHeartPulse', label: 'Master Patient Index', routerLink: '/admin/patients' },
-            { icon: 'lucideCalendarClock', label: 'Appointment Desk', routerLink: '/admin/appointments' },
           ],
         },
       ];
@@ -337,8 +338,9 @@ export class App implements OnInit, OnDestroy {
         {
           label: 'Pathology & Lab Workspace',
           items: [
-            { icon: 'lucideMicroscope', label: 'Lab Worklist Hub', routerLink: '/labtech/dashboard' },
-            { icon: 'lucideHeartPulse', label: 'Patient Directory', routerLink: '/doctor/patients' },
+            { icon: 'lucideMicroscope', label: 'Lab Dashboard', routerLink: '/labtech/dashboard' },
+            { icon: 'lucideListChecks', label: 'Specimen Worklist Queue', routerLink: '/labtech/worklist' },
+            { icon: 'lucideFileText', label: 'LOINC Result Entry', routerLink: '/labtech/results' },
           ],
         },
       ];
@@ -348,8 +350,9 @@ export class App implements OnInit, OnDestroy {
         {
           label: 'Clinical Pharmacy Workspace',
           items: [
-            { icon: 'lucidePill', label: 'eRx Verification Desk', routerLink: '/pharmacist/dashboard' },
-            { icon: 'lucideTriangleAlert', label: 'RxNorm Safety Engine', routerLink: '/doctor/allergies' },
+            { icon: 'lucidePill', label: 'Pharmacy Dashboard', routerLink: '/pharmacist/dashboard' },
+            { icon: 'lucideListChecks', label: 'Active eRx Queue', routerLink: '/pharmacist/erx' },
+            { icon: 'lucideShieldCheck', label: 'Dispense & MAR Log', routerLink: '/pharmacist/dispense' },
           ],
         },
       ];
@@ -359,8 +362,9 @@ export class App implements OnInit, OnDestroy {
         {
           label: 'Revenue Cycle Workspace',
           items: [
-            { icon: 'lucideReceipt', label: 'Billing Operations', routerLink: '/billing/dashboard' },
-            { icon: 'lucideCalendarClock', label: 'Appointment Invoices', routerLink: '/admin/appointments' },
+            { icon: 'lucideReceipt', label: 'Revenue Dashboard', routerLink: '/billing/dashboard' },
+            { icon: 'lucideFileText', label: 'Patient Invoices', routerLink: '/billing/invoices' },
+            { icon: 'lucideCalendarClock', label: 'Insurance Claims 837P', routerLink: '/billing/claims' },
           ],
         },
       ];

@@ -203,7 +203,21 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./workspaces/receptionist/receptionist-dashboard.component').then((m) => m.ReceptionistDashboardComponent),
     canActivate: [authGuard, roleGuard],
-    data: { roles: ['ROLE_RECEPTIONIST', 'ROLE_SYS_ADMIN', 'ROLE_ORG_ADMIN', 'ROLE_ADMIN'] },
+    data: { roles: ['ROLE_RECEPTIONIST'] },
+  },
+  {
+    path: 'receptionist/appointments',
+    loadComponent: () =>
+      import('./workspaces/receptionist/receptionist-appointments.component').then((m) => m.ReceptionistAppointmentsComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ROLE_RECEPTIONIST'] },
+  },
+  {
+    path: 'receptionist/intake',
+    loadComponent: () =>
+      import('./workspaces/receptionist/receptionist-intake.component').then((m) => m.ReceptionistIntakeComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ROLE_RECEPTIONIST'] },
   },
 
   // --- LAB TECH WORKSPACE ROUTES ---
@@ -212,7 +226,21 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./workspaces/labtech/labtech-dashboard.component').then((m) => m.LabTechDashboardComponent),
     canActivate: [authGuard, roleGuard],
-    data: { roles: ['ROLE_LAB_TECH', 'ROLE_SYS_ADMIN', 'ROLE_ORG_ADMIN', 'ROLE_ADMIN'] },
+    data: { roles: ['ROLE_LAB_TECH'] },
+  },
+  {
+    path: 'labtech/worklist',
+    loadComponent: () =>
+      import('./workspaces/labtech/labtech-worklist.component').then((m) => m.LabTechWorklistComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ROLE_LAB_TECH'] },
+  },
+  {
+    path: 'labtech/results',
+    loadComponent: () =>
+      import('./workspaces/labtech/labtech-results.component').then((m) => m.LabTechResultsComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ROLE_LAB_TECH'] },
   },
 
   // --- PHARMACIST WORKSPACE ROUTES ---
@@ -221,7 +249,21 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./workspaces/pharmacist/pharmacist-dashboard.component').then((m) => m.PharmacistDashboardComponent),
     canActivate: [authGuard, roleGuard],
-    data: { roles: ['ROLE_PHARMACIST', 'ROLE_SYS_ADMIN', 'ROLE_ORG_ADMIN', 'ROLE_ADMIN'] },
+    data: { roles: ['ROLE_PHARMACIST'] },
+  },
+  {
+    path: 'pharmacist/erx',
+    loadComponent: () =>
+      import('./workspaces/pharmacist/pharmacist-erx.component').then((m) => m.PharmacistErxComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ROLE_PHARMACIST'] },
+  },
+  {
+    path: 'pharmacist/dispense',
+    loadComponent: () =>
+      import('./workspaces/pharmacist/pharmacist-dispense.component').then((m) => m.PharmacistDispenseComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ROLE_PHARMACIST'] },
   },
 
   // --- BILLING WORKSPACE ROUTES ---
@@ -230,7 +272,21 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./workspaces/billing/billing-dashboard.component').then((m) => m.BillingDashboardComponent),
     canActivate: [authGuard, roleGuard],
-    data: { roles: ['ROLE_BILLING', 'ROLE_SYS_ADMIN', 'ROLE_ORG_ADMIN', 'ROLE_ADMIN'] },
+    data: { roles: ['ROLE_BILLING'] },
+  },
+  {
+    path: 'billing/invoices',
+    loadComponent: () =>
+      import('./workspaces/billing/billing-invoices.component').then((m) => m.BillingInvoicesComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ROLE_BILLING'] },
+  },
+  {
+    path: 'billing/claims',
+    loadComponent: () =>
+      import('./workspaces/billing/billing-claims.component').then((m) => m.BillingClaimsComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ROLE_BILLING'] },
   },
 
   // --- AUDITOR WORKSPACE ROUTES ---
@@ -239,7 +295,7 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./workspaces/auditor/auditor-dashboard.component').then((m) => m.AuditorDashboardComponent),
     canActivate: [authGuard, roleGuard],
-    data: { roles: ['ROLE_AUDITOR', 'ROLE_SYS_ADMIN', 'ROLE_ORG_ADMIN', 'ROLE_ADMIN'] },
+    data: { roles: ['ROLE_AUDITOR'] },
   },
   {
     path: 'auditor/ledger',
