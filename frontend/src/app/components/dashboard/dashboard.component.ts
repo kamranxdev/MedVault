@@ -1,165 +1,48 @@
-import { Component, OnInit, signal, effect } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
-import { ApiService } from '../../core/services/api.service';
-import { PatientContextService } from '../../core/services/patient-context.service';
-import { HasRoleDirective, HasAnyRoleDirective } from '../../core/directives/has-role.directive';
-import { Appointment, Patient, Prescription, Vitals } from '../../core/models/models';
-
-import { HlmCardImports } from '@spartan-ng/helm/card';
-import { HlmButtonImports } from '@spartan-ng/helm/button';
-import { HlmBadgeImports } from '@spartan-ng/helm/badge';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import {
-  lucideUserRound,
-  lucideHospital,
-  lucideShieldCheck,
-  lucideCalendarClock,
-  lucideTriangleAlert,
-  lucidePill,
-  lucideActivity,
-  lucideFileText,
-  lucideFolderGit2,
-  lucideStethoscope,
-  lucideListChecks,
-  lucideShield,
-  lucideUsers,
-  lucideArrowUpRight,
-  lucideSparkles,
-  lucideLoader2,
-  lucideHeartPulse,
-  lucideChevronRight,
-  lucideLayoutDashboard,
-} from '@ng-icons/lucide';
+import { lucideLoader2 } from '@ng-icons/lucide';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterModule,
-    HlmCardImports,
-    HlmButtonImports,
-    HlmBadgeImports,
-    HasRoleDirective,
-    HasAnyRoleDirective,
-    NgIcon,
-  ],
-  providers: [
-    provideIcons({
-      lucideUserRound,
-      lucideHospital,
-      lucideShieldCheck,
-      lucideCalendarClock,
-      lucideTriangleAlert,
-      lucidePill,
-      lucideActivity,
-      lucideFileText,
-      lucideFolderGit2,
-      lucideStethoscope,
-      lucideListChecks,
-      lucideShield,
-      lucideUsers,
-      lucideArrowUpRight,
-      lucideSparkles,
-      lucideLoader2,
-      lucideHeartPulse,
-      lucideChevronRight,
-      lucideLayoutDashboard,
-    }),
-  ],
-  templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.css',
+  imports: [NgIcon],
+  providers: [provideIcons({ lucideLoader2 })],
+  template: `
+    <div class="flex flex-col items-center justify-center min-h-[60vh] gap-3 text-muted-foreground">
+      <ng-icon name="lucideLoader2" size="24" class="animate-spin text-primary" />
+      <span class="text-xs font-medium tracking-wide">Navigating to your workspace...</span>
+    </div>
+  `,
 })
 export class DashboardComponent implements OnInit {
-  patientCount = signal(0);
-  recentPatients = signal<Patient[]>([]);
-  generating = signal(false);
-
-  patient = signal<Patient | null>(null);
-  activeRxCount = signal(0);
-  latestVitals = signal<Vitals | null>(null);
-
   constructor(
-    public authService: AuthService,
-    private apiService: ApiService,
-    public patientContext: PatientContextService,
-  ) {
-    effect(() => {
-      const active = this.patientContext.activePatient();
-      if (active && !this.authService.hasRole('ROLE_PATIENT')) {
-        this.loadPatientMetrics(active.id);
-      }
-    });
-  }
-
-  private loadPatientMetrics(patientId: number): void {
-    this.apiService
-      .getPrescriptionsByPatient(patientId)
-      .subscribe((rx) => this.activeRxCount.set(rx.length));
-    this.apiService.getVitalsByPatient(patientId).subscribe((v) => {
-      if (v.length > 0) this.latestVitals.set(v[v.length - 1]);
-      else this.latestVitals.set(null);
-    });
-  }
-
-  get currentUser() {
-    return this.authService.currentUser();
-  }
+    private authService: AuthService,
+    private router: Router,
+  ) {}
 
   ngOnInit(): void {
-    if (this.authService.hasRole('ROLE_PATIENT')) {
-      const u = this.currentUser;
-      if (u) {
-        this.apiService.getPatientByUserId(u.userId).subscribe((p) => {
-          this.patient.set(p);
-          if (p) {
-            this.apiService
-              .getPrescriptionsByPatient(p.id)
-              .subscribe((rx) => this.activeRxCount.set(rx.length));
-            this.apiService.getVitalsByPatient(p.id).subscribe((v) => {
-              if (v.length > 0) this.latestVitals.set(v[v.length - 1]);
-            });
-          }
-        });
-      }
+    if (this.authService.hasRole('ROLE_SYS_ADMIN') || this.authService.hasRole('ROLE_ORG_ADMIN') || this.authService.hasRole('ROLE_ADMIN')) {
+      this.router.navigate(['/admin/dashboard']);
+    } else if (this.authService.hasRole('ROLE_DOCTOR')) {
+      this.router.navigate(['/doctor/dashboard']);
+    } else if (this.authService.hasRole('ROLE_NURSE')) {
+      this.router.navigate(['/nurse/dashboard']);
+    } else if (this.authService.hasRole('ROLE_RECEPTIONIST')) {
+      this.router.navigate(['/receptionist/dashboard']);
+    } else if (this.authService.hasRole('ROLE_LAB_TECH')) {
+      this.router.navigate(['/labtech/dashboard']);
+    } else if (this.authService.hasRole('ROLE_PHARMACIST')) {
+      this.router.navigate(['/pharmacist/dashboard']);
+    } else if (this.authService.hasRole('ROLE_BILLING')) {
+      this.router.navigate(['/billing/dashboard']);
+    } else if (this.authService.hasRole('ROLE_AUDITOR')) {
+      this.router.navigate(['/auditor/dashboard']);
+    } else if (this.authService.hasRole('ROLE_PATIENT')) {
+      this.router.navigate(['/patient/dashboard']);
     } else {
-      this.loadClinicianData();
+      this.router.navigate(['/login']);
     }
-  }
-
-  loadClinicianData(): void {
-    this.apiService.getPatients().subscribe({
-      next: (pts) => {
-        this.patientCount.set(pts.length);
-        this.recentPatients.set(pts);
-      },
-    });
-  }
-
-  selectPatientContext(p: Patient): void {
-    this.patientContext.setActivePatient(p);
-  }
-
-  generateSyntheticCohort(): void {
-    this.generating.set(true);
-    this.apiService.generateSyntheticCohort(3).subscribe({
-      next: () => {
-        this.generating.set(false);
-        this.loadClinicianData();
-        this.patientContext.loadContext();
-      },
-      error: () => this.generating.set(false),
-    });
-  }
-
-  primaryRole(): string {
-    const roles = this.currentUser?.roles || [];
-    if (roles.includes('ROLE_ADMIN')) return 'Admin / Reception';
-    if (roles.includes('ROLE_DOCTOR')) return 'Physician / Clinician';
-    if (roles.includes('ROLE_NURSE')) return 'Clinical Nurse';
-    if (roles.includes('ROLE_AUDITOR')) return 'Compliance Auditor';
-    return 'Patient Portal';
   }
 }

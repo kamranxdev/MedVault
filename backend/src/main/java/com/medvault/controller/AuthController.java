@@ -5,6 +5,7 @@ import com.medvault.dto.LoginRequest;
 import com.medvault.dto.RegisterRequest;
 import com.medvault.exception.ResourceNotFoundException;
 import com.medvault.model.Patient;
+import com.medvault.model.Permission;
 import com.medvault.model.Role;
 import com.medvault.model.User;
 import com.medvault.repository.PatientRepository;
@@ -70,7 +71,17 @@ public class AuthController {
 
             User user = userRepository.findByUsernameOrEmail(loginRequest.getUsername(), loginRequest.getUsername())
                     .orElseThrow(() -> new ResourceNotFoundException("User record not found"));
+
             Set<String> roles = user.getRoles().stream().map(Role::getName).collect(Collectors.toSet());
+
+            Set<String> permissions = new HashSet<>();
+            for (Role role : user.getRoles()) {
+                if (role.getPermissions() != null) {
+                    for (Permission perm : role.getPermissions()) {
+                        permissions.add(perm.getCode());
+                    }
+                }
+            }
 
             String primaryRole = roles.isEmpty() ? "ROLE_USER" : roles.iterator().next();
             auditService.logAction(user.getUsername(), primaryRole, "LOGIN", "AUTH", String.valueOf(user.getId()), "User authenticated successfully");
@@ -80,6 +91,8 @@ public class AuthController {
                     user.getUsername(),
                     user.getFullName(),
                     roles,
+                    permissions,
+                    user.getDepartment(),
                     user.getId()
             ));
         } catch (Exception e) {
@@ -135,7 +148,7 @@ public class AuthController {
     }
 
     @PostMapping("/admin/create-user")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_SYS_ADMIN', 'ROLE_ORG_ADMIN', 'ROLE_ADMIN', 'USER_CREATE')")
     public ResponseEntity<?> createUserByAdmin(@RequestBody RegisterRequest registerRequest, Authentication auth) {
         if (userRepository.existsByUsername(registerRequest.getUsername())) {
             return ResponseEntity.badRequest().body(Map.of("error", "BAD_REQUEST", "message", "Username is already taken!"));
@@ -148,7 +161,6 @@ public class AuthController {
         Set<String> strRoles = registerRequest.getRoles();
         boolean isDoctor = strRoles != null && strRoles.stream().anyMatch(r -> r.equalsIgnoreCase("DOCTOR") || r.equalsIgnoreCase("ROLE_DOCTOR"));
 
-        // Mandatory Doctor Credential Validation
         if (isDoctor) {
             if (registerRequest.getLicenseNumber() == null || registerRequest.getLicenseNumber().trim().isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "BAD_REQUEST", "message", "Doctor registration requires a valid Medical Practice License Number!"));
@@ -171,7 +183,7 @@ public class AuthController {
         user.setQualifications(registerRequest.getQualifications());
         user.setYearsOfExperience(registerRequest.getYearsOfExperience() != null ? registerRequest.getYearsOfExperience() : 5);
         user.setMedicalBoardState(registerRequest.getMedicalBoardState() != null ? registerRequest.getMedicalBoardState() : "State Licensing Board");
-        user.setVerificationStatus(isDoctor ? "VERIFIED" : "VERIFIED");
+        user.setVerificationStatus("VERIFIED");
 
         Set<Role> roles = new HashSet<>();
 
@@ -203,13 +215,24 @@ public class AuthController {
 
         User user = userRepository.findByUsername(authentication.getName())
                 .orElseThrow(() -> new ResourceNotFoundException("Authenticated user not found"));
+
         Set<String> roles = user.getRoles().stream().map(Role::getName).collect(Collectors.toSet());
+        Set<String> permissions = new HashSet<>();
+        for (Role role : user.getRoles()) {
+            if (role.getPermissions() != null) {
+                for (Permission perm : role.getPermissions()) {
+                    permissions.add(perm.getCode());
+                }
+            }
+        }
 
         return ResponseEntity.ok(new JwtAuthResponse(
                 null,
                 user.getUsername(),
                 user.getFullName(),
                 roles,
+                permissions,
+                user.getDepartment(),
                 user.getId()
         ));
     }

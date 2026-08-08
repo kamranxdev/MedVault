@@ -1,6 +1,6 @@
 # MedVault Database Schema & Entity Relationship Guide
 
-This document provides a comprehensive reference for MedVault's relational database schema, entity relationships, and data model design decisions.
+This document provides a comprehensive reference for MedVault's relational database schema, entity relationships, security tables, and data model design decisions.
 
 ---
 
@@ -9,24 +9,40 @@ This document provides a comprehensive reference for MedVault's relational datab
 MedVault's database is organized like a large hospital's physical filing system:
 
 - **`users` table** → The **Staff Directory** — contains every employee (doctors, nurses, admins, auditors) and their credentials.
-- **`roles` & `user_roles` tables** → The **Badge Access List** — maps which staff members hold which access levels (Doctor, Nurse, Admin, Auditor, Patient).
-- **`patients` table** → The **Master Patient Index (MPI)** — the central registry of every patient, their demographics, insurance, and medical alerts.
-- **`encounters` table** → The **Visit Log Book** — records every time a patient checks into the hospital (outpatient, inpatient, emergency).
-- **`vitals` table** → The **Bedside Telemetry Charts** — time-stamped vital sign recordings (BP, HR, Temp, SpO2, Glucose).
-- **`prescriptions` table** → The **Pharmacy Order Pad** — every eRx order with dosage, frequency, and RxNorm coding.
+- **`roles` & `user_roles` tables** → The **Badge Access List** — maps staff members to their assigned role definitions.
+- **`permissions` & `role_permissions` tables** → The **Detailed Permission Matrix** — fine-grained authority keys (e.g., `PRESCRIPTION_CREATE`, `VITALS_READ`).
+- **`departments` & `patient_assignments` tables** → The **Care Roster & Facility Assignment** — maps staff and patients to departments and active treatment care teams for ABAC evaluation.
+- **`abac_policies` table** → The **Policy Rules Registry** — configurable SpEL policies enforcing context-based authorization constraints.
+- **`patients` table** → The **Master Patient Index (MPI)** — central registry of patient identity, demographics, insurance, and medical alerts.
+- **`encounters` table** → The **Visit Log Book** — records every patient check-in (outpatient, inpatient, emergency).
+- **`vitals` table** → The **Bedside Telemetry Charts** — time-stamped vital sign flowsheets.
+- **`prescriptions` table** → The **Pharmacy Order Pad** — eRx orders with dosage, frequency, and RxNorm coding.
 - **`allergies` table** → The **Red Wristband Register** — documented allergens that trigger safety alerts before prescriptions are issued.
-- **`diagnoses` table** → The **Problem List Binder** — active and chronic conditions coded in ICD-10 and SNOMED-CT.
-- **`audit_logs` table** → The **Black Box Vault** — an immutable, append-only record of every system action for HIPAA compliance.
+- **`diagnoses` table** → The **Problem List Binder** — active/chronic conditions coded in ICD-10 and SNOMED-CT.
+- **`audit_logs` table** → The **Black Box Vault** — immutable, append-only record of every system action for HIPAA § 164.312 compliance.
 
 ---
 
-## 🗄️ Entity Relationship Diagram
+## 🗄️ Comprehensive Entity Relationship Diagram
 
 ```mermaid
 erDiagram
     ROLES {
         BIGINT id PK
-        VARCHAR name UK "ROLE_ADMIN, ROLE_DOCTOR, etc."
+        VARCHAR name UK "ROLE_SYS_ADMIN, ROLE_DOCTOR, etc."
+        VARCHAR description
+    }
+
+    PERMISSIONS {
+        BIGINT id PK
+        VARCHAR code UK "PATIENT_READ, PRESCRIPTION_CREATE, etc."
+        VARCHAR category "PATIENT, CLINICAL, BILLING, SYSTEM"
+        VARCHAR description
+    }
+
+    ROLE_PERMISSIONS {
+        BIGINT role_id FK
+        BIGINT permission_id FK
     }
 
     USERS {
@@ -36,13 +52,37 @@ erDiagram
         VARCHAR email UK
         VARCHAR full_name
         VARCHAR specialization
-        VARCHAR department
+        BIGINT department_id FK
         TIMESTAMP created_at
     }
 
     USER_ROLES {
         BIGINT user_id FK
         BIGINT role_id FK
+    }
+
+    DEPARTMENTS {
+        BIGINT id PK
+        VARCHAR name UK "CARDIOLOGY, EMERGENCY, ONCOLOGY"
+        VARCHAR code UK "CARD, EMG, ONC"
+        BIGINT facility_id FK
+    }
+
+    PATIENT_ASSIGNMENTS {
+        BIGINT id PK
+        BIGINT patient_id FK
+        BIGINT staff_user_id FK
+        VARCHAR assignment_type "ATTENDING_PHYSICIAN, ASSIGNED_NURSE"
+        TIMESTAMP start_date
+        TIMESTAMP end_date
+    }
+
+    ABAC_POLICIES {
+        BIGINT id PK
+        VARCHAR policy_name UK
+        VARCHAR target_resource
+        VARCHAR action
+        VARCHAR spel_expression
     }
 
     PATIENTS {
@@ -60,7 +100,8 @@ erDiagram
         VARCHAR insurance_provider
         VARCHAR insurance_policy_number
         VARCHAR medical_alerts
-        BIGINT user_id FK "Links to login account"
+        BIGINT user_id FK "Links to patient self-service account"
+        BIGINT department_id FK
         TIMESTAMP created_at
     }
 
@@ -193,18 +234,6 @@ erDiagram
         TIMESTAMP generated_at
     }
 
-    MEDICAL_RECORDS {
-        BIGINT id PK
-        BIGINT patient_id FK
-        BIGINT doctor_id FK
-        VARCHAR diagnosis
-        VARCHAR icd_code
-        VARCHAR symptoms
-        VARCHAR treatment_plan
-        VARCHAR notes
-        TIMESTAMP created_at
-    }
-
     AUDIT_LOGS {
         BIGINT id PK
         VARCHAR username
@@ -217,8 +246,14 @@ erDiagram
         TIMESTAMP timestamp "Immutable WORM entry"
     }
 
-    USERS ||--o{ USER_ROLES : "has"
-    ROLES ||--o{ USER_ROLES : "assigned to"
+    ROLES ||--o{ USER_ROLES : "has"
+    USERS ||--o{ USER_ROLES : "assigned to"
+    ROLES ||--o{ ROLE_PERMISSIONS : "has"
+    PERMISSIONS ||--o{ ROLE_PERMISSIONS : "granted via"
+    DEPARTMENTS ||--o{ USERS : "employs"
+    DEPARTMENTS ||--o{ PATIENTS : "admits to"
+    PATIENTS ||--o{ PATIENT_ASSIGNMENTS : "care team"
+    USERS ||--o{ PATIENT_ASSIGNMENTS : "staff member"
     USERS ||--o| PATIENTS : "login account"
     PATIENTS ||--o{ ENCOUNTERS : "visits"
     USERS ||--o{ ENCOUNTERS : "attends as provider"
@@ -227,7 +262,6 @@ erDiagram
     PATIENTS ||--o{ VITALS : "recorded for"
     PATIENTS ||--o{ PRESCRIPTIONS : "prescribed to"
     PATIENTS ||--o{ APPOINTMENTS : "scheduled for"
-    PATIENTS ||--o{ MEDICAL_RECORDS : "has records"
     USERS ||--o{ PRESCRIPTIONS : "prescribed by"
     USERS ||--o{ DIAGNOSES : "diagnosed by"
     USERS ||--o{ VITALS : "recorded by"
@@ -241,37 +275,24 @@ erDiagram
 
 ---
 
-## 📊 Table Summary & Row Counts
+## 📊 Table Summary
 
-| Table | Purpose | Key Foreign Keys | Approximate Seed Rows |
+| Table | Purpose | Primary / Foreign Keys | Access Control Level |
 | :--- | :--- | :--- | :--- |
-| `roles` | RBAC role definitions | — | 5 (ADMIN, DOCTOR, NURSE, PATIENT, AUDITOR) |
-| `users` | Staff & patient login accounts | `→ roles (via user_roles)` | 8 |
-| `user_roles` | Many-to-many user ↔ role mapping | `→ users`, `→ roles` | 8 |
-| `patients` | Master Patient Index (MPI) | `→ users (optional)` | 3 |
-| `encounters` | Clinical visit records | `→ patients`, `→ users` | 3 |
-| `allergies` | Documented allergens | `→ patients`, `→ users` | 3 |
-| `diagnoses` | Problem list (ICD-10, SNOMED) | `→ patients`, `→ users` | 3 |
-| `vitals` | Longitudinal vital signs | `→ patients`, `→ users` | 6 |
-| `prescriptions` | eRx medication orders (RxNorm) | `→ patients`, `→ users` | 3 |
-| `appointments` | Scheduled visits & workflow stages | `→ patients`, `→ users`, `→ vitals` | 5 |
-| `appointment_cancellations` | Cancellation records | `→ appointments`, `→ users` | 1 |
-| `appointment_notes` | Clinical & admin notes per visit | `→ appointments`, `→ users` | 4 |
-| `appointment_lab_orders` | Lab test orders | `→ appointments`, `→ users` | 2 |
-| `appointment_billings` | Financial billing summaries | `→ appointments` | 3 |
-| `medical_records` | Legacy medical records | `→ patients`, `→ users` | 3 |
-| `audit_logs` | HIPAA WORM compliance vault | — (standalone) | 2 |
-
----
-
-## 🔑 Coding Standards & Terminology Reference
-
-MedVault uses standardized healthcare coding systems throughout the database:
-
-| Coding System | Authority | Used In | Example |
-| :--- | :--- | :--- | :--- |
-| **ICD-10-CM** | WHO / CMS | `diagnoses.icd_code` | `E11.9` (Type 2 Diabetes) |
-| **SNOMED-CT** | SNOMED International | `diagnoses.snomed_code` | `44054006` (Type 2 Diabetes) |
-| **RxNorm** | NLM (NIH) | `prescriptions.rx_norm_code`, `allergies.allergen_code` | `7980` (Penicillin V) |
-| **LOINC** | Regenstrief Institute | Vital signs (via Synthea ingest) | `8480-6` (Systolic BP) |
-| **HL7 FHIR R4** | HL7 International | FHIR API resource format | `Patient`, `Observation`, `Bundle` |
+| `roles` | Definitions for 10 baseline roles | `id` (PK) | Read-only runtime lookup |
+| `permissions` | Granular security authority codes | `id` (PK) | Read-only runtime lookup |
+| `role_permissions` | Mappings between roles and permissions | `role_id`, `permission_id` (FKs) | System Admin managed |
+| `users` | Staff & patient login accounts | `id` (PK), `department_id` (FK) | Authentication core |
+| `user_roles` | Mappings between users and roles | `user_id`, `role_id` (FKs) | Admin managed |
+| `departments` | Clinic/hospital functional units | `id` (PK) | Admin managed |
+| `patient_assignments` | Active care team roster (ABAC) | `id` (PK), `patient_id`, `staff_user_id` (FKs) | Attending / Admin managed |
+| `abac_policies` | Dynamic SpEL policy definitions | `id` (PK) | Security Admin managed |
+| `patients` | Master Patient Index (MPI) | `id` (PK), `user_id` (FK) | RBAC + ABAC protected PHI |
+| `encounters` | Clinical visit encounters | `id` (PK), `patient_id`, `attending_provider_id` (FKs) | RBAC + ABAC protected PHI |
+| `allergies` | Patient RxNorm allergy list | `id` (PK), `patient_id`, `recorded_by_id` (FKs) | RBAC + ABAC protected PHI |
+| `diagnoses` | Problem list (ICD-10, SNOMED) | `id` (PK), `patient_id`, `doctor_id` (FKs) | RBAC + ABAC protected PHI |
+| `vitals` | Longitudinal vital signs flowsheets | `id` (PK), `patient_id`, `recorded_by_id` (FKs) | RBAC + ABAC protected PHI |
+| `prescriptions` | eRx medication orders | `id` (PK), `patient_id`, `doctor_id` (FKs) | RBAC + ABAC protected PHI |
+| `appointments` | Visit scheduling & workflow stages | `id` (PK), `patient_id`, `doctor_id` (FKs) | RBAC + ABAC protected PHI |
+| `appointment_billings` | Revenue cycle & invoice records | `id` (PK), `appointment_id` (FK) | Billing / Admin restricted |
+| `audit_logs` | WORM compliance ledger | `id` (PK) | Append-Only (WORM) |

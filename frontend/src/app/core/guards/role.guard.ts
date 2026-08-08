@@ -1,6 +1,7 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { Capability } from '../models/permissions.model';
 
 export const roleGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
@@ -12,14 +13,19 @@ export const roleGuard: CanActivateFn = (route, state) => {
   }
 
   const expectedRoles = route.data?.['roles'] as string[];
-  if (!expectedRoles || expectedRoles.length === 0) {
-    return true;
+  const requiredCapability = route.data?.['permission'] as Capability;
+
+  if (requiredCapability && !authService.hasCapability(requiredCapability)) {
+    router.navigate(['/dashboard']);
+    return false;
   }
 
-  if (authService.hasAnyRole(expectedRoles)) {
-    return true;
+  if (expectedRoles && expectedRoles.length > 0) {
+    if (!authService.hasAnyRole(expectedRoles)) {
+      router.navigate(['/dashboard']);
+      return false;
+    }
   }
 
-  router.navigate(['/dashboard']);
-  return false;
+  return true;
 };

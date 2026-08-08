@@ -100,4 +100,30 @@ public class SecurityIntegrationTest {
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isForbidden());
     }
+
+    @Test
+    public void testAllRoleLoginsSucceed() throws Exception {
+        String[][] credentials = {
+            {"admin", "admin123"},
+            {"doctor", "doctor123"},
+            {"nurse", "nurse123"},
+            {"receptionist", "receptionist123"},
+            {"labtech", "labtech123"},
+            {"pharmacist", "pharmacist123"},
+            {"billing", "billing123"},
+            {"auditor", "auditor123"},
+            {"patient", "patient123"}
+        };
+
+        for (String[] cred : credentials) {
+            com.medvault.dto.LoginRequest login = new com.medvault.dto.LoginRequest();
+            login.setUsername(cred[0]);
+            login.setPassword(cred[1]);
+
+            mockMvc.perform(post("/api/auth/login")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(login)))
+                    .andExpect(status().isOk());
+        }
+    }
 }

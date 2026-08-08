@@ -4,22 +4,101 @@
 -- ==============================================================================
 
 -- ------------------------------------------------------------------------------
--- 1. ROLES
+-- 1. DEPARTMENTS
 -- ------------------------------------------------------------------------------
-INSERT INTO roles (id, name) VALUES (1, 'ROLE_ADMIN');
-INSERT INTO roles (id, name) VALUES (2, 'ROLE_DOCTOR');
-INSERT INTO roles (id, name) VALUES (3, 'ROLE_NURSE');
-INSERT INTO roles (id, name) VALUES (4, 'ROLE_AUDITOR');
-INSERT INTO roles (id, name) VALUES (5, 'ROLE_PATIENT');
-INSERT INTO roles (id, name) VALUES (6, 'ROLE_RECEPTIONIST');
+INSERT INTO departments (id, name, code, description) VALUES (1, 'Cardiovascular Medicine', 'CARD', 'Cardiology, ECG, Heart Failure, Echocardiography');
+INSERT INTO departments (id, name, code, description) VALUES (2, 'Emergency & Acute Care', 'EMG', 'Emergency Department, Triage, ICU Bedside');
+INSERT INTO departments (id, name, code, description) VALUES (3, 'Patient Intake & Reception Desk', 'REC', 'Front Desk, Patient Registration, Appointment Scheduling');
+INSERT INTO departments (id, name, code, description) VALUES (4, 'Clinical Pathology & Laboratory', 'LAB', 'Diagnostic Specimen Processing & Hematology');
+INSERT INTO departments (id, name, code, description) VALUES (5, 'Clinical Pharmacy Services', 'PHARM', 'Medication Reconciliation, eRx Verification, Dispensing');
+INSERT INTO departments (id, name, code, description) VALUES (6, 'Revenue Cycle & Patient Billing', 'BILL', 'Invoicing, Insurance Claims, Financial Audits');
+INSERT INTO departments (id, name, code, description) VALUES (7, 'Platform Administration & Security', 'ADM', 'System Infrastructure & Security Governance');
+INSERT INTO departments (id, name, code, description) VALUES (8, 'Regulatory Compliance & Forensics', 'AUD', 'HIPAA § 164.312 Compliance & WORM Audits');
 
 -- ------------------------------------------------------------------------------
--- 2. USERS
+-- 2. ROLES (10 Baseline Production Roles + Legacy Alias)
+-- ------------------------------------------------------------------------------
+INSERT INTO roles (id, name, description) VALUES (1, 'ROLE_SYS_ADMIN', 'Platform System Administrator - Tenant Infrastructure & Security');
+INSERT INTO roles (id, name, description) VALUES (2, 'ROLE_ORG_ADMIN', 'Organization Administrator - Clinic Facilities & Staff Roster');
+INSERT INTO roles (id, name, description) VALUES (3, 'ROLE_DOCTOR', 'Physician / Attending Doctor - Diagnoses, Notes, eRx Orders');
+INSERT INTO roles (id, name, description) VALUES (4, 'ROLE_NURSE', 'Registered Nurse - Triage, Vitals, MAR Administration');
+INSERT INTO roles (id, name, description) VALUES (5, 'ROLE_RECEPTIONIST', 'Receptionist - Front Desk Intake, Scheduling, Demographics');
+INSERT INTO roles (id, name, description) VALUES (6, 'ROLE_LAB_TECH', 'Laboratory Technician - Specimen Processing & Lab Results');
+INSERT INTO roles (id, name, description) VALUES (7, 'ROLE_PHARMACIST', 'Pharmacist - Medication Reconciliation & Dispensing');
+INSERT INTO roles (id, name, description) VALUES (8, 'ROLE_BILLING', 'Billing Officer - Revenue Cycle, Invoices, Claims');
+INSERT INTO roles (id, name, description) VALUES (9, 'ROLE_PATIENT', 'Patient - Personal Health Portal Access');
+INSERT INTO roles (id, name, description) VALUES (10, 'ROLE_AUDITOR', 'Compliance Officer - WORM Audit Log & Access Reports');
+INSERT INTO roles (id, name, description) VALUES (11, 'ROLE_ADMIN', 'Legacy Admin Alias');
+
+-- ------------------------------------------------------------------------------
+-- 3. PERMISSIONS
+-- ------------------------------------------------------------------------------
+INSERT INTO permissions (id, code, category, description) VALUES (1, 'PATIENT_CREATE', 'PATIENT', 'Create new patient profile in MPI');
+INSERT INTO permissions (id, code, category, description) VALUES (2, 'PATIENT_READ', 'PATIENT', 'View patient demographic details');
+INSERT INTO permissions (id, code, category, description) VALUES (3, 'PATIENT_UPDATE', 'PATIENT', 'Update patient demographic fields');
+INSERT INTO permissions (id, code, category, description) VALUES (4, 'APPOINTMENT_CREATE', 'APPOINTMENT', 'Schedule new patient appointment');
+INSERT INTO permissions (id, code, category, description) VALUES (5, 'APPOINTMENT_READ', 'APPOINTMENT', 'View appointment calendar');
+INSERT INTO permissions (id, code, category, description) VALUES (6, 'APPOINTMENT_UPDATE', 'APPOINTMENT', 'Reschedule or update appointment');
+INSERT INTO permissions (id, code, category, description) VALUES (7, 'APPOINTMENT_CANCEL', 'APPOINTMENT', 'Cancel scheduled appointment');
+INSERT INTO permissions (id, code, category, description) VALUES (8, 'CLINICAL_NOTE_CREATE', 'CLINICAL', 'Write SOAP progress notes');
+INSERT INTO permissions (id, code, category, description) VALUES (9, 'CLINICAL_NOTE_READ', 'CLINICAL', 'Read SOAP progress notes');
+INSERT INTO permissions (id, code, category, description) VALUES (10, 'DIAGNOSIS_CREATE', 'CLINICAL', 'Log ICD-10/SNOMED diagnosis');
+INSERT INTO permissions (id, code, category, description) VALUES (11, 'DIAGNOSIS_READ', 'CLINICAL', 'View patient problem list');
+INSERT INTO permissions (id, code, category, description) VALUES (12, 'VITALS_CREATE', 'CLINICAL', 'Record patient vital signs');
+INSERT INTO permissions (id, code, category, description) VALUES (13, 'VITALS_READ', 'CLINICAL', 'View vitals flowsheet');
+INSERT INTO permissions (id, code, category, description) VALUES (14, 'PRESCRIPTION_CREATE', 'MEDICATION', 'Issue RxNorm eRx prescription');
+INSERT INTO permissions (id, code, category, description) VALUES (15, 'PRESCRIPTION_READ', 'MEDICATION', 'View prescription history');
+INSERT INTO permissions (id, code, category, description) VALUES (16, 'MEDICATION_DISPENSE', 'MEDICATION', 'Dispense prescription order');
+INSERT INTO permissions (id, code, category, description) VALUES (17, 'LAB_ORDER_CREATE', 'LABORATORY', 'Order diagnostic lab test');
+INSERT INTO permissions (id, code, category, description) VALUES (18, 'LAB_RESULT_CREATE', 'LABORATORY', 'Enter diagnostic lab results');
+INSERT INTO permissions (id, code, category, description) VALUES (19, 'LAB_RESULT_READ', 'LABORATORY', 'View lab result reports');
+INSERT INTO permissions (id, code, category, description) VALUES (20, 'INVOICE_CREATE', 'BILLING', 'Generate patient invoice');
+INSERT INTO permissions (id, code, category, description) VALUES (21, 'INVOICE_READ', 'BILLING', 'View financial billing invoices');
+INSERT INTO permissions (id, code, category, description) VALUES (22, 'AUDIT_LOG_READ', 'SYSTEM', 'Read HIPAA WORM audit log');
+INSERT INTO permissions (id, code, category, description) VALUES (23, 'USER_CREATE', 'SYSTEM', 'Provision new staff user');
+
+-- ------------------------------------------------------------------------------
+-- 4. ROLE_PERMISSIONS MAPPING
+-- ------------------------------------------------------------------------------
+-- Doctor (ROLE_DOCTOR): Full Clinical
+INSERT INTO role_permissions (role_id, permission_id) VALUES (3, 1), (3, 2), (3, 3), (3, 4), (3, 5), (3, 6), (3, 7), (3, 8), (3, 9), (3, 10), (3, 11), (3, 12), (3, 13), (3, 14), (3, 15), (3, 17), (3, 19);
+
+-- Nurse (ROLE_NURSE): Triage, Vitals, MAR, Notes Read
+INSERT INTO role_permissions (role_id, permission_id) VALUES (4, 1), (4, 2), (4, 4), (4, 5), (4, 6), (4, 9), (4, 11), (4, 12), (4, 13), (4, 15), (4, 19);
+
+-- Receptionist (ROLE_RECEPTIONIST): Demographics & Appointments
+INSERT INTO role_permissions (role_id, permission_id) VALUES (5, 1), (5, 2), (5, 3), (5, 4), (5, 5), (5, 6), (5, 7), (5, 21);
+
+-- Lab Tech (ROLE_LAB_TECH): Specimen & Lab Results
+INSERT INTO role_permissions (role_id, permission_id) VALUES (6, 2), (6, 5), (6, 18), (6, 19);
+
+-- Pharmacist (ROLE_PHARMACIST): eRx Review & Dispensing
+INSERT INTO role_permissions (role_id, permission_id) VALUES (7, 2), (7, 15), (7, 16);
+
+-- Billing Officer (ROLE_BILLING): Invoices & Revenue Cycle
+INSERT INTO role_permissions (role_id, permission_id) VALUES (8, 2), (8, 20), (8, 21);
+
+-- Patient (ROLE_PATIENT): Personal Self-Service
+INSERT INTO role_permissions (role_id, permission_id) VALUES (9, 2), (9, 5), (9, 9), (9, 11), (9, 13), (9, 15), (9, 19), (9, 21);
+
+-- Auditor (ROLE_AUDITOR): Read-only Compliance
+INSERT INTO role_permissions (role_id, permission_id) VALUES (10, 2), (10, 5), (10, 9), (10, 11), (10, 13), (10, 15), (10, 19), (10, 21), (10, 22);
+
+-- System Admin (ROLE_SYS_ADMIN) & Org Admin (ROLE_ORG_ADMIN): All
+INSERT INTO role_permissions (role_id, permission_id) SELECT 1, id FROM permissions;
+INSERT INTO role_permissions (role_id, permission_id) SELECT 2, id FROM permissions;
+INSERT INTO role_permissions (role_id, permission_id) SELECT 11, id FROM permissions;
+
+-- ------------------------------------------------------------------------------
+-- 5. USERS
 -- Default Login Passwords:
 -- Admin: admin / admin123
 -- Receptionist: receptionist / receptionist123
 -- Doctors: doctor (or doctor_mahtab, doctor_rajesh) / doctor123
 -- Nurse: nurse (or nurse_priya) / nurse123
+-- Lab Tech: labtech / labtech123
+-- Pharmacist: pharmacist / pharmacist123
+-- Billing: billing / billing123
 -- Auditor: auditor / auditor123
 -- Patient: patient (or user_kamran, user_aarav, user_ananya) / patient123
 -- ------------------------------------------------------------------------------
@@ -36,10 +115,10 @@ INSERT INTO users (id, username, password, email, full_name, specialization, dep
 VALUES (4, 'doctor_rajesh', '$2a$10$bvRrisyOUu8PQa8gPJlQjOTPxtPQDosqRBdRoW95EXlrydpL6/IvW', 'rajesh.sharma@medvault.org', 'Dr. Rajesh Sharma', 'Neurology & Internal Medicine', 'Neurological Sciences', CURRENT_TIMESTAMP);
 
 INSERT INTO users (id, username, password, email, full_name, specialization, department, created_at) 
-VALUES (5, 'nurse', '$2a$10$DgGz9Ehsr5I9xvTQ/lbBQeF0AGNdBCr8C7zQgdOVScnY1fEaxXfsG', 'nurse@medvault.org', 'Nurse Priya Verma', NULL, 'Emergency / ICU Bedside', CURRENT_TIMESTAMP);
+VALUES (5, 'nurse', '$2a$10$DgGz9Ehsr5I9xvTQ/lbBQeF0AGNdBCr8C7zQgdOVScnY1fEaxXfsG', 'nurse@medvault.org', 'Nurse Priya Verma', NULL, 'Emergency & Acute Care', CURRENT_TIMESTAMP);
 
 INSERT INTO users (id, username, password, email, full_name, specialization, department, created_at) 
-VALUES (6, 'nurse_priya', '$2a$10$DgGz9Ehsr5I9xvTQ/lbBQeF0AGNdBCr8C7zQgdOVScnY1fEaxXfsG', 'priya.verma@medvault.org', 'Nurse Priya Verma', NULL, 'Emergency / ICU Bedside', CURRENT_TIMESTAMP);
+VALUES (6, 'nurse_priya', '$2a$10$DgGz9Ehsr5I9xvTQ/lbBQeF0AGNdBCr8C7zQgdOVScnY1fEaxXfsG', 'priya.verma@medvault.org', 'Nurse Priya Verma', NULL, 'Emergency & Acute Care', CURRENT_TIMESTAMP);
 
 INSERT INTO users (id, username, password, email, full_name, specialization, department, created_at) 
 VALUES (7, 'auditor', '$2a$10$3Uj7vg0rhOtYROAzLYvK2.HbXLWJfNM4lfK8DNWsGCsEHLH14A3ei', 'auditor@medvault.org', 'Inspector Suresh Menon (Compliance Auditor)', NULL, 'Regulatory Compliance & Forensics', CURRENT_TIMESTAMP);
@@ -60,28 +139,41 @@ INSERT INTO users (id, username, password, email, full_name, specialization, dep
 VALUES (12, 'user_rohan', '$2a$10$1Knu6HwyDwDWpqngg1N6nOoWKupSsqQLU0Mw/3EmTdJ.XKt4e32kC', 'rohan.mehta@example.com', 'Rohan Mehta', NULL, NULL, CURRENT_TIMESTAMP);
 
 INSERT INTO users (id, username, password, email, full_name, specialization, department, created_at) 
-VALUES (13, 'receptionist', '$2a$10$DgGz9Ehsr5I9xvTQ/lbBQeF0AGNdBCr8C7zQgdOVScnY1fEaxXfsG', 'receptionist@medvault.org', 'Receptionist Sarita Verma', NULL, 'Patient Intake & Reception Desk', CURRENT_TIMESTAMP);
+VALUES (13, 'receptionist', '$2a$10$U9LDGKztApw0TjXI3gt68.3HMfnpsCf7HlfH40w2YrrlwRMhZAIwq', 'receptionist@medvault.org', 'Receptionist Sarita Verma', NULL, 'Patient Intake & Reception Desk', CURRENT_TIMESTAMP);
+
+INSERT INTO users (id, username, password, email, full_name, specialization, department, created_at) 
+VALUES (14, 'labtech', '$2a$10$hWfjzWpgqoy9xSFfTa.X5uTLq.RWkf4jw1qWre4K3NzV3JvT9UH7e', 'labtech@medvault.org', 'Lab Specialist Tech Roy', NULL, 'Clinical Pathology & Laboratory', CURRENT_TIMESTAMP);
+
+INSERT INTO users (id, username, password, email, full_name, specialization, department, created_at) 
+VALUES (15, 'pharmacist', '$2a$10$u/Xd8bxyQUr5Nqc/9xQhB.b3liUdM.MNO.SaOVkNbkKsi6EsJZPfa', 'pharmacist@medvault.org', 'PharmD Anita Desai', NULL, 'Clinical Pharmacy Services', CURRENT_TIMESTAMP);
+
+INSERT INTO users (id, username, password, email, full_name, specialization, department, created_at) 
+VALUES (16, 'billing', '$2a$10$JxvglMjc9cihsQTvpClZpeFA.aXuko6xiRl4zU4J3IDqcRRv.GKGS', 'billing@medvault.org', 'Billing Officer Vikram Patel', NULL, 'Revenue Cycle & Patient Billing', CURRENT_TIMESTAMP);
 
 -- ------------------------------------------------------------------------------
--- 3. USER ROLES (JOIN TABLE)
+-- 6. USER ROLES (JOIN TABLE)
 -- ------------------------------------------------------------------------------
 INSERT INTO user_roles (user_id, role_id) VALUES (1, 1);
-INSERT INTO user_roles (user_id, role_id) VALUES (2, 2);
-INSERT INTO user_roles (user_id, role_id) VALUES (3, 2);
-INSERT INTO user_roles (user_id, role_id) VALUES (4, 2);
-INSERT INTO user_roles (user_id, role_id) VALUES (5, 3);
-INSERT INTO user_roles (user_id, role_id) VALUES (6, 3);
-INSERT INTO user_roles (user_id, role_id) VALUES (7, 4);
-INSERT INTO user_roles (user_id, role_id) VALUES (8, 5);
-INSERT INTO user_roles (user_id, role_id) VALUES (9, 5);
-INSERT INTO user_roles (user_id, role_id) VALUES (10, 5);
-INSERT INTO user_roles (user_id, role_id) VALUES (11, 5);
-INSERT INTO user_roles (user_id, role_id) VALUES (12, 5);
-INSERT INTO user_roles (user_id, role_id) VALUES (13, 6);
-
+INSERT INTO user_roles (user_id, role_id) VALUES (1, 2);
+INSERT INTO user_roles (user_id, role_id) VALUES (1, 11);
+INSERT INTO user_roles (user_id, role_id) VALUES (2, 3);
+INSERT INTO user_roles (user_id, role_id) VALUES (3, 3);
+INSERT INTO user_roles (user_id, role_id) VALUES (4, 3);
+INSERT INTO user_roles (user_id, role_id) VALUES (5, 4);
+INSERT INTO user_roles (user_id, role_id) VALUES (6, 4);
+INSERT INTO user_roles (user_id, role_id) VALUES (7, 10);
+INSERT INTO user_roles (user_id, role_id) VALUES (8, 9);
+INSERT INTO user_roles (user_id, role_id) VALUES (9, 9);
+INSERT INTO user_roles (user_id, role_id) VALUES (10, 9);
+INSERT INTO user_roles (user_id, role_id) VALUES (11, 9);
+INSERT INTO user_roles (user_id, role_id) VALUES (12, 9);
+INSERT INTO user_roles (user_id, role_id) VALUES (13, 5);
+INSERT INTO user_roles (user_id, role_id) VALUES (14, 6);
+INSERT INTO user_roles (user_id, role_id) VALUES (15, 7);
+INSERT INTO user_roles (user_id, role_id) VALUES (16, 8);
 
 -- ------------------------------------------------------------------------------
--- 4. PATIENTS
+-- 7. PATIENTS
 -- ------------------------------------------------------------------------------
 INSERT INTO patients (id, patient_code, ssn, full_name, date_of_birth, gender, blood_type, phone, email, address, emergency_contact, insurance_provider, insurance_policy_number, insurance_group_number, coverage_plan, medical_alerts, user_id, created_at) 
 VALUES (1, 'PAT-1001', '459-00-1284', 'Kamran Khan', '1985-04-12', 'Male', 'O+', '+91 98765 43210', 'patient@medvault.org', '742 Marine Drive, Mumbai', 'Farah Khan (Wife) - +91 98765 98765', 'Star Health Insurance', 'STAR-9874102', 'GRP-55410', 'Premier Comprehensive Care', 'Type 2 Diabetes, Severe Penicillin Allergy, Mild Asthma', 9, CURRENT_TIMESTAMP);
@@ -96,7 +188,19 @@ INSERT INTO patients (id, patient_code, ssn, full_name, date_of_birth, gender, b
 VALUES (4, 'PAT-1004', '312-00-5582', 'Rohan Mehta', '1990-07-22', 'Male', 'AB+', '+91 98765 88990', 'rohan.mehta@example.com', '88 Bandra Reclamation, Mumbai', 'Neha Mehta (Sister) - +91 98765 11223', 'Care Health Insurance', 'CARE-3341029', 'GRP-99401', 'Peanut Allergy', 12, CURRENT_TIMESTAMP);
 
 -- ------------------------------------------------------------------------------
--- 5. ENCOUNTERS
+-- 8. PATIENT CARE TEAM ASSIGNMENTS (ABAC)
+-- ------------------------------------------------------------------------------
+INSERT INTO patient_assignments (id, patient_id, staff_user_id, assignment_type, start_date)
+VALUES (1, 1, 3, 'ATTENDING_PHYSICIAN', CURRENT_TIMESTAMP);
+
+INSERT INTO patient_assignments (id, patient_id, staff_user_id, assignment_type, start_date)
+VALUES (2, 1, 6, 'ASSIGNED_NURSE', CURRENT_TIMESTAMP);
+
+INSERT INTO patient_assignments (id, patient_id, staff_user_id, assignment_type, start_date)
+VALUES (3, 2, 4, 'ATTENDING_PHYSICIAN', CURRENT_TIMESTAMP);
+
+-- ------------------------------------------------------------------------------
+-- 9. ENCOUNTERS
 -- ------------------------------------------------------------------------------
 INSERT INTO encounters (id, patient_id, attending_provider_id, encounter_type, chief_complaint, clinical_notes, discharge_summary, status, encounter_date)
 VALUES (1, 1, 2, 'OUTPATIENT', 'Routine diabetes checkup and cardiovascular risk evaluation.', 'Patient reports good dietary discipline. Blood pressure reading is 128/82. HbA1c is 6.8%.', 'Continue current Metformin therapy. Follow up in 90 days.', 'COMPLETED', CURRENT_TIMESTAMP);
@@ -111,7 +215,7 @@ INSERT INTO encounters (id, patient_id, attending_provider_id, encounter_type, c
 VALUES (4, 4, 4, 'OUTPATIENT', 'Annual physical and neurological screening.', 'Neurological exam normal. Cranial nerves II-XII intact. DTRs 2+ bilaterally.', 'Screening completed without abnormalities.', 'COMPLETED', CURRENT_TIMESTAMP);
 
 -- ------------------------------------------------------------------------------
--- 6. ALLERGIES
+-- 10. ALLERGIES
 -- ------------------------------------------------------------------------------
 INSERT INTO allergies (id, patient_id, allergen_name, allergen_code, category, severity, reaction_description, status, recorded_by_id, recorded_at)
 VALUES (1, 1, 'Penicillin', 'RxNorm-70618', 'DRUG', 'SEVERE', 'Anaphylaxis, acute bronchial constriction, severe hives.', 'ACTIVE', 2, CURRENT_TIMESTAMP);
@@ -126,7 +230,7 @@ INSERT INTO allergies (id, patient_id, allergen_name, allergen_code, category, s
 VALUES (4, 2, 'Sulfa Drugs', 'RxNorm-10160', 'DRUG', 'MODERATE', 'Skin rash and localized hives upon exposure.', 'ACTIVE', 2, CURRENT_TIMESTAMP);
 
 -- ------------------------------------------------------------------------------
--- 7. DIAGNOSES
+-- 11. DIAGNOSES
 -- ------------------------------------------------------------------------------
 INSERT INTO diagnoses (id, patient_id, doctor_id, condition_name, icd_code, snomed_code, onset_date, status, notes, recorded_at)
 VALUES (1, 1, 2, 'Type 2 Diabetes Mellitus without complications', 'E11.9', '44054006', '2020-03-15', 'CHRONIC', 'Managed with oral antihyperglycemic agents and quarterly glycemic monitoring.', CURRENT_TIMESTAMP);
@@ -141,7 +245,7 @@ INSERT INTO diagnoses (id, patient_id, doctor_id, condition_name, icd_code, snom
 VALUES (4, 4, 4, 'Tension Headache', 'G44.2', '398057008', '2025-11-12', 'RESOLVED', 'Stress-related tension headaches, resolved after lifestyle modifications.', CURRENT_TIMESTAMP);
 
 -- ------------------------------------------------------------------------------
--- 8. MEDICAL RECORDS
+-- 12. MEDICAL RECORDS
 -- ------------------------------------------------------------------------------
 INSERT INTO medical_records (id, patient_id, doctor_id, diagnosis, icd_code, symptoms, treatment_plan, notes, created_at)
 VALUES (1, 1, 2, 'Routine Cardiac Follow-up & Glycemic Assessment', 'E11.9', 'Mild fatigue, occasional shortness of breath after climbing stairs.', 'Continue Metformin 500mg. Start daily 30-min walking routine. Follow up in 3 months.', 'Patient reports good compliance with diet. Blood pressure slightly elevated.', CURRENT_TIMESTAMP);
@@ -153,7 +257,7 @@ INSERT INTO medical_records (id, patient_id, doctor_id, diagnosis, icd_code, sym
 VALUES (3, 4, 4, 'Annual Neurological Check', 'Z00.00', 'None reported.', 'Maintain regular physical exercise and sleep hygiene.', 'All vitals and reflex responses within optimal baseline parameters.', CURRENT_TIMESTAMP);
 
 -- ------------------------------------------------------------------------------
--- 9. VITALS
+-- 13. VITALS
 -- ------------------------------------------------------------------------------
 INSERT INTO vitals (id, patient_id, recorded_by_id, blood_pressure, heart_rate, temperature, oxygen_saturation, respiratory_rate, weight_kg, height_cm, bmi, blood_glucose, recorded_at)
 VALUES (1, 1, 5, '134/86', 78, 36.7, 98, 16, 70.0, 165.0, 25.7, 135, CURRENT_TIMESTAMP);
@@ -180,7 +284,7 @@ INSERT INTO vitals (id, patient_id, recorded_by_id, blood_pressure, heart_rate, 
 VALUES (8, 4, 5, '120/78', 70, 36.6, 99, 15, 75.0, 175.0, 24.5, 92, CURRENT_TIMESTAMP);
 
 -- ------------------------------------------------------------------------------
--- 10. PRESCRIPTIONS
+-- 14. PRESCRIPTIONS
 -- ------------------------------------------------------------------------------
 INSERT INTO prescriptions (id, patient_id, doctor_id, medication_name, rx_norm_code, dosage, route, frequency, duration_days, refills, instructions, status, prescribed_at)
 VALUES (1, 1, 2, 'Metformin HCl', '6809', '500 mg', 'Oral', 'Twice daily with meals', 90, 3, 'Take after morning and evening meals with a full glass of water.', 'ACTIVE', CURRENT_TIMESTAMP);
@@ -195,7 +299,7 @@ INSERT INTO prescriptions (id, patient_id, doctor_id, medication_name, rx_norm_c
 VALUES (4, 4, 4, 'EpiPen Auto-Injector', '314684', '0.3 mg', 'Intramuscular', 'As needed for severe allergic reaction', 365, 2, 'Use immediately upon accidental peanut exposure and call emergency services.', 'ACTIVE', CURRENT_TIMESTAMP);
 
 -- ------------------------------------------------------------------------------
--- 11. APPOINTMENTS
+-- 15. APPOINTMENTS
 -- ------------------------------------------------------------------------------
 INSERT INTO appointments (id, patient_id, doctor_id, appointment_date, status, reason, notes, created_at)
 VALUES (1, 1, 2, '2026-08-04 10:00:00', 'SCHEDULED', '3-Month Diabetes & Cardiology Review', 'Patient requested morning slot.', CURRENT_TIMESTAMP);
@@ -210,36 +314,20 @@ INSERT INTO appointments (id, patient_id, doctor_id, appointment_date, status, r
 VALUES (4, 4, 4, '2026-08-10 15:00:00', 'SCHEDULED', 'Neurology Routine Review', 'Annual follow up.', CURRENT_TIMESTAMP);
 
 -- ------------------------------------------------------------------------------
+-- 16. AUDIT LOGS
 -- ------------------------------------------------------------------------------
--- 12. AUDIT LOGS
--- ------------------------------------------------------------------------------
 INSERT INTO audit_logs (id, username, user_role, action, entity_name, resource_id, ip_address, details, timestamp)
-VALUES (1, 'SYSTEM', 'SYSTEM', 'SEED', 'DATABASE', '0', '127.0.0.1', 'Initialized MedVault EHR database via manual SQL seed script.', CURRENT_TIMESTAMP);
+VALUES (1, 'SYSTEM', 'SYSTEM', 'SEED', 'DATABASE', '0', '127.0.0.1', 'Initialized MedVault EHR database via manual SQL seed script with 10 production roles and RBAC+ABAC matrices.', CURRENT_TIMESTAMP);
 
 INSERT INTO audit_logs (id, username, user_role, action, entity_name, resource_id, ip_address, details, timestamp)
-VALUES (2, 'admin', 'ROLE_ADMIN', 'CREATE', 'USER', '1', '127.0.0.1', 'Provisioned RBAC clinical access credentials for Dr. Mahtab Khan, Nurse Priya Verma, and Inspector Suresh Menon.', CURRENT_TIMESTAMP);
+VALUES (2, 'admin', 'ROLE_SYS_ADMIN', 'CREATE', 'USER', '1', '127.0.0.1', 'Provisioned RBAC clinical access credentials across 10 production roles.', CURRENT_TIMESTAMP);
 
-INSERT INTO audit_logs (id, username, user_role, action, entity_name, resource_id, ip_address, details, timestamp)
-VALUES (3, 'doctor', 'ROLE_DOCTOR', 'CREATE', 'ALLERGY', '1', '127.0.0.1', 'Documented SEVERE Penicillin allergy (RxNorm-70618) for patient PAT-1001.', CURRENT_TIMESTAMP);
-
-INSERT INTO audit_logs (id, username, user_role, action, entity_name, resource_id, ip_address, details, timestamp)
-VALUES (4, 'auditor', 'ROLE_AUDITOR', 'READ', 'AUDIT_LEDGER', 'ALL', '127.0.0.1', 'Executed HIPAA § 164.312(b) compliance forensic audit review.', CURRENT_TIMESTAMP);
-
-INSERT INTO audit_logs (id, username, user_role, action, entity_name, resource_id, ip_address, details, timestamp)
-VALUES (5, 'doctor', 'ROLE_DOCTOR', 'CREATE', 'PRESCRIPTION', '3', '127.0.0.1', 'Prescribed Hydroxyzine for patient PAT-1003.', CURRENT_TIMESTAMP);
-
-INSERT INTO audit_logs (id, username, user_role, action, entity_name, resource_id, ip_address, details, timestamp)
-VALUES (6, 'nurse', 'ROLE_NURSE', 'CREATE', 'VITALS', 'ALL', '127.0.0.1', 'Recorded vitals for patient PAT-1003.', CURRENT_TIMESTAMP);
-
-INSERT INTO audit_logs (id, username, user_role, action, entity_name, resource_id, ip_address, details, timestamp)
-VALUES (7, 'doctor', 'ROLE_DOCTOR', 'CREATE', 'DIAGNOSIS', '3', '127.0.0.1', 'Logged Contact Dermatitis diagnosis for patient PAT-1003.', CURRENT_TIMESTAMP);
-
-INSERT INTO audit_logs (id, username, user_role, action, entity_name, resource_id, ip_address, details, timestamp)
-VALUES (8, 'doctor', 'ROLE_DOCTOR', 'CREATE', 'ENCOUNTER', '3', '127.0.0.1', 'Logged TELEHEALTH encounter for patient PAT-1003.', CURRENT_TIMESTAMP);
-
+ALTER TABLE departments ALTER COLUMN id RESTART WITH 3000;
+ALTER TABLE permissions ALTER COLUMN id RESTART WITH 3000;
 ALTER TABLE roles ALTER COLUMN id RESTART WITH 3000;
 ALTER TABLE users ALTER COLUMN id RESTART WITH 3000;
 ALTER TABLE patients ALTER COLUMN id RESTART WITH 3000;
+ALTER TABLE patient_assignments ALTER COLUMN id RESTART WITH 3000;
 ALTER TABLE encounters ALTER COLUMN id RESTART WITH 3000;
 ALTER TABLE allergies ALTER COLUMN id RESTART WITH 3000;
 ALTER TABLE diagnoses ALTER COLUMN id RESTART WITH 3000;

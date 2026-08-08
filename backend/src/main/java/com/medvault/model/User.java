@@ -25,7 +25,11 @@ public class User {
     private String fullName;
 
     private String specialization; // For Doctors
-    private String department;     // For Staff/Doctors
+    private String department;     // String department name (e.g. "Cardiovascular Medicine")
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "department_id")
+    private Department departmentEntity; // Optional relation to Department entity
 
     private String licenseNumber;     // Medical Practice License / NPI Number
     private String qualifications;    // e.g., MD, MBBS, FACC, Board Certified
@@ -106,6 +110,14 @@ public class User {
 
     public void setDepartment(String department) {
         this.department = department;
+    }
+
+    public Department getDepartmentEntity() {
+        return departmentEntity;
+    }
+
+    public void setDepartmentEntity(Department departmentEntity) {
+        this.departmentEntity = departmentEntity;
     }
 
     public String getLicenseNumber() {

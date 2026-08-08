@@ -129,7 +129,7 @@ public class PrescriptionController {
     }
 
     @PutMapping("/{id}/status")
-    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE')")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE', 'PHARMACIST', 'SYS_ADMIN', 'ORG_ADMIN', 'ADMIN')")
     public ResponseEntity<?> updateStatus(@PathVariable Long id, @RequestParam String status, Authentication auth) {
         Prescription rx = prescriptionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Prescription with ID " + id + " not found"));

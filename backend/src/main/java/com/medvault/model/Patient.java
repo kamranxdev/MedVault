@@ -32,6 +32,8 @@ public class Patient {
     private String insuranceGroupNumber;
     private String coveragePlan;
     
+    private String department; // e.g. "Cardiovascular Medicine", "Emergency & Acute Care"
+
     @Column(length = 1000)
     private String medicalAlerts; // Allergies, chronic conditions summary
 
@@ -179,6 +181,14 @@ public class Patient {
 
     public void setCoveragePlan(String coveragePlan) {
         this.coveragePlan = coveragePlan;
+    }
+
+    public String getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(String department) {
+        this.department = department;
     }
 
     public String getMedicalAlerts() {

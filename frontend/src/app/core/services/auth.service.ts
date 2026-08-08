@@ -2,6 +2,7 @@ import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { JwtAuthResponse } from '../models/models';
+import { Capability, ROLE_CAPABILITY_MAP, UserRole } from '../models/permissions.model';
 
 @Injectable({
   providedIn: 'root',
@@ -106,6 +107,17 @@ export class AuthService {
     return roles.some((r) => this.hasRole(r));
   }
 
+  hasCapability(capability: Capability): boolean {
+    if (!this.isLoggedIn()) return false;
+    const user = this.currentUser();
+    if (!user || !user.roles) return false;
+    return user.roles.some((roleStr) => {
+      const role = roleStr as UserRole;
+      const capabilities = ROLE_CAPABILITY_MAP[role];
+      return capabilities ? capabilities.includes(capability) : false;
+    });
+  }
+
   isReceptionist(): boolean {
     return this.hasRole('ROLE_RECEPTIONIST') || this.hasRole('ROLE_ADMIN');
   }
@@ -126,11 +138,16 @@ export class AuthService {
     return this.hasRole('ROLE_PATIENT');
   }
 
-  getPrimaryRole(): 'Patient' | 'Doctor' | 'Nurse' | 'Receptionist' | 'Admin' {
+  isAuditor(): boolean {
+    return this.hasRole('ROLE_AUDITOR');
+  }
+
+  getPrimaryRole(): 'Patient' | 'Doctor' | 'Nurse' | 'Receptionist' | 'Admin' | 'Auditor' {
     if (this.hasRole('ROLE_ADMIN')) return 'Admin';
     if (this.hasRole('ROLE_RECEPTIONIST')) return 'Receptionist';
     if (this.hasRole('ROLE_DOCTOR')) return 'Doctor';
     if (this.hasRole('ROLE_NURSE')) return 'Nurse';
+    if (this.hasRole('ROLE_AUDITOR')) return 'Auditor';
     return 'Patient';
   }
 
@@ -138,3 +155,4 @@ export class AuthService {
     return this.http.post<any>(`${this.apiUrl}/admin/create-user`, payload);
   }
 }
+

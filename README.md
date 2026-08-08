@@ -69,10 +69,12 @@ All detailed documentation is organized in the [`docs/`](docs/) directory:
 | Document | Description |
 | :--- | :--- |
 | **[Getting Started](docs/getting-started.md)** | Prerequisites, full credentials matrix, all 3 database execution modes, build & test commands |
-| **[Architecture](docs/architecture.md)** | High-level system architecture, real-world analogies, multi-tier diagrams, RBAC matrix |
+| **[Architecture](docs/architecture.md)** | High-level system architecture, real-world analogies, multi-tier diagrams, hybrid RBAC+ABAC evaluation |
+| **[RBAC & ABAC Matrix](docs/rbac-abac-matrix.md)** | 10 baseline roles, resource permission matrices (Clinical, Vitals, Labs, Medication, Billing), ABAC policies, HIPAA integrity rules |
+| **[RBAC & ABAC Implementation Guide](docs/rbac-abac-implementation-guide.md)** | Step-by-step developer guide for implementing Spring Boot SpEL evaluators and Angular 19 guards/directives |
 | **[Clinical Workflows](docs/workflows.md)** | End-to-end workflow guides for Patient Portal, Physician eRx, Nurse Vitals, Audit Vault, Synthea Pipeline, and FHIR Interop |
 | **[Security & HIPAA](docs/security.md)** | JWT authentication deep dive, Spring Security filter chain, password hashing, HIPAA § 164.312 compliance mapping, WORM audit log |
-| **[Database Schema](docs/database.md)** | Full entity-relationship diagram, table reference, foreign key map, healthcare coding standards (ICD-10, SNOMED, RxNorm, LOINC) |
+| **[Database Schema](docs/database.md)** | Full entity-relationship diagram, security tables (`permissions`, `departments`, `patient_assignments`), table reference, foreign key map, coding standards |
 | **[API Reference](docs/api-guide.md)** | Complete REST endpoint catalog, request/response examples, FHIR R4 resource API specification |
 | **[Synthea Pipeline](docs/synthea-pipeline.md)** | Synthea framework integration, FHIR-to-entity mapping matrix, LOINC vitals mapping, CLI & web UI usage |
 
@@ -93,6 +95,8 @@ MedVault/
 │
 ├── docs/                     # 📚 Comprehensive Documentation Suite
 │   ├── architecture.md       # System architecture & diagrams
+│   ├── rbac-abac-matrix.md   # 10 production roles & RBAC+ABAC matrices
+│   ├── rbac-abac-implementation-guide.md # Spring Boot & Angular security code guide
 │   ├── workflows.md          # Clinical & admin workflow guides
 │   ├── security.md           # Security, JWT, HIPAA compliance
 │   ├── database.md           # ER diagram & schema reference
