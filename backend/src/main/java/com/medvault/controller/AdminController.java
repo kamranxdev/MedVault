@@ -14,7 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAnyAuthority('USER_CREATE', 'AUDIT_LOG_READ')")
 public class AdminController {
 
     private final UserRepository userRepository;
@@ -26,13 +26,13 @@ public class AdminController {
     }
 
     @GetMapping("/users")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('USER_CREATE')")
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 
     @GetMapping("/audit-logs")
-    @PreAuthorize("hasAnyRole('ADMIN', 'AUDITOR')")
+    @PreAuthorize("hasAuthority('AUDIT_LOG_READ')")
     public List<AuditLog> getAuditLogs(@RequestParam(value = "search", required = false) String search) {
         List<AuditLog> logs = auditLogRepository.findAllByOrderByTimestampDesc();
         if (search == null || search.trim().isEmpty()) {

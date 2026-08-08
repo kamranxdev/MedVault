@@ -44,7 +44,7 @@ public class AppointmentController {
     }
 
     @GetMapping("/recommended-doctors")
-    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE', 'ADMIN', 'PATIENT', 'RECEPTIONIST')")
+    @PreAuthorize("hasAuthority('APPOINTMENT_READ')")
     public List<DoctorRecommendationDTO> getRecommendedDoctors(@RequestParam(value = "patientId", required = false) Long patientId,
                                                                 @RequestParam(value = "reason", required = false) String reason,
                                                                 Authentication auth) {
@@ -53,7 +53,7 @@ public class AppointmentController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE', 'ADMIN', 'PATIENT', 'RECEPTIONIST', 'AUDITOR')")
+    @PreAuthorize("hasAuthority('APPOINTMENT_READ')")
     public List<Appointment> getAllAppointments(Authentication auth) {
         boolean isPatientOnly = auth.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
@@ -77,7 +77,7 @@ public class AppointmentController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE', 'ADMIN', 'PATIENT', 'RECEPTIONIST', 'AUDITOR')")
+    @PreAuthorize("hasAuthority('APPOINTMENT_READ') and @patientSecurityService.canAccessAppointment(authentication, #id)")
     public ResponseEntity<Appointment> getAppointmentById(@PathVariable Long id, Authentication auth) {
         Appointment apt = appointmentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Appointment #" + id + " not found"));
@@ -85,14 +85,14 @@ public class AppointmentController {
     }
 
     @GetMapping("/patient/{patientId}")
-    @PreAuthorize("@patientSecurityService.canAccessPatient(authentication, #patientId)")
+    @PreAuthorize("hasAuthority('APPOINTMENT_READ') and @abacEvaluator.hasTreatmentRelationship(authentication, #patientId)")
     public List<Appointment> getAppointmentsByPatient(@PathVariable Long patientId, Authentication auth) {
         auditService.logAction(auth, "READ", "APPOINTMENT", String.valueOf(patientId), "Accessed appointment history for patient ID: " + patientId);
         return appointmentRepository.findByPatientIdOrderByAppointmentDateDesc(patientId);
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('DOCTOR', 'ADMIN', 'PATIENT', 'RECEPTIONIST')")
+    @PreAuthorize("hasAuthority('APPOINTMENT_CREATE')")
     public ResponseEntity<?> scheduleAppointment(@RequestBody Appointment appointment, Authentication auth) {
         if (appointment.getPatient() == null || appointment.getPatient().getId() == null) {
             throw new IllegalArgumentException("Patient ID must be provided");
@@ -119,7 +119,7 @@ public class AppointmentController {
     }
 
     @PutMapping("/{id}/status")
-    @PreAuthorize("hasAnyRole('DOCTOR', 'ADMIN', 'RECEPTIONIST')")
+    @PreAuthorize("hasAuthority('APPOINTMENT_UPDATE') and @patientSecurityService.canAccessAppointment(authentication, #id)")
     public ResponseEntity<?> updateStatus(@PathVariable Long id, @RequestParam String status, Authentication auth) {
         Appointment apt = appointmentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Appointment with ID " + id + " not found"));
@@ -135,7 +135,7 @@ public class AppointmentController {
     // --- WORKFLOW ENDPOINTS ---
 
     @PostMapping("/{id}/check-in")
-    @PreAuthorize("hasAnyRole('RECEPTIONIST', 'ADMIN')")
+    @PreAuthorize("hasAuthority('APPOINTMENT_UPDATE') and @patientSecurityService.canAccessAppointment(authentication, #id)")
     public ResponseEntity<Appointment> checkInPatient(@PathVariable Long id,
                                                         @RequestBody Map<String, Object> payload,
                                                         Authentication auth) {
@@ -149,7 +149,7 @@ public class AppointmentController {
     }
 
     @PostMapping("/{id}/triage-vitals")
-    @PreAuthorize("hasAnyRole('NURSE', 'ADMIN')")
+    @PreAuthorize("hasAuthority('VITALS_CREATE') and @patientSecurityService.canAccessAppointment(authentication, #id)")
     public ResponseEntity<Appointment> recordTriageVitals(@PathVariable Long id,
                                                            @RequestBody Map<String, Object> payload,
                                                            Authentication auth) {
@@ -170,7 +170,7 @@ public class AppointmentController {
     }
 
     @PostMapping("/{id}/doctor-consultation")
-    @PreAuthorize("hasAnyRole('DOCTOR', 'ADMIN')")
+    @PreAuthorize("hasAuthority('CLINICAL_NOTE_CREATE') and @patientSecurityService.canAccessAppointment(authentication, #id)")
     public ResponseEntity<Appointment> recordDoctorConsultation(@PathVariable Long id,
                                                                  @RequestBody Map<String, Object> payload,
                                                                  Authentication auth) {
@@ -232,13 +232,13 @@ public class AppointmentController {
     // --- NOTES ENDPOINTS ---
 
     @GetMapping("/{id}/notes")
-    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE', 'ADMIN', 'PATIENT', 'RECEPTIONIST', 'AUDITOR')")
+    @PreAuthorize("hasAuthority('APPOINTMENT_READ') and @patientSecurityService.canAccessAppointment(authentication, #id)")
     public List<AppointmentNote> getNotesForAppointment(@PathVariable Long id) {
         return workflowService.getNotesForAppointment(id);
     }
 
     @PostMapping("/{id}/notes")
-    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE', 'ADMIN', 'PATIENT', 'RECEPTIONIST')")
+    @PreAuthorize("hasAuthority('APPOINTMENT_READ') and @patientSecurityService.canAccessAppointment(authentication, #id)")
     public ResponseEntity<AppointmentNote> addNote(@PathVariable Long id,
                                                     @RequestBody Map<String, String> payload,
                                                     Authentication auth) {
@@ -249,7 +249,7 @@ public class AppointmentController {
     }
 
     @PutMapping("/notes/{noteId}")
-    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE', 'ADMIN', 'PATIENT', 'RECEPTIONIST')")
+    @PreAuthorize("hasAuthority('APPOINTMENT_READ')")
     public ResponseEntity<AppointmentNote> editNote(@PathVariable Long noteId,
                                                      @RequestBody Map<String, String> payload,
                                                      Authentication auth) {
@@ -261,7 +261,7 @@ public class AppointmentController {
     // --- CANCELLATION MODAL ENDPOINT ---
 
     @PostMapping("/{id}/cancel")
-    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE', 'ADMIN', 'PATIENT', 'RECEPTIONIST')")
+    @PreAuthorize("hasAuthority('APPOINTMENT_CANCEL') and @patientSecurityService.canAccessAppointment(authentication, #id)")
     public ResponseEntity<AppointmentCancellation> cancelAppointment(@PathVariable Long id,
                                                                       @RequestBody Map<String, String> payload,
                                                                       Authentication auth) {
@@ -272,7 +272,7 @@ public class AppointmentController {
     }
 
     @GetMapping("/{id}/cancellation")
-    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE', 'ADMIN', 'PATIENT', 'RECEPTIONIST', 'AUDITOR')")
+    @PreAuthorize("hasAuthority('APPOINTMENT_READ') and @patientSecurityService.canAccessAppointment(authentication, #id)")
     public ResponseEntity<?> getCancellationDetails(@PathVariable Long id) {
         Optional<AppointmentCancellation> opt = workflowService.getCancellationForAppointment(id);
         if (opt.isPresent()) {
@@ -284,7 +284,7 @@ public class AppointmentController {
     // --- BILLING & LAB ORDERS ---
 
     @PostMapping("/{id}/billing")
-    @PreAuthorize("hasAnyRole('RECEPTIONIST', 'ADMIN')")
+    @PreAuthorize("hasAuthority('INVOICE_CREATE') and @patientSecurityService.canAccessAppointment(authentication, #id)")
     public ResponseEntity<AppointmentBilling> generateBilling(@PathVariable Long id,
                                                                @RequestBody Map<String, Object> payload,
                                                                Authentication auth) {
@@ -299,7 +299,7 @@ public class AppointmentController {
     }
 
     @GetMapping("/{id}/billing")
-    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE', 'ADMIN', 'PATIENT', 'RECEPTIONIST', 'AUDITOR')")
+    @PreAuthorize("hasAuthority('INVOICE_READ') and @patientSecurityService.canAccessAppointment(authentication, #id)")
     public ResponseEntity<?> getBilling(@PathVariable Long id) {
         Optional<AppointmentBilling> opt = workflowService.getBillingForAppointment(id);
         if (opt.isPresent()) {
@@ -309,7 +309,7 @@ public class AppointmentController {
     }
 
     @GetMapping("/{id}/lab-orders")
-    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE', 'ADMIN', 'PATIENT', 'RECEPTIONIST', 'AUDITOR')")
+    @PreAuthorize("hasAuthority('LAB_RESULT_READ') and @patientSecurityService.canAccessAppointment(authentication, #id)")
     public List<AppointmentLabOrder> getLabOrders(@PathVariable Long id) {
         return workflowService.getLabOrdersForAppointment(id);
     }

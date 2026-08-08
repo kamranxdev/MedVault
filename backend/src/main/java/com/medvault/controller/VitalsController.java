@@ -35,14 +35,14 @@ public class VitalsController {
     }
 
     @GetMapping("/patient/{patientId}")
-    @PreAuthorize("@patientSecurityService.canAccessPatient(authentication, #patientId)")
+    @PreAuthorize("hasAuthority('VITALS_READ') and @abacEvaluator.hasTreatmentRelationship(authentication, #patientId)")
     public List<Vitals> getVitalsByPatient(@PathVariable Long patientId, Authentication auth) {
         auditService.logAction(auth, "READ", "VITALS", String.valueOf(patientId), "Accessed physiological vitals for patient ID: " + patientId);
         return vitalsRepository.findByPatientIdOrderByRecordedAtDesc(patientId);
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE')")
+    @PreAuthorize("hasAuthority('VITALS_CREATE') and (#vitals != null and #vitals.patient != null and #vitals.patient.id != null and @abacEvaluator.hasTreatmentRelationship(authentication, #vitals.patient.id))")
     public ResponseEntity<?> recordVitals(@RequestBody Vitals vitals, Authentication auth) {
         if (vitals.getPatient() == null || vitals.getPatient().getId() == null) {
             throw new IllegalArgumentException("Patient ID is required");

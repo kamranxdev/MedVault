@@ -127,6 +127,29 @@ export class AuthService {
     });
   }
 
+  /**
+   * RBAC: Checks if the current user has a specific permission code.
+   * Derives permissions from the ROLE_CAPABILITY_MAP based on user roles.
+   */
+  hasPermission(permissionCode: string): boolean {
+    return this.hasCapability(permissionCode as Capability);
+  }
+
+  /**
+   * Combined RBAC + ABAC: Checks permission AND patient context.
+   * Frontend ABAC is advisory — backend enforces the real access decision.
+   * Admin/Auditor roles bypass patient-level ABAC on frontend.
+   */
+  canAccessPatient(patientId: number, permissionCode: string): boolean {
+    if (!this.hasPermission(permissionCode)) return false;
+    // Admin/Auditor roles bypass patient-level ABAC
+    if (this.hasAnyRole(['ROLE_SYS_ADMIN', 'ROLE_ORG_ADMIN', 'ROLE_ADMIN', 'ROLE_AUDITOR'])) {
+      return true;
+    }
+    // For all other roles, allow and let backend ABAC enforce
+    return true;
+  }
+
   isReceptionist(): boolean {
     return this.hasRole('ROLE_RECEPTIONIST') || this.hasRole('ROLE_ADMIN');
   }

@@ -7,6 +7,7 @@ import com.medvault.model.User;
 import com.medvault.repository.PatientRepository;
 import com.medvault.repository.PrescriptionRepository;
 import com.medvault.repository.UserRepository;
+import com.medvault.security.PatientSecurityService;
 import com.medvault.service.AuditService;
 import com.medvault.service.SmartSafetyService;
 import com.medvault.service.SmartSafetyService.SafetyCheckResult;
@@ -28,34 +29,40 @@ public class PrescriptionController {
     private final UserRepository userRepository;
     private final AuditService auditService;
     private final SmartSafetyService safetyService;
+    private final PatientSecurityService patientSecurityService;
 
     public PrescriptionController(PrescriptionRepository prescriptionRepository,
                                    PatientRepository patientRepository,
                                    UserRepository userRepository,
                                    AuditService auditService,
-                                   SmartSafetyService safetyService) {
+                                   SmartSafetyService safetyService,
+                                   PatientSecurityService patientSecurityService) {
         this.prescriptionRepository = prescriptionRepository;
         this.patientRepository = patientRepository;
         this.userRepository = userRepository;
         this.auditService = auditService;
         this.safetyService = safetyService;
+        this.patientSecurityService = patientSecurityService;
     }
 
     @GetMapping("/patient/{patientId}")
-    @PreAuthorize("@patientSecurityService.canAccessPatient(authentication, #patientId)")
+    @PreAuthorize("hasAuthority('PRESCRIPTION_READ') and @abacEvaluator.hasTreatmentRelationship(authentication, #patientId)")
     public List<Prescription> getPrescriptionsByPatient(@PathVariable Long patientId, Authentication auth) {
         auditService.logAction(auth, "READ", "PRESCRIPTION", String.valueOf(patientId), "Accessed eRx prescription history for patient ID: " + patientId);
         return prescriptionRepository.findByPatientIdOrderByPrescribedAtDesc(patientId);
     }
 
     @PostMapping("/safety-check")
-    @PreAuthorize("hasRole('DOCTOR')")
+    @PreAuthorize("hasAuthority('PRESCRIPTION_CREATE')")
     public ResponseEntity<SafetyCheckResult> checkSafety(@RequestBody Map<String, Object> body, Authentication auth) {
         if (!body.containsKey("patientId") || !body.containsKey("medicationName")) {
             throw new IllegalArgumentException("patientId and medicationName are required fields");
         }
 
         Long patientId = Long.parseLong(body.get("patientId").toString());
+        if (!patientSecurityService.canAccessPatient(auth, patientId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         String medicationName = body.get("medicationName").toString();
 
         SafetyCheckResult result = safetyService.checkPrescriptionSafety(
@@ -68,10 +75,14 @@ public class PrescriptionController {
     }
 
     @PostMapping("/validate-safety")
-    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE')")
+    @PreAuthorize("hasAuthority('PRESCRIPTION_READ')")
     public ResponseEntity<SafetyCheckResult> validatePrescriptionSafety(@RequestBody com.medvault.dto.PrescriptionSafetyCheckRequest request, Authentication auth) {
         if (request.getPatientId() == null || request.getMedicationName() == null) {
             throw new IllegalArgumentException("patientId and medicationName are required for safety validation");
+        }
+
+        if (!patientSecurityService.canAccessPatient(auth, request.getPatientId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
         SafetyCheckResult result = safetyService.checkPrescriptionSafety(
@@ -84,7 +95,7 @@ public class PrescriptionController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('DOCTOR')")
+    @PreAuthorize("hasAuthority('PRESCRIPTION_CREATE') and (#prescription != null and #prescription.patient != null and #prescription.patient.id != null and @abacEvaluator.hasTreatmentRelationship(authentication, #prescription.patient.id))")
     public ResponseEntity<?> createPrescription(@RequestBody Prescription prescription, 
                                                  @RequestParam(value = "overrideWarning", defaultValue = "false") boolean overrideWarning,
                                                  Authentication auth) {
@@ -129,7 +140,7 @@ public class PrescriptionController {
     }
 
     @PutMapping("/{id}/status")
-    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE', 'PHARMACIST', 'SYS_ADMIN', 'ORG_ADMIN', 'ADMIN')")
+    @PreAuthorize("hasAuthority('PRESCRIPTION_READ') and @patientSecurityService.canAccessPrescription(authentication, #id)")
     public ResponseEntity<?> updateStatus(@PathVariable Long id, @RequestParam String status, Authentication auth) {
         Prescription rx = prescriptionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Prescription with ID " + id + " not found"));

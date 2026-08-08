@@ -4,13 +4,17 @@ import com.medvault.dto.PatientClinicalHistoryDTO;
 import com.medvault.exception.ResourceNotFoundException;
 import com.medvault.model.*;
 import com.medvault.repository.*;
+import com.medvault.security.PatientSecurityService;
 import com.medvault.service.AuditService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/patients")
@@ -23,6 +27,7 @@ public class PatientController {
     private final VitalsRepository vitalsRepository;
     private final MedicalRecordRepository medicalRecordRepository;
     private final AuditService auditService;
+    private final PatientSecurityService patientSecurityService;
 
     public PatientController(PatientRepository patientRepository,
                              DiagnosisRepository diagnosisRepository,
@@ -30,7 +35,8 @@ public class PatientController {
                              PrescriptionRepository prescriptionRepository,
                              VitalsRepository vitalsRepository,
                              MedicalRecordRepository medicalRecordRepository,
-                             AuditService auditService) {
+                             AuditService auditService,
+                             PatientSecurityService patientSecurityService) {
         this.patientRepository = patientRepository;
         this.diagnosisRepository = diagnosisRepository;
         this.allergyRepository = allergyRepository;
@@ -38,19 +44,45 @@ public class PatientController {
         this.vitalsRepository = vitalsRepository;
         this.medicalRecordRepository = medicalRecordRepository;
         this.auditService = auditService;
+        this.patientSecurityService = patientSecurityService;
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR', 'NURSE', 'AUDITOR')")
-    public List<Patient> getAllPatients() {
-        return patientRepository.findAll();
+    @PreAuthorize("hasAuthority('PATIENT_READ')")
+    public List<Patient> getAllPatients(Authentication auth) {
+        List<Patient> all = patientRepository.findAll();
+        if (auth == null) return Collections.emptyList();
+
+        boolean isFullAccess = auth.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(r -> r.equals("ROLE_SYS_ADMIN") || r.equals("ROLE_ADMIN") || r.equals("ROLE_AUDITOR") || r.equals("ROLE_RECEPTIONIST"));
+
+        if (isFullAccess) {
+            return all;
+        }
+
+        return all.stream()
+                .filter(p -> patientSecurityService.canAccessPatient(auth, p.getId()))
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/search")
-    @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR', 'NURSE', 'AUDITOR')")
+    @PreAuthorize("hasAuthority('PATIENT_READ')")
     public List<Patient> searchPatients(@RequestParam("query") String query, Authentication auth) {
         auditService.logAction(auth, "READ", "PATIENT_MPI", null, "Executed Master Patient Index search for query: '" + query + "'");
-        return patientRepository.searchPatients(query);
+        List<Patient> matches = patientRepository.searchPatients(query);
+
+        boolean isFullAccess = auth != null && auth.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(r -> r.equals("ROLE_SYS_ADMIN") || r.equals("ROLE_ADMIN") || r.equals("ROLE_AUDITOR") || r.equals("ROLE_RECEPTIONIST"));
+
+        if (isFullAccess) {
+            return matches;
+        }
+
+        return matches.stream()
+                .filter(p -> patientSecurityService.canAccessPatient(auth, p.getId()))
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
@@ -99,7 +131,7 @@ public class PatientController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('PATIENT_CREATE')")
     public ResponseEntity<Patient> createPatient(@RequestBody Patient patient, Authentication auth) {
         if (patient.getPatientCode() == null || patient.getPatientCode().isEmpty()) {
             patient.setPatientCode("PAT-" + (1000 + (System.currentTimeMillis() % 9000)));

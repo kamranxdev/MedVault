@@ -35,14 +35,14 @@ public class EncounterController {
     }
 
     @GetMapping("/patient/{patientId}")
-    @PreAuthorize("@patientSecurityService.canAccessPatient(authentication, #patientId)")
+    @PreAuthorize("hasAuthority('CLINICAL_NOTE_READ') and @abacEvaluator.hasTreatmentRelationship(authentication, #patientId)")
     public List<Encounter> getEncountersByPatient(@PathVariable Long patientId, Authentication auth) {
         auditService.logAction(auth, "READ", "ENCOUNTER", String.valueOf(patientId), "Accessed encounter & visit log history for patient ID: " + patientId);
         return encounterRepository.findByPatientIdOrderByEncounterDateDesc(patientId);
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE', 'ADMIN')")
+    @PreAuthorize("hasAuthority('CLINICAL_NOTE_CREATE') and (#encounter != null and #encounter.patient != null and #encounter.patient.id != null and @abacEvaluator.hasTreatmentRelationship(authentication, #encounter.patient.id))")
     public ResponseEntity<?> createEncounter(@RequestBody Encounter encounter, Authentication auth) {
         if (encounter.getPatient() == null || encounter.getPatient().getId() == null) {
             throw new IllegalArgumentException("Patient ID is required");
@@ -67,7 +67,7 @@ public class EncounterController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE', 'ADMIN')")
+    @PreAuthorize("hasAuthority('CLINICAL_NOTE_CREATE') and @patientSecurityService.canAccessEncounter(authentication, #id)")
     public ResponseEntity<?> updateEncounter(@PathVariable Long id, @RequestBody Encounter updated, Authentication auth) {
         Encounter enc = encounterRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Encounter record with ID " + id + " not found"));

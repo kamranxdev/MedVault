@@ -68,10 +68,7 @@ public class AbacSecurityEvaluator {
                 return true;
             }
 
-            // Allow doctors & nurses general clinical access if no explicit assignment table restriction
-            if (hasRole(authentication, "ROLE_DOCTOR") || hasRole(authentication, "ROLE_NURSE")) {
-                return true;
-            }
+            // Remove fallback doctor/nurse bypass: Care team assignment or department match is strictly required for ABAC
         }
 
         return false;

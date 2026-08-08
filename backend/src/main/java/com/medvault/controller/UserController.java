@@ -21,7 +21,7 @@ public class UserController {
     }
 
     @GetMapping("/doctors")
-    @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR', 'NURSE', 'PATIENT', 'AUDITOR')")
+    @PreAuthorize("hasAuthority('APPOINTMENT_READ')")
     public List<User> getDoctors() {
         return userRepository.findByRolesName("ROLE_DOCTOR");
     }

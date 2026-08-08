@@ -35,14 +35,14 @@ public class AllergyController {
     }
 
     @GetMapping("/patient/{patientId}")
-    @PreAuthorize("@patientSecurityService.canAccessPatient(authentication, #patientId)")
+    @PreAuthorize("(hasAuthority('ALLERGY_READ') or hasAuthority('DIAGNOSIS_READ') or hasAuthority('VITALS_READ')) and @abacEvaluator.hasTreatmentRelationship(authentication, #patientId)")
     public List<Allergy> getAllergiesByPatient(@PathVariable Long patientId, Authentication auth) {
         auditService.logAction(auth, "READ", "ALLERGY", String.valueOf(patientId), "Accessed allergy profile for patient ID: " + patientId);
         return allergyRepository.findByPatientIdOrderByRecordedAtDesc(patientId);
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE')")
+    @PreAuthorize("(hasAuthority('ALLERGY_CREATE') or hasAuthority('VITALS_CREATE') or hasAuthority('CLINICAL_NOTE_CREATE')) and (#allergy != null and #allergy.patient != null and #allergy.patient.id != null and @abacEvaluator.hasTreatmentRelationship(authentication, #allergy.patient.id))")
     public ResponseEntity<?> createAllergy(@RequestBody Allergy allergy, Authentication auth) {
         if (allergy.getPatient() == null || allergy.getPatient().getId() == null) {
             throw new IllegalArgumentException("Patient ID is required");
@@ -63,7 +63,7 @@ public class AllergyController {
     }
 
     @PutMapping("/{id}/status")
-    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE')")
+    @PreAuthorize("(hasAuthority('ALLERGY_CREATE') or hasAuthority('VITALS_CREATE')) and @patientSecurityService.canAccessAllergy(authentication, #id)")
     public ResponseEntity<?> updateAllergyStatus(@PathVariable Long id, @RequestParam String status, Authentication auth) {
         Allergy allergy = allergyRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Allergy record with ID " + id + " not found"));

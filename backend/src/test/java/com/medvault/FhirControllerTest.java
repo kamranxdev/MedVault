@@ -3,6 +3,7 @@ package com.medvault;
 import com.medvault.controller.FhirController;
 import com.medvault.model.Patient;
 import com.medvault.repository.*;
+import com.medvault.security.PatientSecurityService;
 import com.medvault.service.FhirService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,8 @@ public class FhirControllerTest {
     private VitalsRepository vitalsRepository;
     private UserRepository userRepository;
 
+    private PatientSecurityService patientSecurityService;
+
     private FhirService fhirService;
     private FhirController fhirController;
 
@@ -38,12 +41,13 @@ public class FhirControllerTest {
         prescriptionRepository = mock(PrescriptionRepository.class);
         vitalsRepository = mock(VitalsRepository.class);
         userRepository = mock(UserRepository.class);
+        patientSecurityService = mock(PatientSecurityService.class);
 
         fhirService = new FhirService(patientRepository, encounterRepository, allergyRepository,
                 diagnosisRepository, prescriptionRepository, vitalsRepository, userRepository);
 
         fhirController = new FhirController(fhirService, patientRepository, encounterRepository,
-                allergyRepository, diagnosisRepository, prescriptionRepository, vitalsRepository);
+                allergyRepository, diagnosisRepository, prescriptionRepository, vitalsRepository, patientSecurityService);
     }
 
     @Test

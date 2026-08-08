@@ -35,14 +35,14 @@ public class DiagnosisController {
     }
 
     @GetMapping("/patient/{patientId}")
-    @PreAuthorize("@patientSecurityService.canAccessPatient(authentication, #patientId)")
+    @PreAuthorize("hasAuthority('DIAGNOSIS_READ') and @abacEvaluator.hasTreatmentRelationship(authentication, #patientId)")
     public List<Diagnosis> getDiagnosesByPatient(@PathVariable Long patientId, Authentication auth) {
         auditService.logAction(auth, "READ", "DIAGNOSIS", String.valueOf(patientId), "Accessed coded problem list & diagnoses for patient ID: " + patientId);
         return diagnosisRepository.findByPatientIdOrderByRecordedAtDesc(patientId);
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('DOCTOR')")
+    @PreAuthorize("hasAuthority('DIAGNOSIS_CREATE') and (#diagnosis != null and #diagnosis.patient != null and #diagnosis.patient.id != null and @abacEvaluator.hasTreatmentRelationship(authentication, #diagnosis.patient.id))")
     public ResponseEntity<?> createDiagnosis(@RequestBody Diagnosis diagnosis, Authentication auth) {
         if (diagnosis.getPatient() == null || diagnosis.getPatient().getId() == null) {
             throw new IllegalArgumentException("Patient ID is required");
@@ -63,7 +63,7 @@ public class DiagnosisController {
     }
 
     @PutMapping("/{id}/status")
-    @PreAuthorize("hasRole('DOCTOR')")
+    @PreAuthorize("hasAuthority('DIAGNOSIS_CREATE') and @patientSecurityService.canAccessDiagnosis(authentication, #id)")
     public ResponseEntity<?> updateDiagnosisStatus(@PathVariable Long id, @RequestParam String status, Authentication auth) {
         Diagnosis diag = diagnosisRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Diagnosis record with ID " + id + " not found"));

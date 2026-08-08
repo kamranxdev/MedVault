@@ -35,14 +35,14 @@ public class MedicalRecordController {
     }
 
     @GetMapping("/patient/{patientId}")
-    @PreAuthorize("@patientSecurityService.canAccessPatient(authentication, #patientId)")
+    @PreAuthorize("hasAuthority('CLINICAL_NOTE_READ') and @abacEvaluator.hasTreatmentRelationship(authentication, #patientId)")
     public List<MedicalRecord> getRecordsByPatient(@PathVariable Long patientId, Authentication auth) {
         auditService.logAction(auth, "READ", "MEDICAL_RECORD", String.valueOf(patientId), "Fetched medical history for patient ID: " + patientId);
         return recordRepository.findByPatientIdOrderByCreatedAtDesc(patientId);
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('DOCTOR')")
+    @PreAuthorize("hasAuthority('CLINICAL_NOTE_CREATE') and (#record != null and #record.patient != null and #record.patient.id != null and @abacEvaluator.hasTreatmentRelationship(authentication, #record.patient.id))")
     public ResponseEntity<?> createRecord(@RequestBody MedicalRecord record, Authentication auth) {
         if (record.getPatient() == null || record.getPatient().getId() == null) {
             throw new IllegalArgumentException("Patient ID is required");
