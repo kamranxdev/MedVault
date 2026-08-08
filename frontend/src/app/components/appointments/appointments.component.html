@@ -83,9 +83,9 @@
             <td class="px-4 py-3 text-muted-foreground max-w-xs truncate">{{ apt.reason || 'General Checkup' }}</td>
             <td class="px-4 py-3 text-right">
               <div class="flex items-center justify-end gap-1.5">
-                <button hlmBtn variant="outline" size="sm" (click)="openWorkspace(apt)" class="gap-1 text-[11px] h-7 px-2.5">
+                <button hlmBtn variant="outline" size="sm" (click)="openWorkspace(apt)" class="gap-1.5 text-[11px] h-7 px-3 border-primary/30 text-primary hover:bg-primary/10 transition-all font-semibold shadow-2xs">
                   <ng-icon name="lucideStethoscope" size="13" />
-                  <span>Workflow Workspace</span>
+                  <span>Clinical Encounter Workspace</span>
                 </button>
 
                 <button *ngIf="apt.status !== 'CANCELLED' && apt.status !== 'COMPLETED'"
@@ -114,97 +114,391 @@
     </div>
   </div>
 
-  <!-- SCHEDULE APPOINTMENT MODAL -->
-  <div *ngIf="showModal()" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div hlmCard class="w-full max-w-lg bg-card border border-border shadow-2xl rounded-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-      <div class="p-5 border-b border-border flex items-center justify-between bg-muted/30">
-        <div class="flex items-center gap-2">
-          <ng-icon name="lucidePlus" size="18" class="text-primary" />
-          <h3 class="text-base font-semibold text-foreground">Schedule New Patient Appointment</h3>
+  <!-- SCHEDULE APPOINTMENT MODAL (ADVANCED AI-POWERED WIZARD) -->
+  <div *ngIf="showModal()" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+    <div hlmCard class="w-full max-w-2xl bg-card border border-border/80 shadow-2xl rounded-2xl overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-200">
+      
+      <!-- WIZARD HEADER -->
+      <div class="p-5 border-b border-border bg-gradient-to-r from-muted/50 via-card to-primary/5 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20 shadow-sm">
+            <ng-icon name="lucideSparkles" size="20" />
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="text-base font-bold text-foreground tracking-tight">Schedule New Patient Appointment</h3>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-primary/15 text-primary border border-primary/25">
+                AI Engine v2.0
+              </span>
+            </div>
+            <p class="text-xs text-muted-foreground">Intelligent care matching, automated clinical triage, & smart time slot optimization</p>
+          </div>
         </div>
-        <button (click)="showModal.set(false)" class="text-muted-foreground hover:text-foreground text-sm font-bold p-1">✕</button>
+        <button (click)="showModal.set(false)" class="text-muted-foreground hover:text-foreground text-base font-bold p-1 transition-colors">✕</button>
       </div>
 
-      <div class="p-5 space-y-4 text-xs">
-        <div class="space-y-1.5" *ngIf="!isPatient()">
-          <label class="font-medium text-foreground block">Patient Context ID</label>
-          <input hlmInput type="number" [(ngModel)]="newApt.patientId" (change)="onPatientOrReasonChange()" class="w-full h-8 text-xs" />
+      <!-- STEPPER BAR -->
+      <div class="px-5 py-3 border-b border-border/60 bg-muted/20 grid grid-cols-4 gap-2 text-center text-[11px] font-semibold">
+        <div [ngClass]="{'border-primary bg-primary/10 text-primary font-bold shadow-xs': scheduleStep() === 1, 'border-border/60 text-muted-foreground opacity-70': scheduleStep() !== 1}"
+             class="py-1.5 px-2 rounded-lg border flex items-center justify-center gap-1.5 transition-all">
+          <span class="size-4 rounded-full bg-primary/20 text-[10px] flex items-center justify-center">1</span>
+          <span class="truncate">Intake & Triage</span>
         </div>
-
-        <div class="space-y-1.5">
-          <label class="font-medium text-foreground block">Reason for Visit</label>
-          <input hlmInput type="text" [(ngModel)]="newApt.reason" (change)="onPatientOrReasonChange()" placeholder="e.g. Annual Cardiology Checkup" class="w-full h-8 text-xs" />
+        <div [ngClass]="{'border-primary bg-primary/10 text-primary font-bold shadow-xs': scheduleStep() === 2, 'border-border/60 text-muted-foreground opacity-70': scheduleStep() !== 2}"
+             class="py-1.5 px-2 rounded-lg border flex items-center justify-center gap-1.5 transition-all">
+          <span class="size-4 rounded-full bg-primary/20 text-[10px] flex items-center justify-center">2</span>
+          <span class="truncate">AI Doctor Match</span>
         </div>
-
-        <div class="space-y-1.5">
-          <label class="font-medium text-foreground block">Appointment Date & Time</label>
-          <input hlmInput type="datetime-local" [(ngModel)]="newApt.appointmentDate" class="w-full h-8 text-xs" />
+        <div [ngClass]="{'border-primary bg-primary/10 text-primary font-bold shadow-xs': scheduleStep() === 3, 'border-border/60 text-muted-foreground opacity-70': scheduleStep() !== 3}"
+             class="py-1.5 px-2 rounded-lg border flex items-center justify-center gap-1.5 transition-all">
+          <span class="size-4 rounded-full bg-primary/20 text-[10px] flex items-center justify-center">3</span>
+          <span class="truncate">Time & Slots</span>
         </div>
-
-        <div class="space-y-1.5">
-          <label class="font-medium text-foreground block">Attending Doctor</label>
-          <select [(ngModel)]="newApt.doctorId" class="w-full h-8 rounded-md border border-input bg-background px-3 text-xs">
-            <option *ngFor="let doc of doctors()" [value]="doc.id">{{ doc.fullName }} ({{ doc.specialization || 'Physician' }})</option>
-          </select>
+        <div [ngClass]="{'border-primary bg-primary/10 text-primary font-bold shadow-xs': scheduleStep() === 4, 'border-border/60 text-muted-foreground opacity-70': scheduleStep() !== 4}"
+             class="py-1.5 px-2 rounded-lg border flex items-center justify-center gap-1.5 transition-all">
+          <span class="size-4 rounded-full bg-primary/20 text-[10px] flex items-center justify-center">4</span>
+          <span class="truncate">Confirm</span>
         </div>
+      </div>
 
-        <!-- AI RECOMMENDED DOCTORS -->
-        <div *ngIf="recommendedDoctors().length > 0" class="p-3 rounded-lg bg-primary/5 border border-primary/20 space-y-2">
-          <div class="flex items-center gap-1.5 text-[11px] font-semibold text-primary">
-            <ng-icon name="lucideSparkles" size="14" />
-            <span>AI Match Recommendations</span>
-          </div>
-          <div class="space-y-1">
-            <div *ngFor="let rec of recommendedDoctors()" (click)="selectRecommendedDoctor(rec.doctor.id)"
-                 class="p-2 rounded bg-card hover:bg-muted border border-border cursor-pointer flex items-center justify-between text-[11px]">
-              <div>
-                <div class="font-medium text-foreground">{{ rec.doctor.fullName }}</div>
-                <div class="text-[10px] text-muted-foreground">{{ rec.recommendedSpecialty }} • {{ rec.matchReason }}</div>
+      <!-- WIZARD BODY -->
+      <div class="p-5 space-y-5 text-xs max-h-[65vh] overflow-y-auto">
+
+        <!-- ========================================================================= -->
+        <!-- STEP 1: PATIENT INTAKE & CLINICAL TRIAGE -->
+        <!-- ========================================================================= -->
+        <div *ngIf="scheduleStep() === 1" class="space-y-4 animate-in fade-in duration-150">
+          
+          <!-- PATIENT SEARCH / SELECTION -->
+          <div class="space-y-2">
+            <label class="font-semibold text-foreground flex items-center justify-between text-xs">
+              <span>Patient Context</span>
+              <span *ngIf="selectedPatient()" class="text-[10px] text-primary font-mono">Code: {{ selectedPatient()?.patientCode }}</span>
+            </label>
+
+            <!-- STAFF PATIENT SEARCH INPUT & SUGGESTIONS -->
+            <div *ngIf="!isPatient()" class="relative">
+              <div class="relative flex items-center">
+                <ng-icon name="lucideSearch" size="14" class="absolute left-3 text-muted-foreground" />
+                <input hlmInput type="text"
+                       [ngModel]="patientSearchQuery()"
+                       (ngModelChange)="patientSearchQuery.set($event)"
+                       placeholder="Search patient by Name, MRN Code, or DOB..."
+                       class="w-full h-9 pl-9 pr-4 text-xs rounded-xl border border-input bg-background" />
               </div>
-              <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-600">
-                Match {{ rec.matchScore }}%
+
+              <!-- SEARCH AUTOCOMPLETE LIST -->
+              <div *ngIf="patientSearchQuery() && !selectedPatient()" class="absolute left-0 right-0 top-11 z-20 bg-card border border-border shadow-xl rounded-xl max-h-48 overflow-y-auto divide-y divide-border">
+                <div *ngFor="let pt of filteredPatientsList" (click)="selectPatient(pt)"
+                     class="p-2.5 hover:bg-primary/5 cursor-pointer flex items-center justify-between transition-colors">
+                  <div>
+                    <div class="font-semibold text-foreground">{{ pt.fullName }}</div>
+                    <div class="text-[10px] text-muted-foreground">{{ pt.patientCode }} • DOB: {{ pt.dateOfBirth }} • Gender: {{ pt.gender }}</div>
+                  </div>
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-muted text-muted-foreground">Select</span>
+                </div>
+                <div *ngIf="filteredPatientsList.length === 0" class="p-3 text-center text-muted-foreground text-xs">
+                  No matching patients found.
+                </div>
+              </div>
+            </div>
+
+            <!-- SELECTED PATIENT CARD PREVIEW -->
+            <div *ngIf="selectedPatient()" class="p-3 rounded-xl bg-muted/40 border border-border flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="size-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs border border-primary/20">
+                  {{ selectedPatient()?.fullName?.charAt(0) }}
+                </div>
+                <div>
+                  <div class="font-bold text-foreground">{{ selectedPatient()?.fullName }}</div>
+                  <div class="text-[11px] text-muted-foreground">
+                    DOB: {{ selectedPatient()?.dateOfBirth }} • Blood: <strong class="text-foreground">{{ selectedPatient()?.bloodType || 'N/A' }}</strong> • Phone: {{ selectedPatient()?.phone || 'N/A' }}
+                  </div>
+                </div>
+              </div>
+              <button *ngIf="!isPatient()" (click)="selectedPatient.set(null); patientSearchQuery.set('')" class="text-[10px] text-muted-foreground hover:text-foreground underline">Change</button>
+            </div>
+          </div>
+
+          <!-- VISIT TYPE TOGGLE -->
+          <div class="space-y-1.5">
+            <label class="font-semibold text-foreground block text-xs">Visit Consultation Type</label>
+            <div class="grid grid-cols-3 gap-2">
+              <button type="button" (click)="visitType.set('IN_PERSON')"
+                      [ngClass]="{'border-primary bg-primary/10 text-primary font-bold ring-1 ring-primary/30': visitType() === 'IN_PERSON', 'border-border bg-card text-muted-foreground': visitType() !== 'IN_PERSON'}"
+                      class="p-2.5 rounded-xl border flex flex-col items-center gap-1 transition-all text-[11px]">
+                <ng-icon name="lucideUserCheck" size="16" />
+                <span>In-Person Visit</span>
+              </button>
+              <button type="button" (click)="visitType.set('TELEHEALTH')"
+                      [ngClass]="{'border-primary bg-primary/10 text-primary font-bold ring-1 ring-primary/30': visitType() === 'TELEHEALTH', 'border-border bg-card text-muted-foreground': visitType() !== 'TELEHEALTH'}"
+                      class="p-2.5 rounded-xl border flex flex-col items-center gap-1 transition-all text-[11px]">
+                <ng-icon name="lucideVideo" size="16" />
+                <span>Virtual Telehealth</span>
+              </button>
+              <button type="button" (click)="visitType.set('FOLLOW_UP')"
+                      [ngClass]="{'border-primary bg-primary/10 text-primary font-bold ring-1 ring-primary/30': visitType() === 'FOLLOW_UP', 'border-border bg-card text-muted-foreground': visitType() !== 'FOLLOW_UP'}"
+                      class="p-2.5 rounded-xl border flex flex-col items-center gap-1 transition-all text-[11px]">
+                <ng-icon name="lucideHistory" size="16" />
+                <span>Routine Follow-up</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- REASON FOR VISIT & SYMPTOM TAGS -->
+          <div class="space-y-2">
+            <label class="font-semibold text-foreground block text-xs">Chief Complaint / Visit Reason</label>
+            <input hlmInput type="text" [(ngModel)]="newApt.reason" (change)="onPatientOrReasonChange()"
+                   placeholder="e.g. High blood pressure checkup, severe throbbing headache, chest tightness" class="w-full h-9 text-xs rounded-xl" />
+
+            <!-- QUICK SYMPTOM CHIPS -->
+            <div class="space-y-1">
+              <span class="text-[10px] text-muted-foreground font-medium">Quick Symptom Tags (Click to add):</span>
+              <div class="flex flex-wrap gap-1.5 pt-0.5">
+                <button type="button" *ngFor="let chip of symptomChips" (click)="selectSymptomTag(chip)"
+                        class="px-2.5 py-1 rounded-full bg-muted/60 hover:bg-primary/10 hover:text-primary border border-border text-[10px] font-medium transition-colors">
+                  {{ chip }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- LIVE AI TRIAGE RISK STRATIFICATION CARD -->
+          <div class="p-3.5 rounded-xl border transition-all"
+               [ngClass]="{
+                 'bg-emerald-500/5 border-emerald-500/30 text-emerald-950 dark:text-emerald-200': getTriageLevel() === 'ROUTINE',
+                 'bg-amber-500/5 border-amber-500/30 text-amber-950 dark:text-amber-200': getTriageLevel() === 'URGENT',
+                 'bg-rose-500/10 border-rose-500/40 text-rose-950 dark:text-rose-200': getTriageLevel() === 'EMERGENT'
+               }">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2 font-bold text-[11px]">
+                <ng-icon name="lucideActivity" size="15" />
+                <span>AI Automated Clinical Triage</span>
+              </div>
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase border"
+                    [ngClass]="{
+                      'bg-emerald-500/20 text-emerald-600 border-emerald-500/40': getTriageLevel() === 'ROUTINE',
+                      'bg-amber-500/20 text-amber-600 border-amber-500/40': getTriageLevel() === 'URGENT',
+                      'bg-rose-500/20 text-rose-600 border-rose-500/40 animate-pulse': getTriageLevel() === 'EMERGENT'
+                    }">
+                {{ getTriageLevel() }} TRIAGE
               </span>
+            </div>
+            <p class="text-[11px] mt-1 opacity-90 leading-snug">{{ getTriageSummary() }}</p>
+          </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- STEP 2: AI DOCTOR MATCHING & RECOMMENDATION ENGINE -->
+        <!-- ========================================================================= -->
+        <div *ngIf="scheduleStep() === 2" class="space-y-4 animate-in fade-in duration-150">
+          <div class="flex items-center justify-between">
+            <div>
+              <h4 class="font-bold text-foreground text-xs">AI Doctor Recommendation Engine</h4>
+              <p class="text-[11px] text-muted-foreground">Multi-factor vector matching based on specialty, continuity, & availability</p>
+            </div>
+            <div class="flex items-center gap-1 bg-muted p-0.5 rounded-lg text-[10px]">
+              <button type="button" (click)="showDoctorFilterAll.set(false)"
+                      [ngClass]="{'bg-card font-bold shadow-xs text-foreground': !showDoctorFilterAll(), 'text-muted-foreground': showDoctorFilterAll()}"
+                      class="px-2 py-1 rounded-md transition-all">AI Top Matches</button>
+              <button type="button" (click)="showDoctorFilterAll.set(true)"
+                      [ngClass]="{'bg-card font-bold shadow-xs text-foreground': showDoctorFilterAll(), 'text-muted-foreground': !showDoctorFilterAll()}"
+                      class="px-2 py-1 rounded-md transition-all">All Specialists ({{ doctors().length }})</button>
+            </div>
+          </div>
+
+          <!-- RECOMMENDED DOCTORS LIST -->
+          <div class="space-y-2.5">
+            <div *ngFor="let rec of (showDoctorFilterAll() ? recommendedDoctors() : recommendedDoctors().slice(0, 3))"
+                 (click)="selectRecommendedDoctor(rec.doctor.id)"
+                 [ngClass]="{'border-primary bg-primary/5 ring-2 ring-primary/30 shadow-md': newApt.doctorId === rec.doctor.id, 'border-border bg-card hover:bg-muted/40': newApt.doctorId !== rec.doctor.id}"
+                 class="p-3.5 rounded-xl border cursor-pointer transition-all space-y-2.5">
+              
+              <!-- TOP DOCTOR HEADER -->
+              <div class="flex items-start justify-between gap-2">
+                <div class="flex items-center gap-3">
+                  <div class="size-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs border border-primary/20">
+                    <ng-icon name="lucideUser" size="18" />
+                  </div>
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <span class="font-bold text-foreground text-xs">{{ rec.doctor.fullName }}</span>
+                      <span *ngIf="rec.verifiedLicense" class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-blue-500/10 text-blue-600 border border-blue-500/20">Verified</span>
+                    </div>
+                    <div class="text-[11px] text-muted-foreground font-medium">
+                      {{ rec.doctor.specialization || 'General Physician' }} • {{ rec.doctor.yearsOfExperience || 8 }}+ yrs exp
+                    </div>
+                  </div>
+                </div>
+
+                <!-- MATCH SCORE BADGE -->
+                <div class="text-right">
+                  <span [ngClass]="{
+                    'bg-emerald-500/15 text-emerald-600 border-emerald-500/30': rec.matchScore >= 80,
+                    'bg-amber-500/15 text-amber-600 border-amber-500/30': rec.matchScore >= 60 && rec.matchScore < 80,
+                    'bg-blue-500/15 text-blue-600 border-blue-500/30': rec.matchScore < 60
+                  }" class="px-2.5 py-1 rounded-full text-[11px] font-extrabold border inline-flex items-center gap-1 shadow-xs">
+                    <ng-icon name="lucideSparkles" size="12" />
+                    <span>{{ rec.matchScore }}% Match</span>
+                  </span>
+                </div>
+              </div>
+
+              <!-- RATIONALE TAGS -->
+              <div class="flex flex-wrap gap-1.5">
+                <span *ngFor="let tag of (rec.reasoningBreakdown || [rec.matchReason])"
+                      class="px-2 py-0.5 rounded-md bg-muted text-muted-foreground text-[10px] font-medium border border-border/60">
+                  ✓ {{ tag }}
+                </span>
+              </div>
+
+              <!-- SUB-SCORE BREAKDOWN BARS -->
+              <div class="grid grid-cols-3 gap-2 pt-1 text-[10px] border-t border-border/40 text-muted-foreground">
+                <div>
+                  <span>Specialty Fit: </span>
+                  <strong class="text-foreground">{{ rec.specialtyFitScore || 85 }}%</strong>
+                </div>
+                <div>
+                  <span>Continuity: </span>
+                  <strong class="text-foreground">{{ rec.continuityScore || 70 }}%</strong>
+                </div>
+                <div>
+                  <span>Queue Load: </span>
+                  <strong class="text-foreground">{{ rec.workloadScore || 90 }}%</strong>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="space-y-1.5">
-          <label class="font-medium text-foreground block">Initial Reception Remarks</label>
-          <textarea hlmTextarea [(ngModel)]="newApt.notes" rows="2" placeholder="Optional booking notes..." class="w-full text-xs"></textarea>
+        <!-- ========================================================================= -->
+        <!-- STEP 3: SMART DATE & TIME SLOTS -->
+        <!-- ========================================================================= -->
+        <div *ngIf="scheduleStep() === 3" class="space-y-4 animate-in fade-in duration-150">
+          
+          <!-- DATE SELECTION -->
+          <div class="space-y-1.5">
+            <label class="font-semibold text-foreground block text-xs">Select Appointment Date & Preferred Time</label>
+            <input hlmInput type="datetime-local" [(ngModel)]="newApt.appointmentDate" class="w-full h-9 text-xs rounded-xl" />
+          </div>
+
+          <!-- AI RECOMMENDED TIME SLOTS -->
+          <div class="space-y-2" *ngIf="getTopDoctorRecommendation()?.recommendedSlots?.length">
+            <label class="font-semibold text-foreground flex items-center gap-1.5 text-xs text-primary">
+              <ng-icon name="lucideClock" size="14" />
+              <span>AI Recommended Smart Time Slots</span>
+            </label>
+
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" *ngFor="let slot of getTopDoctorRecommendation()?.recommendedSlots"
+                      (click)="selectTimeSlot(slot)"
+                      [ngClass]="{'border-primary bg-primary/10 text-primary font-bold ring-1 ring-primary/30': selectedSlot() === slot, 'border-border bg-card text-muted-foreground hover:bg-muted': selectedSlot() !== slot}"
+                      class="p-2.5 rounded-xl border text-left text-[11px] flex items-center justify-between transition-all">
+                <span>{{ slot }}</span>
+                <ng-icon name="lucideCheck" size="13" *ngIf="selectedSlot() === slot" />
+              </button>
+            </div>
+          </div>
+
+          <!-- INITIAL RECEPTION REMARKS -->
+          <div class="space-y-1.5">
+            <label class="font-semibold text-foreground block text-xs">Initial Booking Notes & Patient Remarks</label>
+            <textarea hlmTextarea [(ngModel)]="newApt.notes" rows="3" placeholder="Add optional booking instructions, symptoms history, or pre-visit prep notes..." class="w-full text-xs rounded-xl"></textarea>
+          </div>
         </div>
+
+        <!-- ========================================================================= -->
+        <!-- STEP 4: BOOKING CONFIRMATION & REVIEW SUMMARY -->
+        <!-- ========================================================================= -->
+        <div *ngIf="scheduleStep() === 4" class="space-y-4 animate-in fade-in duration-150">
+          <div class="p-4 rounded-xl bg-muted/40 border border-border space-y-3">
+            <div class="flex items-center justify-between border-b border-border/60 pb-2">
+              <span class="font-bold text-foreground text-xs">Appointment Booking Summary</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-primary/10 text-primary">Ready to Confirm</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 text-xs">
+              <div>
+                <span class="text-[10px] text-muted-foreground block">Patient Name:</span>
+                <strong class="text-foreground">{{ selectedPatient()?.fullName || 'Patient ID #' + newApt.patientId }}</strong>
+              </div>
+              <div>
+                <span class="text-[10px] text-muted-foreground block">Attending Doctor:</span>
+                <strong class="text-foreground">{{ getSelectedDoctor()?.fullName }} ({{ getSelectedDoctor()?.specialization || 'Physician' }})</strong>
+              </div>
+              <div>
+                <span class="text-[10px] text-muted-foreground block">Scheduled Date & Time:</span>
+                <strong class="text-foreground">{{ newApt.appointmentDate | date:'medium' }}</strong>
+              </div>
+              <div>
+                <span class="text-[10px] text-muted-foreground block">Consultation Type:</span>
+                <strong class="text-foreground capitalize">{{ visitType().replace('_', ' ') }}</strong>
+              </div>
+            </div>
+
+            <div class="pt-2 border-t border-border/60 text-xs">
+              <span class="text-[10px] text-muted-foreground block">Chief Complaint:</span>
+              <p class="text-foreground font-medium">{{ newApt.reason }}</p>
+            </div>
+
+            <div *ngIf="newApt.notes" class="pt-2 border-t border-border/60 text-xs">
+              <span class="text-[10px] text-muted-foreground block">Booking Remarks:</span>
+              <p class="text-muted-foreground italic">{{ newApt.notes }}</p>
+            </div>
+          </div>
+        </div>
+
       </div>
 
-      <div class="p-4 bg-muted/30 border-t border-border flex items-center justify-end gap-2">
-        <button hlmBtn variant="ghost" (click)="showModal.set(false)" class="text-xs h-8">Cancel</button>
-        <button hlmBtn variant="default" (click)="saveAppointment()" class="text-xs h-8 px-4">Confirm Booking</button>
+      <!-- WIZARD FOOTER ACTIONS -->
+      <div class="p-4 bg-muted/30 border-t border-border flex items-center justify-between">
+        <button hlmBtn variant="ghost" (click)="scheduleStep() === 1 ? showModal.set(false) : prevScheduleStep()" class="text-xs h-8 px-3 gap-1">
+          <ng-icon name="lucideChevronLeft" size="14" *ngIf="scheduleStep() > 1" />
+          <span>{{ scheduleStep() === 1 ? 'Cancel' : 'Back' }}</span>
+        </button>
+
+        <div class="flex items-center gap-2">
+          <button *ngIf="scheduleStep() < 4" hlmBtn variant="default" (click)="nextScheduleStep()" class="text-xs h-8 px-4 gap-1.5 shadow-md shadow-primary/20">
+            <span>Continue</span>
+            <ng-icon name="lucideChevronRight" size="14" />
+          </button>
+
+          <button *ngIf="scheduleStep() === 4" hlmBtn variant="default" (click)="saveAppointment()" class="text-xs h-8 px-5 gap-1.5 shadow-lg shadow-primary/25 bg-primary font-bold">
+            <ng-icon name="lucideCheck" size="14" />
+            <span>Confirm Booking</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- ========================================================================= -->
   <!-- COLLABORATIVE APPOINTMENT WORKSPACE DRAWER / MODAL -->
+
   <!-- ========================================================================= -->
   <div *ngIf="showWorkspaceModal()" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-2 sm:p-6 overflow-y-auto">
     <div hlmCard class="w-full max-w-5xl bg-card border border-border shadow-2xl rounded-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col">
 
       <!-- WORKSPACE HEADER & STEPPER -->
-      <div class="p-5 border-b border-border bg-muted/40 space-y-4 shrink-0">
+      <div class="p-5 border-b border-border bg-gradient-to-r from-muted/50 via-card to-primary/5 space-y-4 shrink-0">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <div class="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
+            <div class="size-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-extrabold text-xs border border-primary/20 shadow-xs">
               #AP-10{{ activeAppointment()?.id }}
             </div>
             <div>
               <div class="flex items-center gap-2">
-                <h3 class="text-base font-bold text-foreground">{{ activeAppointment()?.patient?.fullName }}</h3>
-                <span class="text-xs text-muted-foreground">({{ activeAppointment()?.patient?.patientCode }})</span>
+                <h3 class="text-base font-bold text-foreground">Clinical Encounter Workspace</h3>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-primary/10 text-primary border border-primary/20">
+                  {{ activeAppointment()?.status ? formatLabel(activeAppointment()?.status) : 'SCHEDULED' }}
+                </span>
               </div>
               <p class="text-xs text-muted-foreground">
-                Attending: <strong class="text-foreground">{{ activeAppointment()?.doctor?.fullName }}</strong> • Date: {{ activeAppointment()?.appointmentDate | date:'medium' }}
+                Patient: <strong class="text-foreground">{{ activeAppointment()?.patient?.fullName }}</strong> ({{ activeAppointment()?.patient?.patientCode }}) • Attending: <strong class="text-foreground">{{ activeAppointment()?.doctor?.fullName }}</strong> • Date: {{ activeAppointment()?.appointmentDate | date:'medium' }}
               </p>
             </div>
           </div>
-          <button (click)="showWorkspaceModal.set(false)" class="text-muted-foreground hover:text-foreground text-base font-bold p-1">✕</button>
+          <button (click)="showWorkspaceModal.set(false)" class="text-muted-foreground hover:text-foreground text-base font-bold p-1 transition-colors">✕</button>
         </div>
 
         <!-- VISUAL WORKFLOW STEPPER -->
@@ -767,24 +1061,39 @@
       <!-- PRESCRIPTIONS -->
       <div class="space-y-3 text-xs">
         <h4 class="font-bold text-slate-900 border-b border-slate-200 pb-1 uppercase tracking-wider text-[11px]">Prescribed Medications (eRx)</h4>
-        <table class="w-full text-left text-xs border border-slate-200">
+        <table class="w-full text-left text-xs border border-slate-200 rounded-lg overflow-hidden">
           <thead class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
             <tr>
-              <th class="p-2">Medication</th>
-              <th class="p-2">Dosage</th>
-              <th class="p-2">Frequency</th>
-              <th class="p-2">Instructions</th>
+              <th class="p-2.5 w-1/3">Medication Name (RxNorm)</th>
+              <th class="p-2.5 w-1/6">Dosage</th>
+              <th class="p-2.5 w-1/4">Frequency</th>
+              <th class="p-2.5 w-1/4">Instructions & Duration</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-200">
-            <tr *ngFor="let rx of prescriptionsList()">
-              <td class="p-2 font-bold">{{ rx.medicationName }}</td>
-              <td class="p-2">{{ rx.dosage }}</td>
-              <td class="p-2">{{ rx.frequency }}</td>
-              <td class="p-2">{{ rx.instructions }}</td>
+            <tr *ngFor="let rx of prescriptionsList()" class="hover:bg-slate-50/50">
+              <td class="p-2.5">
+                <div class="font-bold text-slate-900">{{ rx.medicationName }}</div>
+                <span *ngIf="rx.rxNormCode" class="text-[10px] text-slate-500 font-mono block">RxNorm: #{{ rx.rxNormCode }}</span>
+              </td>
+              <td class="p-2.5 font-semibold text-slate-800">{{ rx.dosage || 'N/A' }}</td>
+              <td class="p-2.5 text-slate-700">{{ rx.frequency || 'As directed' }}</td>
+              <td class="p-2.5 text-slate-700">
+                <div>{{ rx.instructions || 'Take as directed by attending physician.' }}</div>
+                <span *ngIf="rx.durationDays" class="text-[10px] text-slate-500 font-medium block mt-0.5">Duration: {{ rx.durationDays }} Days</span>
+              </td>
             </tr>
-            <tr *ngIf="prescriptionsList().length === 0">
-              <td colspan="4" class="p-3 text-center text-slate-500">Lisinopril 10mg • Once Daily in the Morning (30 Days)</td>
+            <tr *ngIf="prescriptionsList().length === 0" class="hover:bg-slate-50/50">
+              <td class="p-2.5">
+                <div class="font-bold text-slate-900">Lisinopril</div>
+                <span class="text-[10px] text-slate-500 font-mono block">RxNorm: #29046</span>
+              </td>
+              <td class="p-2.5 font-semibold text-slate-800">10 mg</td>
+              <td class="p-2.5 text-slate-700">Once daily in the morning</td>
+              <td class="p-2.5 text-slate-700">
+                <div>Take in morning with water. Monitor BP weekly.</div>
+                <span class="text-[10px] text-slate-500 font-medium block mt-0.5">Duration: 30 Days</span>
+              </td>
             </tr>
           </tbody>
         </table>

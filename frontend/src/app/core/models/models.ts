@@ -159,9 +159,17 @@ export interface SafetyCheckResult {
 export interface DoctorRecommendationDTO {
   doctor: User;
   matchScore: number;
+  specialtyFitScore?: number;
+  continuityScore?: number;
+  workloadScore?: number;
+  urgencyScore?: number;
+  triageRiskLevel?: 'ROUTINE' | 'URGENT' | 'EMERGENT' | string;
+  triageSummary?: string;
   recommendedSpecialty: string;
   matchReason: string;
   verifiedLicense: boolean;
+  reasoningBreakdown?: string[];
+  recommendedSlots?: string[];
 }
 
 export interface Appointment {

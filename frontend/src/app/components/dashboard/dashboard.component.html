@@ -99,9 +99,20 @@
     <div class="space-y-3 pt-2">
       <h2 class="text-sm font-semibold text-foreground">Portal Navigation</h2>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <a routerLink="/profile" class="p-4 rounded-xl border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors flex items-center justify-between group">
+          <div class="flex items-center gap-3">
+            <ng-icon name="lucideUserRound" size="18" class="text-primary" />
+            <div>
+              <span class="text-xs font-semibold text-primary block">My Health Profile</span>
+              <span class="text-[11px] text-muted-foreground block">Habits, allergies & info</span>
+            </div>
+          </div>
+          <ng-icon name="lucideChevronRight" size="16" class="text-primary" />
+        </a>
+
         <a routerLink="/patients" class="p-4 rounded-xl border border-border bg-card hover:bg-accent/40 transition-colors flex items-center justify-between group">
           <div class="flex items-center gap-3">
-            <ng-icon name="lucideUserRound" size="18" class="text-muted-foreground group-hover:text-foreground" />
+            <ng-icon name="lucideHeartPulse" size="18" class="text-muted-foreground group-hover:text-foreground" />
             <div>
               <span class="text-xs font-semibold text-foreground block">My Patient Chart</span>
               <span class="text-[11px] text-muted-foreground block">Demographics & records</span>

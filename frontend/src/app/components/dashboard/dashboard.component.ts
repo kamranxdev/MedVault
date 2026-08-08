@@ -30,6 +30,7 @@ import {
   lucideLoader2,
   lucideHeartPulse,
   lucideChevronRight,
+  lucideLayoutDashboard,
 } from '@ng-icons/lucide';
 
 @Component({
@@ -65,6 +66,7 @@ import {
       lucideLoader2,
       lucideHeartPulse,
       lucideChevronRight,
+      lucideLayoutDashboard,
     }),
   ],
   templateUrl: './dashboard.component.html',

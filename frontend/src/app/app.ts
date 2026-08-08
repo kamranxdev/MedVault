@@ -23,6 +23,7 @@ import {
   lucidePanelLeftOpen,
   lucideSun,
   lucideMoon,
+  lucideChevronRight,
 } from '@ng-icons/lucide';
 
 import { AuthService } from './core/services/auth.service';
@@ -89,6 +90,7 @@ interface PatientOption {
       lucidePanelLeftOpen,
       lucideSun,
       lucideMoon,
+      lucideChevronRight,
     }),
   ],
   templateUrl: './app.component.html',
@@ -97,9 +99,44 @@ export class App implements OnInit, OnDestroy {
   isMobile = signal(false);
   sidebarOpen = signal(true);
   isStandalonePage = signal(false);
+  currentUrl = signal<string>('/dashboard');
 
   showDashboardLayout = computed(() => {
     return this.authService.isLoggedIn() && !this.isStandalonePage();
+  });
+
+  currentRouteInfo = computed(() => {
+    const url = this.currentUrl().split('?')[0];
+    switch (url) {
+      case '/dashboard':
+        return { title: 'Dashboard Command Center', icon: 'lucideLayoutDashboard' };
+      case '/patients':
+        return { title: 'Master Patient Index (MPI)', icon: 'lucideHeartPulse' };
+      case '/profile':
+        return { title: 'My Health Profile & Settings', icon: 'lucideUserRound' };
+      case '/encounters':
+        return { title: 'Visits & Consultations', icon: 'lucideHospital' };
+      case '/allergies':
+        return { title: 'Allergies & Risk Register', icon: 'lucideTriangleAlert' };
+      case '/diagnoses':
+        return { title: 'Problem List (ICD-10)', icon: 'lucideListChecks' };
+      case '/records':
+        return { title: 'SOAP Progress Notes', icon: 'lucideFileText' };
+      case '/vitals':
+        return { title: 'Bedside Vitals Flowsheet', icon: 'lucideActivity' };
+      case '/prescriptions':
+        return { title: 'Pharmacy & eRx Orders', icon: 'lucidePill' };
+      case '/appointments':
+        return { title: 'Consultation Schedule', icon: 'lucideCalendarClock' };
+      case '/audit-ledger':
+        return { title: 'Compliance Audit Ledger', icon: 'lucideShieldCheck' };
+      case '/admin':
+        return { title: 'System Administration', icon: 'lucideSettings' };
+      case '/fhir-explorer':
+        return { title: 'FHIR R4 API Explorer', icon: 'lucideShieldCheck' };
+      default:
+        return { title: 'EHR Workspace', icon: 'lucideLayoutDashboard' };
+    }
   });
 
   private mql?: MediaQueryList;
@@ -115,7 +152,8 @@ export class App implements OnInit, OnDestroy {
   ) {
     this.routerSub = this.router.events
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
-      .subscribe(() => {
+      .subscribe((event) => {
+        this.currentUrl.set(event.urlAfterRedirects || event.url);
         this.updateStandaloneStatus();
       });
 
@@ -363,6 +401,7 @@ export class App implements OnInit, OnDestroy {
         label: 'My Personal Health Record',
         items: [
           { icon: 'lucideLayoutDashboard', label: 'My Health Summary', routerLink: '/dashboard' },
+          { icon: 'lucideUserRound', label: 'My Health Profile', routerLink: '/profile' },
           { icon: 'lucideHeartPulse', label: 'My Patient Chart', routerLink: '/patients' },
           { icon: 'lucidePill', label: 'My Prescriptions', routerLink: '/prescriptions' },
           { icon: 'lucideActivity', label: 'My Vitals Trends', routerLink: '/vitals' },
@@ -371,12 +410,6 @@ export class App implements OnInit, OnDestroy {
           { icon: 'lucideFileText', label: 'My Progress Notes', routerLink: '/records' },
           { icon: 'lucideHospital', label: 'My Visit History', routerLink: '/encounters' },
           { icon: 'lucideCalendarClock', label: 'My Appointments', routerLink: '/appointments' },
-          {
-            icon: 'lucideShieldCheck',
-            label: 'FHIR R4 Interop Explorer',
-            routerLink: '/fhir-explorer',
-            badge: 'R4 API',
-          },
         ],
       },
     ];

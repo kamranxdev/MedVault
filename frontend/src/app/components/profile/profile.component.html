@@ -1,0 +1,425 @@
+<div class="space-y-6 max-w-6xl mx-auto pb-12">
+  <!-- Loading state -->
+  <div *ngIf="loading()" class="p-12 text-center space-y-3">
+    <div class="inline-flex p-3 rounded-full bg-primary/10 text-primary animate-spin">
+      <ng-icon name="lucideRefreshCw" size="24" />
+    </div>
+    <p class="text-xs text-muted-foreground">Loading patient profile data...</p>
+  </div>
+
+  <div *ngIf="!loading() && patient() as p" class="space-y-6">
+    <!-- Top Header Banner & Completeness Card -->
+    <div class="p-6 rounded-2xl border border-border bg-card shadow-sm space-y-5">
+      <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+        <!-- Patient Identity -->
+        <div class="flex items-center gap-4">
+          <div class="size-16 rounded-2xl bg-primary/10 text-primary text-2xl font-bold flex items-center justify-center shrink-0 border border-primary/20 shadow-inner">
+            {{ p.fullName.charAt(0) }}
+          </div>
+          <div class="space-y-1">
+            <div class="flex items-center gap-2.5 flex-wrap">
+              <h1 class="text-2xl font-bold text-foreground tracking-tight m-0">{{ p.fullName }}</h1>
+              <span hlmBadge variant="destructive" class="text-xs font-semibold px-2 py-0.5">{{ p.bloodType || 'Type N/A' }}</span>
+              <span hlmBadge variant="outline" class="font-mono text-xs bg-muted">MRN: {{ p.patientCode }}</span>
+            </div>
+            <p class="text-xs text-muted-foreground flex items-center gap-2 flex-wrap">
+              <span>DOB: <strong class="text-foreground font-medium">{{ p.dateOfBirth }}</strong></span>
+              <span>•</span>
+              <span>Gender: <strong class="text-foreground font-medium">{{ p.gender }}</strong></span>
+              <span>•</span>
+              <span>SSN: <strong class="text-foreground font-mono">{{ p.ssn || 'XXX-XX-XXXX' }}</strong></span>
+            </p>
+          </div>
+        </div>
+
+        <!-- Profile Completeness Score Card -->
+        <div class="w-full lg:w-72 p-4 rounded-xl border border-primary/20 bg-primary/5 space-y-2">
+          <div class="flex justify-between items-center text-xs font-semibold">
+            <span class="text-primary uppercase tracking-wide text-[11px] flex items-center gap-1.5">
+              <ng-icon name="lucideSparkles" size="14" /> Profile Completeness
+            </span>
+            <span class="text-primary font-bold text-sm">{{ completenessScore() }}%</span>
+          </div>
+          <div class="w-full h-2.5 bg-primary/20 rounded-full overflow-hidden">
+            <div 
+              class="h-full bg-primary rounded-full transition-all duration-500 ease-out" 
+              [style.width.%]="completenessScore()">
+            </div>
+          </div>
+          <p class="text-[11px] text-muted-foreground">
+            {{ completenessScore() === 100 ? 'All essential healthcare profile details are fully documented!' : 'Complete missing details to optimize clinical care coordination.' }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alert / Toast Messages -->
+    <div *ngIf="saveSuccess()" class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs flex items-center gap-3 animate-in fade-in duration-300">
+      <ng-icon name="lucideCheckCircle2" size="18" class="shrink-0" />
+      <div class="font-medium">Profile successfully updated and synchronized across MedVault EHR system.</div>
+    </div>
+
+    <div *ngIf="saveError()" class="p-4 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive text-xs flex items-center gap-3 animate-in fade-in duration-300">
+      <ng-icon name="lucideAlertCircle" size="18" class="shrink-0" />
+      <div class="font-medium">{{ saveError() }}</div>
+    </div>
+
+    <!-- Main Navigation Tabs -->
+    <div class="p-6 rounded-2xl border border-border bg-card shadow-sm space-y-6">
+      <div class="flex gap-2 border-b border-border pb-3 overflow-x-auto">
+        <button
+          hlmBtn
+          [variant]="activeTab() === 'demographics' ? 'default' : 'ghost'" size="sm"
+          (click)="activeTab.set('demographics')" class="gap-1.5 text-xs">
+          <ng-icon name="lucidePhone" size="14" /> Basic & Contact Info
+        </button>
+        <button
+          hlmBtn
+          [variant]="activeTab() === 'lifestyle' ? 'default' : 'ghost'" size="sm"
+          (click)="activeTab.set('lifestyle')" class="gap-1.5 text-xs">
+          <ng-icon name="lucideActivity" size="14" /> Lifestyle & Habits
+        </button>
+        <button
+          hlmBtn
+          [variant]="activeTab() === 'allergies' ? 'default' : 'ghost'" size="sm"
+          (click)="activeTab.set('allergies')" class="gap-1.5 text-xs">
+          <ng-icon name="lucideTriangleAlert" size="14" /> Food & Allergies
+        </button>
+        <button
+          hlmBtn
+          [variant]="activeTab() === 'insurance' ? 'default' : 'ghost'" size="sm"
+          (click)="activeTab.set('insurance')" class="gap-1.5 text-xs">
+          <ng-icon name="lucideCreditCard" size="14" /> Insurance & Coverage
+        </button>
+        <button
+          hlmBtn
+          [variant]="activeTab() === 'medical-alerts' ? 'default' : 'ghost'" size="sm"
+          (click)="activeTab.set('medical-alerts')" class="gap-1.5 text-xs">
+          <ng-icon name="lucideHeart" size="14" /> Medical Alerts
+        </button>
+        <button
+          hlmBtn
+          [variant]="activeTab() === 'history' ? 'default' : 'ghost'" size="sm"
+          (click)="activeTab.set('history')" class="gap-1.5 text-xs">
+          <ng-icon name="lucideHistory" size="14" /> Clinical History (EHR)
+        </button>
+      </div>
+
+      <form (ngSubmit)="saveProfile()" class="space-y-6">
+        <!-- TAB 1: Demographics & Emergency Contact -->
+        <div *ngIf="activeTab() === 'demographics'" class="space-y-5">
+          <div class="border-b border-border pb-3">
+            <h3 class="text-sm font-semibold text-foreground flex items-center gap-2">
+              <ng-icon name="lucidePhone" size="16" class="text-primary" /> Demographics & Emergency Contact
+            </h3>
+            <p class="text-xs text-muted-foreground mt-0.5">Maintain your primary phone, email address, physical location, and emergency contact network.</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <div class="space-y-1.5">
+              <label class="font-semibold text-foreground flex items-center gap-1.5">
+                <ng-icon name="lucidePhone" size="13" class="text-muted-foreground" /> Primary Phone Number
+              </label>
+              <input hlmInput [(ngModel)]="profileForm.phone" name="phone" placeholder="(555) 000-0000" class="w-full h-9 text-xs" />
+            </div>
+
+            <div class="space-y-1.5">
+              <label class="font-semibold text-foreground flex items-center gap-1.5">
+                <ng-icon name="lucideMail" size="13" class="text-muted-foreground" /> Email Address
+              </label>
+              <input hlmInput [(ngModel)]="profileForm.email" name="email" placeholder="patient@example.com" class="w-full h-9 text-xs" />
+            </div>
+
+            <div class="space-y-1.5 md:col-span-2">
+              <label class="font-semibold text-foreground flex items-center gap-1.5">
+                <ng-icon name="lucideMapPin" size="13" class="text-muted-foreground" /> Mailing / Home Address
+              </label>
+              <input hlmInput [(ngModel)]="profileForm.address" name="address" placeholder="123 Health Avenue, Suite 4, Boston, MA 02115" class="w-full h-9 text-xs" />
+            </div>
+
+            <div class="space-y-1.5 md:col-span-2 p-4 rounded-xl border border-border bg-muted/20">
+              <label class="font-semibold text-foreground flex items-center gap-1.5 text-xs uppercase tracking-wide">
+                <ng-icon name="lucideContact2" size="14" class="text-primary" /> Emergency Contact Details
+              </label>
+              <p class="text-[11px] text-muted-foreground mb-2">Full name, relationship to patient, and primary telephone number for emergency notifications.</p>
+              <input hlmInput [(ngModel)]="profileForm.emergencyContact" name="emergencyContact" placeholder="Jane Doe (Spouse) - (555) 999-8888" class="w-full h-9 text-xs bg-background" />
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: Lifestyle & Dietary Habits -->
+        <div *ngIf="activeTab() === 'lifestyle'" class="space-y-5">
+          <div class="border-b border-border pb-3">
+            <h3 class="text-sm font-semibold text-foreground flex items-center gap-2">
+              <ng-icon name="lucideActivity" size="16" class="text-primary" /> Lifestyle, Dietary Habits & Wellness
+            </h3>
+            <p class="text-xs text-muted-foreground mt-0.5">Specify dietary regimens, physical activity levels, and substance habits for holistic care planning.</p>
+          </div>
+
+          <!-- Dietary Habits Tag Selector -->
+          <div class="p-4 rounded-xl border border-primary/20 bg-primary/5 space-y-3">
+            <label class="font-semibold text-primary block text-xs uppercase tracking-wide flex items-center gap-1.5">
+              <ng-icon name="lucideUtensils" size="14" /> Dietary Regimens & Habits Preferences
+            </label>
+            <p class="text-[11px] text-muted-foreground">Select all dietary habits or meal guidelines that apply to your lifestyle:</p>
+
+            <div class="flex flex-wrap gap-2 pt-1">
+              <button
+                type="button"
+                *ngFor="let preset of dietaryPresets"
+                (click)="toggleDietaryHabit(preset)"
+                [class.bg-primary]="currentDietaryList().includes(preset)"
+                [class.text-primary-foreground]="currentDietaryList().includes(preset)"
+                [class.bg-background]="!currentDietaryList().includes(preset)"
+                class="px-3 py-1.5 rounded-lg border border-primary/30 text-xs font-medium transition-all duration-150 flex items-center gap-1.5 hover:border-primary">
+                <ng-icon [name]="currentDietaryList().includes(preset) ? 'lucideCheckCircle2' : 'lucidePlus'" size="13" />
+                {{ preset }}
+              </button>
+            </div>
+
+            <div class="pt-2">
+              <label class="font-medium text-foreground block text-xs mb-1">Custom / Specific Dietary Notes</label>
+              <input hlmInput [(ngModel)]="profileForm.dietaryHabits" name="dietaryHabits" placeholder="e.g. Low Sodium, Gluten-Free, Intermittent Fasting" class="w-full h-9 text-xs bg-background" />
+            </div>
+          </div>
+
+          <!-- Behavioral & Substance Use Dropdowns -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+            <div class="p-4 rounded-xl border border-border bg-card space-y-2">
+              <label class="font-semibold text-foreground flex items-center gap-1.5">
+                <ng-icon name="lucideCigarette" size="14" class="text-primary" /> Tobacco / Smoking Status
+              </label>
+              <select hlmInput [(ngModel)]="profileForm.smokingStatus" name="smokingStatus" class="w-full h-9 text-xs">
+                <option value="NEVER">Never Smoked</option>
+                <option value="FORMER">Former Smoker</option>
+                <option value="CURRENT_LIGHT">Current Light Smoker</option>
+                <option value="CURRENT_HEAVY">Current Heavy Smoker</option>
+              </select>
+              <span class="text-[11px] text-muted-foreground block">Self-reported tobacco usage profile.</span>
+            </div>
+
+            <div class="p-4 rounded-xl border border-border bg-card space-y-2">
+              <label class="font-semibold text-foreground flex items-center gap-1.5">
+                <ng-icon name="lucideWine" size="14" class="text-primary" /> Alcohol Consumption
+              </label>
+              <select hlmInput [(ngModel)]="profileForm.alcoholConsumption" name="alcoholConsumption" class="w-full h-9 text-xs">
+                <option value="NONE">None</option>
+                <option value="OCCASIONAL">Occasional (1-2 drinks/week)</option>
+                <option value="MODERATE">Moderate (3-7 drinks/week)</option>
+                <option value="HEAVY">Heavy (>7 drinks/week)</option>
+              </select>
+              <span class="text-[11px] text-muted-foreground block">Alcohol consumption frequency.</span>
+            </div>
+
+            <div class="p-4 rounded-xl border border-border bg-card space-y-2">
+              <label class="font-semibold text-foreground flex items-center gap-1.5">
+                <ng-icon name="lucideActivity" size="14" class="text-primary" /> Exercise & Physical Activity
+              </label>
+              <select hlmInput [(ngModel)]="profileForm.exerciseRoutine" name="exerciseRoutine" class="w-full h-9 text-xs">
+                <option value="SEDENTARY">Sedentary (Little or no exercise)</option>
+                <option value="MODERATE">Moderate (1-3 sessions/week)</option>
+                <option value="ACTIVE">Active (4-6 sessions/week)</option>
+                <option value="ATHLETE">Athlete / High Intensity Daily</option>
+              </select>
+              <span class="text-[11px] text-muted-foreground block">Weekly physical activity level.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: Food & Environmental Allergies -->
+        <div *ngIf="activeTab() === 'allergies'" class="space-y-5">
+          <div class="border-b border-border pb-3">
+            <h3 class="text-sm font-semibold text-foreground flex items-center gap-2">
+              <ng-icon name="lucideTriangleAlert" size="16" class="text-destructive" /> Food Allergies & Intolerances
+            </h3>
+            <p class="text-xs text-muted-foreground mt-0.5">Disclose food sensitivities and self-reported allergies for hospital meal planning and medication safety alerts.</p>
+          </div>
+
+          <!-- Interactive Food Allergies Tag Manager -->
+          <div class="p-5 rounded-xl border border-destructive/30 bg-destructive/5 space-y-4">
+            <label class="font-semibold text-destructive block text-xs uppercase tracking-wide flex items-center gap-1.5">
+              <ng-icon name="lucideApple" size="14" /> Food & Dietary Allergen Registry
+            </label>
+
+            <!-- Common Allergen Quick Toggle Pills -->
+            <div class="space-y-2">
+              <span class="text-xs font-medium text-foreground block">Quick-Select Common Food Allergens:</span>
+              <div class="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  *ngFor="let preset of allergenPresets"
+                  (click)="toggleFoodAllergy(preset)"
+                  [class.bg-destructive]="currentFoodAllergiesList().includes(preset)"
+                  [class.text-destructive-foreground]="currentFoodAllergiesList().includes(preset)"
+                  [class.bg-card]="!currentFoodAllergiesList().includes(preset)"
+                  class="px-3 py-1.5 rounded-lg border border-destructive/30 text-xs font-medium transition-all duration-150 flex items-center gap-1.5 hover:border-destructive">
+                  <ng-icon [name]="currentFoodAllergiesList().includes(preset) ? 'lucideCheckCircle2' : 'lucidePlus'" size="13" />
+                  {{ preset }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Custom Allergen Input -->
+            <div class="flex items-center gap-2 pt-2">
+              <input 
+                hlmInput 
+                [(ngModel)]="customAllergyInput" 
+                name="customAllergyInput"
+                (keydown.enter)="$event.preventDefault(); addCustomAllergy()"
+                placeholder="Type additional custom food allergy (e.g. Gelatin, Strawberry) and hit Add..." 
+                class="flex-1 h-9 text-xs bg-background" />
+              <button hlmBtn type="button" variant="outline" size="sm" (click)="addCustomAllergy()" class="gap-1.5 text-xs">
+                <ng-icon name="lucidePlus" size="14" /> Add Allergen
+              </button>
+            </div>
+
+            <!-- Active Documented Food Allergies Badges -->
+            <div class="p-3 rounded-lg border border-border bg-card space-y-2">
+              <span class="text-xs font-semibold text-foreground block uppercase text-muted-foreground">Documented Food Allergies Summary:</span>
+              <div *ngIf="currentFoodAllergiesList().length > 0" class="flex flex-wrap gap-2">
+                <span *ngFor="let alg of currentFoodAllergiesList()" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-destructive/10 text-destructive border border-destructive/30 text-xs font-semibold">
+                  {{ alg }}
+                  <button type="button" (click)="removeFoodAllergy(alg)" class="hover:text-destructive/70">
+                    <ng-icon name="lucideX" size="13" />
+                  </button>
+                </span>
+              </div>
+              <p *ngIf="currentFoodAllergiesList().length === 0" class="text-xs text-muted-foreground italic">No food allergies documented.</p>
+            </div>
+          </div>
+
+          <!-- Clinical Documented Allergies Section (Read Only / Clinical) -->
+          <div class="p-4 rounded-xl border border-border bg-card space-y-3">
+            <div class="flex justify-between items-center border-b border-border pb-2">
+              <span class="font-semibold text-foreground text-xs uppercase tracking-wide flex items-center gap-1.5">
+                <ng-icon name="lucideShieldCheck" size="14" class="text-primary" /> Clinical Staff Verified Medication & Environmental Allergies
+              </span>
+              <span hlmBadge variant="outline" class="text-[10px]">EHR Verified</span>
+            </div>
+
+            <div *ngIf="clinicalAllergies().length > 0" class="space-y-2">
+              <div *ngFor="let ca of clinicalAllergies()" class="p-3 rounded-lg border border-border bg-muted/20 flex justify-between items-center text-xs">
+                <div>
+                  <span class="font-semibold text-foreground block text-sm">{{ ca.allergenName }}</span>
+                  <span class="text-muted-foreground">Category: <strong>{{ ca.category }}</strong> • Reaction: <strong>{{ ca.reactionDescription || 'N/A' }}</strong></span>
+                </div>
+                <span hlmBadge [variant]="ca.severity === 'SEVERE' || ca.severity === 'LIFE_THREATENING' ? 'destructive' : 'secondary'" class="text-[10px]">
+                  {{ ca.severity }}
+                </span>
+              </div>
+            </div>
+
+            <p *ngIf="clinicalAllergies().length === 0" class="text-xs text-muted-foreground italic">
+              No clinical medication or environmental allergies documented in your care chart.
+            </p>
+          </div>
+        </div>
+
+        <!-- TAB 4: Insurance & Coverage Information -->
+        <div *ngIf="activeTab() === 'insurance'" class="space-y-5">
+          <div class="border-b border-border pb-3">
+            <h3 class="text-sm font-semibold text-foreground flex items-center gap-2">
+              <ng-icon name="lucideCreditCard" size="16" class="text-primary" /> Insurance & Coverage Information
+            </h3>
+            <p class="text-xs text-muted-foreground mt-0.5">Manage policy details for automated eligibility verification and billing processing.</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <div class="space-y-1.5">
+              <label class="font-semibold text-foreground">Primary Insurance Provider</label>
+              <input hlmInput [(ngModel)]="profileForm.insuranceProvider" name="insuranceProvider" placeholder="BlueCross BlueShield, Aetna, UnitedHealthcare..." class="w-full h-9 text-xs" />
+            </div>
+
+            <div class="space-y-1.5">
+              <label class="font-semibold text-foreground">Insurance Policy Number</label>
+              <input hlmInput [(ngModel)]="profileForm.insurancePolicyNumber" name="insurancePolicyNumber" placeholder="BCBS-98741029" class="w-full h-9 text-xs font-mono" />
+            </div>
+
+            <div class="space-y-1.5">
+              <label class="font-semibold text-foreground">Group Number</label>
+              <input hlmInput [(ngModel)]="profileForm.insuranceGroupNumber" name="insuranceGroupNumber" placeholder="GRP-123456" class="w-full h-9 text-xs font-mono" />
+            </div>
+
+            <div class="space-y-1.5">
+              <label class="font-semibold text-foreground">Coverage Plan Type</label>
+              <input hlmInput [(ngModel)]="profileForm.coveragePlan" name="coveragePlan" placeholder="Preferred Provider Organization (PPO)" class="w-full h-9 text-xs" />
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 5: Medical Alerts & Special Needs -->
+        <div *ngIf="activeTab() === 'medical-alerts'" class="space-y-5">
+          <div class="border-b border-border pb-3">
+            <h3 class="text-sm font-semibold text-foreground flex items-center gap-2">
+              <ng-icon name="lucideHeart" size="16" class="text-destructive" /> Medical Alerts & Special Accommodations
+            </h3>
+            <p class="text-xs text-muted-foreground mt-0.5">Document critical alerts, mobility aids, or special accommodations needed during appointments.</p>
+          </div>
+
+          <div class="space-y-3 text-xs">
+            <div class="space-y-1.5">
+              <label class="font-semibold text-foreground block">Medical Alerts Summary & Special Instructions</label>
+              <textarea hlmTextarea [(ngModel)]="profileForm.medicalAlerts" name="medicalAlerts" rows="3" placeholder="e.g. Diabetic, Hearing Impaired (Left Ear), Requires Wheelchair Assistance..." class="w-full text-xs"></textarea>
+              <span class="text-[11px] text-muted-foreground block">These notes will be flagged for triage nurses and attending clinicians prior to consultations.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 6: EHR Clinical History Overview (Read-Only) -->
+        <div *ngIf="activeTab() === 'history'" class="space-y-5">
+          <div class="border-b border-border pb-3 flex justify-between items-center">
+            <div>
+              <h3 class="text-sm font-semibold text-foreground flex items-center gap-2">
+                <ng-icon name="lucideHistory" size="16" class="text-primary" /> Longitudinal Clinical History
+              </h3>
+              <p class="text-xs text-muted-foreground mt-0.5">Verified medical history recorded by attending physicians and clinical staff.</p>
+            </div>
+            <span hlmBadge variant="outline" class="text-[10px] bg-muted">EHR Verified • Read Only for Patients</span>
+          </div>
+
+          <div class="space-y-4 text-xs">
+            <div class="p-4 rounded-xl border border-border bg-card space-y-2">
+              <span class="font-semibold text-foreground block text-xs uppercase tracking-wide">Previous Illnesses & Chronic Conditions</span>
+              <p class="text-xs text-muted-foreground leading-relaxed">{{ p.pastMedicalHistory || 'No previous chronic history documented.' }}</p>
+            </div>
+
+            <div class="p-4 rounded-xl border border-border bg-card space-y-2">
+              <span class="font-semibold text-foreground block text-xs uppercase tracking-wide">Serious Conditions & Critical Medical Notes</span>
+              <p class="text-xs text-muted-foreground leading-relaxed">{{ p.seriousConditions || 'No serious critical conditions documented.' }}</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="p-4 rounded-xl border border-border bg-card space-y-2">
+                <span class="font-semibold text-foreground block text-xs uppercase tracking-wide">Past Surgeries & Procedures</span>
+                <p class="text-xs text-muted-foreground leading-relaxed">{{ p.surgeriesAndProcedures || 'No surgical procedures documented.' }}</p>
+              </div>
+
+              <div class="p-4 rounded-xl border border-border bg-card space-y-2">
+                <span class="font-semibold text-foreground block text-xs uppercase tracking-wide">Family Medical History</span>
+                <p class="text-xs text-muted-foreground leading-relaxed">{{ p.familyMedicalHistory || 'No family history documented.' }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sticky Action Footer -->
+        <div class="flex items-center justify-between border-t border-border pt-4 mt-6">
+          <div class="text-xs text-muted-foreground flex items-center gap-1.5">
+            <ng-icon name="lucideShieldCheck" size="14" class="text-emerald-500" />
+            <span>Encrypted HIPAA/FHIR R4 Data Storage</span>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <button hlmBtn type="button" variant="ghost" size="sm" (click)="loadPatientProfile()" class="text-xs">
+              Reset Changes
+            </button>
+            <button hlmBtn type="submit" variant="default" size="sm" [disabled]="saving()" class="gap-2 text-xs">
+              <ng-icon [name]="saving() ? 'lucideRefreshCw' : 'lucideSave'" size="14" [class.animate-spin]="saving()" />
+              {{ saving() ? 'Saving Profile...' : 'Save Profile Changes' }}
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

@@ -81,28 +81,24 @@
 
         <span class="font-semibold text-sm hidden sm:inline-block">MedVault EHR</span>
 
-        <hlm-separator orientation="vertical" class="h-5 hidden sm:block" />
-
-        <!-- Clinician patient context selector -->
-        <div *ngIf="!isPatient() && patientContext.activePatient()" class="flex items-center gap-2">
-          <span class="text-xs text-muted-foreground hidden md:inline">Active patient:</span>
-          <select hlmInput [ngModel]="patientContext.activePatient()?.id" (ngModelChange)="onPatientContextChange($event)" class="h-8 text-xs min-w-[200px] bg-slate-900 border-slate-700 text-slate-200 py-1">
-            <option *ngFor="let p of patientContext.patientList()" [value]="p.id">
-              {{ p.fullName }} (MRN: {{ p.patientCode }})
-            </option>
-          </select>
-          <span *ngIf="patientContext.activePatient()?.medicalAlerts" hlmBadge variant="destructive"
-            class="hidden lg:inline-flex text-[11px]">
-            <ng-icon name="lucideTriangleAlert" size="12" class="mr-1" />
-            {{ patientContext.activePatient()?.medicalAlerts }}
+        <!-- Sticky Top Bar Breadcrumb -->
+        <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-xs text-muted-foreground min-w-0">
+          <a routerLink="/dashboard" class="flex items-center gap-1 font-medium hover:text-foreground transition-colors shrink-0">
+            <ng-icon name="lucideLayoutDashboard" size="13" class="text-primary" />
+            <span class="hidden md:inline">Workspace</span>
+          </a>
+          <ng-icon name="lucideChevronRight" size="12" class="text-muted-foreground/60 shrink-0" />
+          <span class="font-semibold text-foreground truncate flex items-center gap-1.5">
+            <ng-icon [name]="currentRouteInfo().icon" size="13" class="text-primary shrink-0" />
+            <span class="truncate">{{ currentRouteInfo().title }}</span>
           </span>
-        </div>
+        </nav>
 
         <!-- Patient self-service banner -->
-        <div *ngIf="isPatient() && patientContext.activePatient()" class="flex items-center gap-2 text-xs">
-          <span class="text-muted-foreground font-medium hidden sm:inline">My record:</span>
-          <span class="font-semibold">{{ patientContext.activePatient()?.fullName }}</span>
-          <span hlmBadge variant="outline" class="text-[11px]">
+        <div *ngIf="isPatient() && patientContext.activePatient()" class="flex items-center gap-2 text-xs ml-2">
+          <span class="text-muted-foreground font-medium hidden lg:inline">My record:</span>
+          <span class="font-semibold text-xs">{{ patientContext.activePatient()?.fullName }}</span>
+          <span hlmBadge variant="outline" class="text-[10px]">
             MRN: {{ patientContext.activePatient()?.patientCode }}
           </span>
         </div>

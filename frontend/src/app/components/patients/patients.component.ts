@@ -97,6 +97,11 @@ export class PatientsComponent implements OnInit {
   filteredPatients = signal<Patient[]>([]);
   searchQuery = '';
 
+  viewMode = signal<'directory' | 'chart'>('directory');
+  filterGender = signal<string>('ALL');
+  filterRisk = signal<boolean>(false);
+  filterBloodType = signal<string>('ALL');
+
   selectedPatient = signal<Patient | null>(null);
   patientEncounters = signal<Encounter[]>([]);
   patientAllergies = signal<Allergy[]>([]);
@@ -242,8 +247,11 @@ export class PatientsComponent implements OnInit {
       const active = this.patientContext.activePatient();
       if (active) {
         if (this.selectedPatient()?.id !== active.id) {
-          this.selectPatient(active);
+          this.selectPatient(active, false);
         }
+      } else if (!this.authService.hasRole('ROLE_PATIENT')) {
+        this.selectedPatient.set(null);
+        this.viewMode.set('directory');
       }
     });
   }
@@ -273,9 +281,10 @@ export class PatientsComponent implements OnInit {
         this.filteredPatients.set(data);
         const active = this.patientContext.activePatient();
         if (active) {
-          this.selectPatient(active);
-        } else if (data.length > 0) {
-          this.selectPatient(data[0]);
+          this.selectPatient(active, false);
+          this.viewMode.set('chart');
+        } else {
+          this.viewMode.set('directory');
         }
       },
     });
@@ -292,23 +301,111 @@ export class PatientsComponent implements OnInit {
     });
   }
 
-  selectPatient(patient: Patient): void {
+  selectPatient(patient: Patient, updateContext = true): void {
+    if (!patient || !patient.id) return;
     this.selectedPatient.set(patient);
-    this.patientContext.setActivePatient(patient);
-    this.apiService
-      .getPatientClinicalHistory(patient.id)
-      .subscribe((h) => this.clinicalHistory.set(h));
-    this.apiService
-      .getEncountersByPatient(patient.id)
-      .subscribe((e) => this.patientEncounters.set(e));
-    this.apiService
-      .getAllergiesByPatient(patient.id)
-      .subscribe((a) => this.patientAllergies.set(a));
-    this.apiService
-      .getDiagnosesByPatient(patient.id)
-      .subscribe((d) => this.patientDiagnoses.set(d));
-    this.apiService.getVitalsByPatient(patient.id).subscribe((v) => this.patientVitals.set(v));
-    this.apiService.getPrescriptionsByPatient(patient.id).subscribe((rx) => this.patientRx.set(rx));
+    if (updateContext) {
+      this.patientContext.setActivePatient(patient);
+    }
+    this.viewMode.set('chart');
+
+    this.apiService.getPatientClinicalHistory(patient.id).subscribe({
+      next: (h) => this.clinicalHistory.set(h || null),
+      error: (err) => {
+        console.error('Error fetching clinical history:', err);
+        this.clinicalHistory.set(null);
+      },
+    });
+
+    this.apiService.getEncountersByPatient(patient.id).subscribe({
+      next: (e) => this.patientEncounters.set(Array.isArray(e) ? e : []),
+      error: (err) => {
+        console.error('Error fetching patient encounters:', err);
+        this.patientEncounters.set([]);
+      },
+    });
+
+    this.apiService.getAllergiesByPatient(patient.id).subscribe({
+      next: (a) => this.patientAllergies.set(Array.isArray(a) ? a : []),
+      error: (err) => {
+        console.error('Error fetching patient allergies:', err);
+        this.patientAllergies.set([]);
+      },
+    });
+
+    this.apiService.getDiagnosesByPatient(patient.id).subscribe({
+      next: (d) => this.patientDiagnoses.set(Array.isArray(d) ? d : []),
+      error: (err) => {
+        console.error('Error fetching patient diagnoses:', err);
+        this.patientDiagnoses.set([]);
+      },
+    });
+
+    this.apiService.getVitalsByPatient(patient.id).subscribe({
+      next: (v) => this.patientVitals.set(Array.isArray(v) ? v : []),
+      error: (err) => {
+        console.error('Error fetching patient vitals:', err);
+        this.patientVitals.set([]);
+      },
+    });
+
+    this.apiService.getPrescriptionsByPatient(patient.id).subscribe({
+      next: (rx) => this.patientRx.set(Array.isArray(rx) ? rx : []),
+      error: (err) => {
+        console.error('Error fetching patient prescriptions:', err);
+        this.patientRx.set([]);
+      },
+    });
+  }
+
+  openDirectory(): void {
+    this.patientContext.clearActivePatient();
+    this.selectedPatient.set(null);
+    this.viewMode.set('directory');
+  }
+
+  toggleRiskFilter(): void {
+    this.filterRisk.update((v) => !v);
+  }
+
+  setGenderFilter(val: string): void {
+    this.filterGender.set(val);
+  }
+
+  setBloodTypeFilter(val: string): void {
+    this.filterBloodType.set(val);
+  }
+
+  get displayedPatients(): Patient[] {
+    let list = this.filteredPatients();
+    if (this.filterRisk()) {
+      list = list.filter(
+        (p) =>
+          (p.medicalAlerts && p.medicalAlerts.trim().length > 0) ||
+          (p.foodAllergies && p.foodAllergies.trim().length > 0) ||
+          (p.seriousConditions && p.seriousConditions.trim().length > 0),
+      );
+    }
+    if (this.filterGender() !== 'ALL') {
+      list = list.filter((p) => p.gender?.toUpperCase() === this.filterGender().toUpperCase());
+    }
+    if (this.filterBloodType() !== 'ALL') {
+      list = list.filter((p) => p.bloodType === this.filterBloodType());
+    }
+    return list;
+  }
+
+  get totalPatientsCount(): number {
+    return this.patients().length;
+  }
+
+  get highRiskCount(): number {
+    return this.patients().filter(
+      (p) =>
+        (p.medicalAlerts && p.medicalAlerts.trim().length > 0) ||
+        (p.foodAllergies && p.foodAllergies.trim().length > 0) ||
+        (p.seriousConditions && p.seriousConditions.trim().length > 0),
+    ).length;
   }
 
   editPatientInput: Partial<Patient> = {};

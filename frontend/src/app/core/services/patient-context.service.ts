@@ -46,16 +46,10 @@ export class PatientContextService {
         next: (patients) => {
           this.patientList.set(patients);
           const current = this.activePatient();
-          // Retain currently selected patient if still in list, else default to first
+          // Retain currently selected patient if still in list
           if (current) {
             const found = patients.find((p) => p.id === current.id);
-            if (found) {
-              this.activePatient.set(found);
-            } else if (patients.length > 0) {
-              this.activePatient.set(patients[0]);
-            }
-          } else if (patients.length > 0) {
-            this.activePatient.set(patients[0]);
+            this.activePatient.set(found || null);
           }
           this.loading.set(false);
         },
@@ -67,16 +61,25 @@ export class PatientContextService {
     }
   }
 
-  setActivePatient(patient: Patient): void {
+  setActivePatient(patient: Patient | null): void {
     this.activePatient.set(patient);
   }
 
-  selectPatientById(id: number): void {
-    const found = this.patientList().find((p) => p.id === Number(id));
+  clearActivePatient(): void {
+    this.activePatient.set(null);
+  }
+
+  selectPatientById(id: number | string | null): void {
+    if (!id) {
+      this.activePatient.set(null);
+      return;
+    }
+    const numericId = Number(id);
+    const found = this.patientList().find((p) => p.id === numericId);
     if (found) {
       this.activePatient.set(found);
     } else {
-      this.apiService.getPatientById(id).subscribe((p) => this.activePatient.set(p));
+      this.apiService.getPatientById(numericId).subscribe((p) => this.activePatient.set(p));
     }
   }
 

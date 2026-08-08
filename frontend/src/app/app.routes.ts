@@ -28,6 +28,13 @@ export const routes: Routes = [
     data: { roles: ['ROLE_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE', 'ROLE_AUDITOR', 'ROLE_PATIENT'] },
   },
   {
+    path: 'profile',
+    loadComponent: () =>
+      import('./components/profile/profile.component').then((m) => m.ProfileComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ROLE_PATIENT', 'ROLE_DOCTOR', 'ROLE_NURSE', 'ROLE_ADMIN'] },
+  },
+  {
     path: 'encounters',
     loadComponent: () =>
       import('./components/encounters/encounters.component').then((m) => m.EncountersComponent),
@@ -101,7 +108,8 @@ export const routes: Routes = [
       import('./components/fhir-explorer/fhir-explorer.component').then(
         (m) => m.FhirExplorerComponent,
       ),
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ROLE_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE', 'ROLE_AUDITOR'] },
   },
   {
     path: 'privacy-policy',

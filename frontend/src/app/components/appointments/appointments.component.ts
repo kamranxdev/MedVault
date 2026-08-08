@@ -37,6 +37,11 @@ import {
   lucideInfo,
   lucideUser,
   lucideClock,
+  lucideSearch,
+  lucideVideo,
+  lucideChevronRight,
+  lucideChevronLeft,
+  lucideCheck,
 } from '@ng-icons/lucide';
 import {
   Appointment,
@@ -93,6 +98,11 @@ import {
       lucideInfo,
       lucideUser,
       lucideClock,
+      lucideSearch,
+      lucideVideo,
+      lucideChevronRight,
+      lucideChevronLeft,
+      lucideCheck,
     }),
   ],
   templateUrl: './appointments.component.html',
@@ -115,7 +125,7 @@ export class AppointmentsComponent implements OnInit {
   activeAppointment = signal<Appointment | null>(null);
   activeTab = signal<'receptionist' | 'nurse' | 'doctor' | 'billing' | 'notes'>('receptionist');
 
-  // Schedule modal state
+  // Schedule modal & wizard state
   newApt = {
     patientId: 0,
     doctorId: 0,
@@ -125,6 +135,24 @@ export class AppointmentsComponent implements OnInit {
   };
 
   currentPatientId = 0;
+
+  // --- INTERACTIVE SCHEDULE WIZARD STATE ---
+  scheduleStep = signal<number>(1);
+  visitType = signal<'IN_PERSON' | 'TELEHEALTH' | 'FOLLOW_UP'>('IN_PERSON');
+  allPatients = signal<Patient[]>([]);
+  patientSearchQuery = signal<string>('');
+  selectedPatient = signal<Patient | null>(null);
+  selectedSlot = signal<string | null>(null);
+  showDoctorFilterAll = signal<boolean>(false);
+  symptomChips = [
+    '🫀 Cardiac / BP Review',
+    '🫁 Respiratory / Cough',
+    '🩸 Diabetes / Metabolic',
+    '🦴 Joint / Back Pain',
+    '🧠 Headache / Migraine',
+    '🩺 Routine Physical',
+    '🩹 Rash / Skin Check',
+  ];
 
   // --- RECEPTIONIST INTAKE STATE ---
   receptionistForm = {
@@ -237,6 +265,7 @@ export class AppointmentsComponent implements OnInit {
 
   ngOnInit(): void {
     this.apiService.getDoctors().subscribe((d) => this.doctors.set(d));
+    this.apiService.getPatients().subscribe((pts) => this.allPatients.set(pts));
 
     if (this.isPatient()) {
       const u = this.authService.currentUser();
@@ -245,6 +274,7 @@ export class AppointmentsComponent implements OnInit {
           if (p) {
             this.currentPatientId = p.id;
             this.newApt.patientId = p.id;
+            this.selectedPatient.set(p);
             this.loadAppointments(p.id);
           }
         });
@@ -277,19 +307,91 @@ export class AppointmentsComponent implements OnInit {
   }
 
   openScheduleModal(): void {
+    this.scheduleStep.set(1);
+    this.selectedSlot.set(null);
+    this.patientSearchQuery.set('');
+    this.showDoctorFilterAll.set(false);
+
     if (this.isPatient()) {
       this.newApt.patientId = this.currentPatientId;
     } else {
       const active = this.patientContext.activePatient();
-      const list = this.patientContext.patientList();
+      const list = this.allPatients();
       if (active) {
         this.newApt.patientId = active.id;
+        this.selectedPatient.set(active);
+        this.patientSearchQuery.set(active.fullName);
       } else if (list.length > 0) {
         this.newApt.patientId = list[0].id;
+        this.selectedPatient.set(list[0]);
+        this.patientSearchQuery.set(list[0].fullName);
       }
     }
+
+    // Set default tomorrow datetime
+    const tmr = new Date();
+    tmr.setDate(tmr.getDate() + 1);
+    tmr.setHours(9, 30, 0, 0);
+    this.newApt.appointmentDate = tmr.toISOString().slice(0, 16);
+
     this.showModal.set(true);
     this.fetchDoctorRecommendations();
+  }
+
+  get filteredPatientsList(): Patient[] {
+    const q = this.patientSearchQuery().toLowerCase().trim();
+    const list = this.allPatients();
+    if (!q) return list.slice(0, 5);
+    return list
+      .filter(
+        (p) =>
+          p.fullName.toLowerCase().includes(q) ||
+          p.patientCode.toLowerCase().includes(q) ||
+          (p.dateOfBirth && p.dateOfBirth.includes(q)),
+      )
+      .slice(0, 6);
+  }
+
+  selectPatient(p: Patient): void {
+    this.selectedPatient.set(p);
+    this.newApt.patientId = p.id;
+    this.patientSearchQuery.set(p.fullName);
+    this.fetchDoctorRecommendations();
+  }
+
+  selectSymptomTag(tag: string): void {
+    const cleanTag = tag.replace(/^[^\w\s]+/, '').trim();
+    if (!this.newApt.reason) {
+      this.newApt.reason = cleanTag;
+    } else if (!this.newApt.reason.includes(cleanTag)) {
+      this.newApt.reason += ' • ' + cleanTag;
+    }
+    this.fetchDoctorRecommendations();
+  }
+
+  selectTimeSlot(slotStr: string): void {
+    this.selectedSlot.set(slotStr);
+    const match = slotStr.match(/(\d{2}):(\d{2})\s*(AM|PM)/i);
+    let hours = 9;
+    let minutes = 30;
+    if (match) {
+      hours = parseInt(match[1], 10);
+      minutes = parseInt(match[2], 10);
+      const ampm = match[3].toUpperCase();
+      if (ampm === 'PM' && hours < 12) hours += 12;
+      if (ampm === 'AM' && hours === 12) hours = 0;
+    }
+    let datePart = this.newApt.appointmentDate
+      ? this.newApt.appointmentDate.split('T')[0]
+      : '';
+    if (!datePart) {
+      const tmr = new Date();
+      tmr.setDate(tmr.getDate() + 1);
+      datePart = tmr.toISOString().split('T')[0];
+    }
+    const hStr = hours < 10 ? '0' + hours : '' + hours;
+    const mStr = minutes < 10 ? '0' + minutes : '' + minutes;
+    this.newApt.appointmentDate = `${datePart}T${hStr}:${mStr}`;
   }
 
   onPatientOrReasonChange(): void {
@@ -298,11 +400,18 @@ export class AppointmentsComponent implements OnInit {
 
   fetchDoctorRecommendations(): void {
     this.apiService
-      .getRecommendedDoctors(this.newApt.patientId || undefined, this.newApt.reason || undefined)
+      .getRecommendedDoctors(
+        this.newApt.patientId || undefined,
+        this.newApt.reason || undefined,
+      )
       .subscribe({
         next: (recs) => {
           this.recommendedDoctors.set(recs);
-          if (recs && recs.length > 0 && (!this.newApt.doctorId || this.newApt.doctorId === 0)) {
+          if (
+            recs &&
+            recs.length > 0 &&
+            (!this.newApt.doctorId || this.newApt.doctorId === 0)
+          ) {
             this.newApt.doctorId = recs[0].doctor.id;
           }
         },
@@ -311,6 +420,77 @@ export class AppointmentsComponent implements OnInit {
 
   selectRecommendedDoctor(docId: number): void {
     this.newApt.doctorId = docId;
+  }
+
+  getTriageLevel(): string {
+    const recs = this.recommendedDoctors();
+    if (recs && recs.length > 0 && recs[0].triageRiskLevel) {
+      return recs[0].triageRiskLevel;
+    }
+    const r = (this.newApt.reason || '').toUpperCase();
+    if (
+      r.includes('CHEST PAIN') ||
+      r.includes('STROKE') ||
+      r.includes('BREATH') ||
+      r.includes('ANAPHYLAXIS')
+    )
+      return 'EMERGENT';
+    if (
+      r.includes('FEVER') ||
+      r.includes('ASTHMA') ||
+      r.includes('PAIN') ||
+      r.includes('FRACTURE')
+    )
+      return 'URGENT';
+    return 'ROUTINE';
+  }
+
+  getTriageSummary(): string {
+    const recs = this.recommendedDoctors();
+    if (recs && recs.length > 0 && recs[0].triageSummary) {
+      return recs[0].triageSummary;
+    }
+    const level = this.getTriageLevel();
+    if (level === 'EMERGENT')
+      return 'Critical symptoms flagged in chief complaint. Priority same-day consultation recommended.';
+    if (level === 'URGENT')
+      return 'Moderate clinical urgency. Early consultation suggested within 24-48 hours.';
+    return 'Standard routine consultation. Normal scheduling slots assigned.';
+  }
+
+  getSelectedDoctor(): User | undefined {
+    return this.doctors().find((d) => d.id === Number(this.newApt.doctorId));
+  }
+
+  getTopDoctorRecommendation(): DoctorRecommendationDTO | undefined {
+    return (
+      this.recommendedDoctors().find(
+        (r) => r.doctor.id === Number(this.newApt.doctorId),
+      ) || this.recommendedDoctors()[0]
+    );
+  }
+
+  nextScheduleStep(): void {
+    if (this.scheduleStep() === 1) {
+      if (!this.newApt.patientId) return;
+      if (!this.newApt.reason) {
+        this.newApt.reason = 'General Consultation & Health Evaluation';
+      }
+      this.fetchDoctorRecommendations();
+      this.scheduleStep.set(2);
+    } else if (this.scheduleStep() === 2) {
+      if (!this.newApt.doctorId) return;
+      this.scheduleStep.set(3);
+    } else if (this.scheduleStep() === 3) {
+      if (!this.newApt.appointmentDate) return;
+      this.scheduleStep.set(4);
+    }
+  }
+
+  prevScheduleStep(): void {
+    if (this.scheduleStep() > 1) {
+      this.scheduleStep.set(this.scheduleStep() - 1);
+    }
   }
 
   saveAppointment(): void {
@@ -327,7 +507,9 @@ export class AppointmentsComponent implements OnInit {
         patient: { id: Number(this.newApt.patientId) } as Patient,
         doctor: { id: Number(this.newApt.doctorId) } as User,
         appointmentDate: this.newApt.appointmentDate as any,
-        reason: this.newApt.reason,
+        reason:
+          this.newApt.reason +
+          (this.visitType() === 'TELEHEALTH' ? ' (Virtual Telehealth)' : ''),
         notes: this.newApt.notes,
         status: 'SCHEDULED',
         stage: 'SCHEDULED',
@@ -335,7 +517,14 @@ export class AppointmentsComponent implements OnInit {
       .subscribe({
         next: () => {
           this.showModal.set(false);
-          this.newApt = { patientId: 0, doctorId: 0, appointmentDate: '', reason: '', notes: '' };
+          this.newApt = {
+            patientId: 0,
+            doctorId: 0,
+            appointmentDate: '',
+            reason: '',
+            notes: '',
+          };
+          this.selectedPatient.set(null);
           this.refreshList();
         },
       });
@@ -376,6 +565,14 @@ export class AppointmentsComponent implements OnInit {
     this.apiService.getAppointmentNotes(aptId).subscribe((n) => this.appointmentNotes.set(n));
     this.apiService.getLabOrders(aptId).subscribe((l) => this.labOrdersList.set(l));
     this.apiService.getBillingDetails(aptId).subscribe((b) => this.appointmentBilling.set(b));
+    const apt = this.activeAppointment();
+    if (apt && apt.patient && apt.patient.id) {
+      this.apiService.getPrescriptionsByPatient(apt.patient.id).subscribe((p) => {
+        if (p && p.length > 0) {
+          this.prescriptionsList.set(p);
+        }
+      });
+    }
   }
 
   // --- RECEPTIONIST CHECK-IN SUBMIT ---
@@ -688,6 +885,14 @@ export class AppointmentsComponent implements OnInit {
   }
 
   openPrintModal(): void {
+    const apt = this.activeAppointment();
+    if (apt && apt.patient && apt.patient.id) {
+      this.apiService.getPrescriptionsByPatient(apt.patient.id).subscribe((p) => {
+        if (p && p.length > 0) {
+          this.prescriptionsList.set(p);
+        }
+      });
+    }
     this.showPrintModal.set(true);
   }
 

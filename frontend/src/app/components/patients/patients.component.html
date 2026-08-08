@@ -1,56 +1,350 @@
 <div class="space-y-6">
-  <!-- MPI Header -->
-  <div *hasAnyRole="['ROLE_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE', 'ROLE_AUDITOR']" class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-border">
-    <div>
-      <h1 class="text-xl font-semibold tracking-tight text-foreground">Master Patient Index (MPI)</h1>
-      <p class="text-xs text-muted-foreground mt-0.5">FHIR R4 Enterprise Health Record Directory</p>
-    </div>
-    <div class="flex gap-3 items-center">
-      <input
-        hlmInput
-        type="text"
-        [(ngModel)]="searchQuery"
-        (input)="executeMpiSearch()"
-        placeholder="Search MPI..."
-        class="w-64 h-9 text-xs" />
+  <!-- MPI DIRECTORY VIEW (For Clinicians / Staff when no patient is open or directory mode is active) -->
+  <div *ngIf="!authService.hasRole('ROLE_PATIENT') && (viewMode() === 'directory' || !selectedPatient())" class="space-y-6">
+    <!-- MPI Header & Actions -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-border">
+      <div>
+        <h1 class="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+          <span>Master Patient Index (MPI)</span>
+          <span hlmBadge variant="outline" class="text-xs font-mono font-normal">FHIR R4 Enterprise Registry</span>
+        </h1>
+        <p class="text-xs text-muted-foreground mt-1">
+          Search, filter, and access standardized electronic health records across the enterprise health system.
+        </p>
+      </div>
 
-      <button
-        *hasRole="'ROLE_ADMIN'"
-        hlmBtn
-        variant="default"
-        size="sm"
-        (click)="showIntakeModal.set(true)"
-        class="gap-1.5">
-        <ng-icon name="lucideUserPlus" size="15" />
-        <span>Intake Patient</span>
-      </button>
+      <div class="flex gap-3 items-center">
+        <button
+          *hasRole="'ROLE_ADMIN'"
+          hlmBtn
+          variant="default"
+          size="sm"
+          (click)="openIntakeModal()"
+          class="gap-1.5 font-medium shadow-sm">
+          <ng-icon name="lucideUserPlus" size="15" />
+          <span>Intake New Patient</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- MPI Executive Summary Metric Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="p-4 rounded-xl border border-border bg-card flex items-center justify-between shadow-xs">
+        <div class="space-y-1">
+          <span class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Total MPI Directory</span>
+          <div class="text-2xl font-bold text-foreground font-mono">{{ totalPatientsCount }}</div>
+          <span class="text-[10px] text-muted-foreground">Active Patient Records</span>
+        </div>
+        <div class="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+          <ng-icon name="lucideUsers" size="20" />
+        </div>
+      </div>
+
+      <div class="p-4 rounded-xl border border-border bg-card flex items-center justify-between shadow-xs">
+        <div class="space-y-1">
+          <span class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">High Risk & Alerts</span>
+          <div class="text-2xl font-bold text-destructive font-mono">{{ highRiskCount }}</div>
+          <span class="text-[10px] text-destructive/80 font-medium">Critical Allergies / Alerts</span>
+        </div>
+        <div class="size-10 rounded-lg bg-destructive/10 text-destructive flex items-center justify-center shrink-0">
+          <ng-icon name="lucideTriangleAlert" size="20" />
+        </div>
+      </div>
+
+      <div class="p-4 rounded-xl border border-border bg-card flex items-center justify-between shadow-xs">
+        <div class="space-y-1">
+          <span class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">FHIR Interoperability</span>
+          <div class="text-2xl font-bold text-emerald-600 dark:text-emerald-400 font-mono">100%</div>
+          <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">Standardized R4 Bundles</span>
+        </div>
+        <div class="size-10 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+          <ng-icon name="lucideShieldCheck" size="20" />
+        </div>
+      </div>
+
+      <div class="p-4 rounded-xl border border-border bg-card flex items-center justify-between shadow-xs">
+        <div class="space-y-1">
+          <span class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Recent Intakes</span>
+          <div class="text-2xl font-bold text-foreground font-mono">{{ patients().length > 0 ? patients().length : 0 }}</div>
+          <span class="text-[10px] text-muted-foreground">Registered in Census</span>
+        </div>
+        <div class="size-10 rounded-lg bg-accent text-foreground flex items-center justify-center shrink-0">
+          <ng-icon name="lucideActivity" size="20" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Search & Filter Controls Toolbar -->
+    <div class="p-4 rounded-xl border border-border bg-card space-y-3 shadow-xs">
+      <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+        <!-- Main Search Bar -->
+        <div class="relative flex-1">
+          <ng-icon name="lucideSearch" size="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <input
+            hlmInput
+            type="text"
+            [(ngModel)]="searchQuery"
+            (input)="executeMpiSearch()"
+            placeholder="Search by Patient Name, MRN Code, SSN, or Phone..."
+            class="pl-9 h-10 w-full text-xs bg-background" />
+        </div>
+
+        <!-- Filters Group -->
+        <div class="flex flex-wrap items-center gap-2">
+          <!-- Gender filter pills -->
+          <div class="flex items-center rounded-lg border border-border p-0.5 bg-muted/30">
+            <button
+              hlmBtn
+              [variant]="filterGender() === 'ALL' ? 'secondary' : 'ghost'"
+              size="xs"
+              (click)="setGenderFilter('ALL')"
+              class="text-[11px] px-2.5 py-1">
+              All
+            </button>
+            <button
+              hlmBtn
+              [variant]="filterGender() === 'MALE' ? 'secondary' : 'ghost'"
+              size="xs"
+              (click)="setGenderFilter('MALE')"
+              class="text-[11px] px-2.5 py-1">
+              Male
+            </button>
+            <button
+              hlmBtn
+              [variant]="filterGender() === 'FEMALE' ? 'secondary' : 'ghost'"
+              size="xs"
+              (click)="setGenderFilter('FEMALE')"
+              class="text-[11px] px-2.5 py-1">
+              Female
+            </button>
+          </div>
+
+          <!-- Risk filter toggle button -->
+          <button
+            hlmBtn
+            [variant]="filterRisk() ? 'destructive' : 'outline'"
+            size="sm"
+            (click)="toggleRiskFilter()"
+            class="h-9 gap-1.5 text-xs">
+            <ng-icon name="lucideTriangleAlert" size="14" />
+            <span>High Risk / Alerts</span>
+          </button>
+
+          <!-- Blood type selector -->
+          <select
+            hlmInput
+            [ngModel]="filterBloodType()"
+            (ngModelChange)="setBloodTypeFilter($event)"
+            class="h-9 text-xs min-w-[120px] bg-background">
+            <option value="ALL">All Blood Types</option>
+            <option value="O+">O+</option>
+            <option value="A+">A+</option>
+            <option value="B+">B+</option>
+            <option value="AB+">AB+</option>
+            <option value="O-">O-</option>
+            <option value="A-">A-</option>
+            <option value="B-">B-</option>
+            <option value="AB-">AB-</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between text-[11px] text-muted-foreground pt-1 border-t border-border/50">
+        <span>Showing <strong>{{ displayedPatients.length }}</strong> of <strong>{{ patients().length }}</strong> registered patients</span>
+        <span *ngIf="searchQuery || filterRisk() || filterGender() !== 'ALL' || filterBloodType() !== 'ALL'"
+              (click)="searchQuery = ''; filterRisk.set(false); filterGender.set('ALL'); filterBloodType.set('ALL'); executeMpiSearch()"
+              class="text-primary hover:underline cursor-pointer font-medium">
+          Reset Filters
+        </span>
+      </div>
+    </div>
+
+    <!-- Enterprise Master Patient Index Directory Table -->
+    <div class="rounded-xl border border-border bg-card overflow-hidden shadow-xs">
+      <div class="overflow-x-auto">
+        <table hlmTable class="w-full text-xs">
+          <thead hlmTableHeader>
+            <tr hlmTableRow class="bg-muted/50 border-b border-border">
+              <th hlmTableHead class="py-3 px-4 text-left">Patient Demographics</th>
+              <th hlmTableHead class="py-3 px-4 text-left">MRN Code</th>
+              <th hlmTableHead class="py-3 px-4 text-left">DOB / Gender</th>
+              <th hlmTableHead class="py-3 px-4 text-left">Blood Group</th>
+              <th hlmTableHead class="py-3 px-4 text-left">Contact Info</th>
+              <th hlmTableHead class="py-3 px-4 text-left">Insurance Coverage</th>
+              <th hlmTableHead class="py-3 px-4 text-left">Alerts & Safety</th>
+              <th hlmTableHead class="py-3 px-4 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody hlmTableBody class="divide-y divide-border">
+            <tr *ngFor="let p of displayedPatients" hlmTableRow class="hover:bg-muted/40 transition-colors group">
+              <!-- Patient Demographics -->
+              <td hlmTableCell class="py-3 px-4">
+                <div class="flex items-center gap-3">
+                  <div class="size-10 rounded-full bg-primary/10 text-primary font-bold text-sm flex items-center justify-center shrink-0 border border-primary/20">
+                    {{ p.fullName.charAt(0) }}
+                  </div>
+                  <div>
+                    <span class="font-semibold text-foreground text-sm block group-hover:text-primary transition-colors cursor-pointer"
+                          (click)="selectPatient(p)">
+                      {{ p.fullName }}
+                    </span>
+                    <span class="text-[11px] text-muted-foreground block font-mono">SSN: {{ p.ssn || 'XXX-XX-XXXX' }}</span>
+                  </div>
+                </div>
+              </td>
+
+              <!-- MRN Code -->
+              <td hlmTableCell class="py-3 px-4">
+                <span hlmBadge variant="outline" class="font-mono text-[11px] bg-background">
+                  {{ p.patientCode }}
+                </span>
+              </td>
+
+              <!-- DOB / Gender -->
+              <td hlmTableCell class="py-3 px-4">
+                <div class="space-y-0.5">
+                  <span class="font-medium text-foreground block">{{ p.dateOfBirth }}</span>
+                  <span class="text-muted-foreground text-[11px] block">{{ p.gender }}</span>
+                </div>
+              </td>
+
+              <!-- Blood Group -->
+              <td hlmTableCell class="py-3 px-4">
+                <span hlmBadge [variant]="p.bloodType.includes('-') ? 'destructive' : 'secondary'" class="text-[10px] font-bold">
+                  {{ p.bloodType || 'N/A' }}
+                </span>
+              </td>
+
+              <!-- Contact Info -->
+              <td hlmTableCell class="py-3 px-4">
+                <div class="space-y-0.5 text-[11px]">
+                  <div class="text-foreground font-medium">{{ p.phone || 'No phone' }}</div>
+                  <div class="text-muted-foreground truncate max-w-[150px]">{{ p.email || 'No email' }}</div>
+                </div>
+              </td>
+
+              <!-- Insurance Coverage -->
+              <td hlmTableCell class="py-3 px-4">
+                <div class="space-y-0.5">
+                  <span class="font-medium text-foreground block text-[11px]">{{ p.insuranceProvider || 'Self-Pay' }}</span>
+                  <span class="text-muted-foreground font-mono text-[10px] block">{{ p.insurancePolicyNumber || 'N/A' }}</span>
+                </div>
+              </td>
+
+              <!-- Alerts & Safety -->
+              <td hlmTableCell class="py-3 px-4">
+                <div *ngIf="p.medicalAlerts || p.foodAllergies || p.seriousConditions" class="flex flex-col gap-1">
+                  <span hlmBadge variant="destructive" class="text-[10px] font-semibold max-w-[140px] truncate">
+                    <ng-icon name="lucideTriangleAlert" size="11" class="mr-1 inline" />
+                    {{ p.medicalAlerts || p.seriousConditions || p.foodAllergies }}
+                  </span>
+                </div>
+                <div *ngIf="!p.medicalAlerts && !p.foodAllergies && !p.seriousConditions">
+                  <span hlmBadge variant="outline" class="text-[10px] text-muted-foreground">Standard Risk</span>
+                </div>
+              </td>
+
+              <!-- Actions -->
+              <td hlmTableCell class="py-3 px-4 text-right">
+                <div class="flex items-center justify-end gap-1.5">
+                  <button
+                    hlmBtn
+                    variant="default"
+                    size="sm"
+                    (click)="selectPatient(p)"
+                    class="h-8 text-xs px-3 gap-1 font-semibold">
+                    <span>Open Chart</span>
+                    <ng-icon name="lucideChevronRight" size="14" />
+                  </button>
+                  <button
+                    *hasAnyRole="['ROLE_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE']"
+                    hlmBtn
+                    variant="ghost"
+                    size="icon"
+                    (click)="selectPatient(p); openEditPatientModal()"
+                    title="Edit Patient Details"
+                    class="size-8">
+                    <ng-icon name="lucideUserRound" size="14" />
+                  </button>
+                  <button
+                    hlmBtn
+                    variant="ghost"
+                    size="icon"
+                    (click)="downloadFhirBundle(p.id, p.fullName)"
+                    title="Export FHIR R4 Bundle"
+                    class="size-8 text-primary">
+                    <ng-icon name="lucideShieldCheck" size="14" />
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Empty Directory State -->
+            <tr *ngIf="displayedPatients.length === 0" hlmTableRow>
+              <td colspan="8" hlmTableCell class="py-12 text-center">
+                <div class="flex flex-col items-center justify-center space-y-3 max-w-md mx-auto">
+                  <div class="size-12 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
+                    <ng-icon name="lucideSearch" size="24" />
+                  </div>
+                  <h3 class="text-base font-semibold text-foreground m-0">No Patient Records Found</h3>
+                  <p class="text-xs text-muted-foreground text-center m-0">
+                    No patients matched your search query or active filter criteria. Try adjusting your query or resetting filters.
+                  </p>
+                  <button
+                    hlmBtn
+                    variant="outline"
+                    size="sm"
+                    (click)="searchQuery = ''; filterRisk.set(false); filterGender.set('ALL'); filterBloodType.set('ALL'); executeMpiSearch()"
+                    class="mt-2 text-xs">
+                    Clear Search & Filters
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
-  <!-- Patient Selector Bar -->
-  <div *hasAnyRole="['ROLE_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE', 'ROLE_AUDITOR']" class="flex overflow-x-auto gap-2.5 pb-1">
-    <div
-      *ngFor="let p of filteredPatients()"
-      (click)="selectPatient(p)"
-      class="flex items-center gap-3 p-3 rounded-lg border cursor-pointer min-w-56 transition-colors"
-      [class.bg-accent]="selectedPatient()?.id === p.id"
-      [class.text-accent-foreground]="selectedPatient()?.id === p.id"
-      [class.border-border]="selectedPatient()?.id === p.id"
-      [class.bg-card]="selectedPatient()?.id !== p.id">
+  <!-- PATIENT CLINICAL CHART VIEW (When viewing a specific patient chart) -->
+  <div *ngIf="selectedPatient() as p" [class.hidden]="!authService.hasRole('ROLE_PATIENT') && viewMode() === 'directory'" class="space-y-6">
+    <!-- Chart Header & Navigation Toolbar -->
+    <div *ngIf="!authService.hasRole('ROLE_PATIENT')" class="p-3 rounded-xl border border-border bg-card flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+      <div class="flex items-center gap-3">
+        <button
+          hlmBtn
+          variant="outline"
+          size="sm"
+          (click)="openDirectory()"
+          class="gap-1.5 text-xs font-semibold hover:bg-accent border-border">
+          <ng-icon name="lucideArrowLeft" size="15" />
+          <span>Back to MPI Directory</span>
+        </button>
 
-      <div class="size-8 rounded-full bg-primary/10 text-primary font-semibold text-xs flex items-center justify-center shrink-0">
-        {{ p.fullName.charAt(0) }}
+        <span class="text-border hidden sm:inline">|</span>
+
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-muted-foreground hidden lg:inline">Viewing Chart:</span>
+          <span class="font-bold text-sm text-foreground">{{ p.fullName }}</span>
+          <span hlmBadge variant="outline" class="font-mono text-[10px]">MRN: {{ p.patientCode }}</span>
+        </div>
       </div>
 
-      <div class="flex flex-col overflow-hidden">
-        <span class="font-medium text-xs truncate">{{ p.fullName }}</span>
-        <span class="text-[11px] text-muted-foreground font-mono">MRN: {{ p.patientCode }}</span>
+      <!-- Quick Switch Patient Dropdown in Chart view -->
+      <div class="flex items-center gap-2 w-full sm:w-auto">
+        <span class="text-xs text-muted-foreground shrink-0 hidden md:inline">Switch Patient:</span>
+        <select
+          hlmInput
+          [ngModel]="p.id"
+          (ngModelChange)="patientContext.selectPatientById($event)"
+          class="h-8 text-xs min-w-[200px] w-full sm:w-auto bg-background">
+          <option *ngFor="let opt of patients()" [value]="opt.id">
+            {{ opt.fullName }} (MRN: {{ opt.patientCode }})
+          </option>
+        </select>
       </div>
     </div>
-  </div>
-
-  <!-- Patient Chart Details -->
-  <div *ngIf="selectedPatient() as p" class="space-y-6">
     <!-- Patient Onboarding Completeness Alert Banner -->
     <div *ngIf="authService.hasRole('ROLE_PATIENT') && (!p.phone || !p.address || !p.emergencyContact || !p.insuranceProvider)" 
          class="p-4 rounded-xl border border-primary/30 bg-primary/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -63,9 +357,9 @@
           <span class="text-muted-foreground block">Your profile is missing basic contact, emergency contact, or insurance details. Complete your profile onboarding below.</span>
         </div>
       </div>
-      <button hlmBtn variant="default" size="sm" (click)="openEditPatientModal()" class="shrink-0 gap-1.5 text-xs">
+      <a routerLink="/profile" hlmBtn variant="default" size="sm" class="shrink-0 gap-1.5 text-xs">
         <ng-icon name="lucideUserPlus" size="14" /> Complete Onboarding Profile
-      </button>
+      </a>
     </div>
 
     <div class="p-6 rounded-xl border border-border bg-card space-y-4">
@@ -176,347 +470,365 @@
         </button>
       </div>
 
-      <!-- TAB 1: SUMMARY -->
-      <div *ngIf="chartTab() === 'summary'" class="space-y-4">
-        <!-- Longitudinal Patient Health History & Habits Card -->
-        <div class="p-4 rounded-lg border border-primary/20 bg-primary/5 space-y-3">
-          <div class="flex justify-between items-center border-b border-primary/20 pb-2">
-            <h3 class="text-xs font-semibold text-primary uppercase tracking-wide flex items-center gap-1.5">
-              <ng-icon name="lucideActivity" size="14" /> Longitudinal Health History, Habits & Food Allergies Profile
-            </h3>
-            <div class="flex items-center gap-2">
-              <button
-                *ngIf="authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE', 'ROLE_PATIENT'])"
-                hlmBtn
-                variant="outline"
-                size="sm"
-                (click)="openEditPatientModal()"
-                class="h-6 text-[10px] px-2 gap-1 border-primary/30 text-primary hover:bg-primary/10">
-                Edit Profile & Habits
+      <!-- Chart Tab Contents -->
+      @switch (chartTab()) {
+        @case ('summary') {
+          <div class="space-y-4">
+            <!-- Longitudinal Patient Health History & Habits Card -->
+            <div class="p-4 rounded-lg border border-primary/20 bg-primary/5 space-y-3">
+              <div class="flex justify-between items-center border-b border-primary/20 pb-2">
+                <h3 class="text-xs font-semibold text-primary uppercase tracking-wide flex items-center gap-1.5">
+                  <ng-icon name="lucideActivity" size="14" /> Longitudinal Health History, Habits & Food Allergies Profile
+                </h3>
+                <div class="flex items-center gap-2">
+                  <a
+                    *ngIf="authService.hasRole('ROLE_PATIENT')"
+                    routerLink="/profile"
+                    hlmBtn
+                    variant="outline"
+                    size="sm"
+                    class="h-6 text-[10px] px-2 gap-1 border-primary/30 text-primary hover:bg-primary/10">
+                    Manage My Profile
+                  </a>
+                  <button
+                    *ngIf="!authService.hasRole('ROLE_PATIENT') && authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE'])"
+                    hlmBtn
+                    variant="outline"
+                    size="sm"
+                    (click)="openEditPatientModal()"
+                    class="h-6 text-[10px] px-2 gap-1 border-primary/30 text-primary hover:bg-primary/10">
+                    Edit Profile & Habits
+                  </button>
+                  <span hlmBadge variant="outline" class="text-[10px] bg-background">EHR Verified Profile</span>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                <!-- Basic Habits & Food Allergies -->
+                <div class="p-3 border border-border rounded-lg bg-card space-y-2">
+                  <span class="font-semibold text-foreground block text-[11px] uppercase text-muted-foreground">Patient Basic Habits & Food Allergies</span>
+                  <div class="flex flex-wrap gap-1.5 items-center">
+                    <span class="text-muted-foreground font-medium">Food Allergies:</span>
+                    <span hlmBadge variant="destructive" class="text-[10px] font-semibold">
+                      {{ p.foodAllergies || 'No known food allergies' }}
+                    </span>
+                  </div>
+                  <div class="grid grid-cols-2 gap-2 pt-1 text-[11px]">
+                    <div><span class="text-muted-foreground">Dietary Habits:</span> <strong class="text-foreground font-semibold block">{{ p.dietaryHabits || 'Standard Diet' }}</strong></div>
+                    <div><span class="text-muted-foreground">Smoking Status:</span> <strong class="text-foreground font-semibold block">{{ p.smokingStatus || 'Never' }}</strong></div>
+                    <div><span class="text-muted-foreground">Alcohol:</span> <strong class="text-foreground font-semibold block">{{ p.alcoholConsumption || 'None/Occasional' }}</strong></div>
+                    <div><span class="text-muted-foreground">Exercise:</span> <strong class="text-foreground font-semibold block">{{ p.exerciseRoutine || 'Moderate' }}</strong></div>
+                  </div>
+                </div>
+
+                <!-- Longitudinal Conditions & Surgeries -->
+                <div class="p-3 border border-border rounded-lg bg-card space-y-2">
+                  <span class="font-semibold text-foreground block text-[11px] uppercase text-muted-foreground">Longitudinal Medical History</span>
+                  <div class="space-y-1 text-[11px]">
+                    <div>
+                      <span class="text-muted-foreground font-medium">Previous Illnesses & Diagnoses:</span>
+                      <p class="text-foreground font-semibold m-0 mt-0.5">{{ p.pastMedicalHistory || 'No documented previous major illnesses' }}</p>
+                    </div>
+                    <div>
+                      <span class="text-muted-foreground font-medium">Serious Conditions / Alerts:</span>
+                      <p class="text-destructive font-semibold m-0 mt-0.5">{{ p.seriousConditions || p.medicalAlerts || 'None documented' }}</p>
+                    </div>
+                    <div>
+                      <span class="text-muted-foreground font-medium">Past Surgeries & Procedures:</span>
+                      <p class="text-foreground font-semibold m-0 mt-0.5">{{ p.surgeriesAndProcedures || 'No prior surgeries' }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="p-4 rounded-lg border border-border bg-card space-y-3">
+                <div class="flex justify-between items-center border-b border-border pb-2">
+                  <h3 class="text-xs font-semibold text-foreground uppercase tracking-wide">Active Problem List</h3>
+                  <button *ngIf="authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_DOCTOR'])" hlmBtn variant="ghost" size="sm" class="h-6 text-[11px] px-2" (click)="showDiagnosisModal.set(true)">
+                    + Add Problem
+                  </button>
+                </div>
+                <div class="space-y-2">
+                  <div *ngFor="let d of patientDiagnoses()" class="p-3 border border-border rounded-lg bg-muted/30 flex justify-between items-center text-xs">
+                    <div>
+                      <span class="font-semibold text-foreground block">{{ d.conditionName }}</span>
+                      <span class="text-muted-foreground block text-[11px]">{{ d.notes }}</span>
+                    </div>
+                    <span hlmBadge variant="outline" class="font-mono text-[10px]">{{ d.icdCode }}</span>
+                  </div>
+                  <div *ngIf="patientDiagnoses().length === 0" class="p-3 rounded bg-muted/30 text-muted-foreground text-xs">No active diagnoses logged.</div>
+                </div>
+              </div>
+
+              <div class="p-4 rounded-lg border border-border bg-card space-y-3">
+                <div class="flex justify-between items-center border-b border-border pb-2">
+                  <h3 class="text-xs font-semibold text-foreground uppercase tracking-wide">Active eRx Prescriptions</h3>
+                  <button *ngIf="authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_DOCTOR'])" hlmBtn variant="ghost" size="sm" class="h-6 text-[11px] px-2" (click)="showRxModal.set(true)">
+                    + Order eRx
+                  </button>
+                </div>
+                <div class="space-y-2">
+                  <div *ngFor="let rx of patientRx()" class="p-3 border border-border rounded-lg bg-muted/30 flex justify-between items-center text-xs">
+                    <div>
+                      <span class="font-semibold text-foreground block">{{ rx.medicationName }}</span>
+                      <span class="text-muted-foreground block text-[11px]">{{ rx.dosage }} • {{ rx.frequency }} ({{ rx.route }})</span>
+                    </div>
+                    <span hlmBadge variant="secondary" class="text-[10px]">{{ rx.status }}</span>
+                  </div>
+                  <div *ngIf="patientRx().length === 0" class="p-3 rounded bg-muted/30 text-muted-foreground text-xs">No active prescriptions.</div>
+                </div>
+              </div>
+
+              <div class="p-4 rounded-lg border border-border bg-card space-y-3">
+                <div class="flex justify-between items-center border-b border-border pb-2">
+                  <h3 class="text-xs font-semibold text-foreground uppercase tracking-wide">Bedside Vitals Summary</h3>
+                  <button *ngIf="authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE'])" hlmBtn variant="ghost" size="sm" class="h-6 text-[11px] px-2" (click)="showVitalsModal.set(true)">
+                    + Log Vitals
+                  </button>
+                </div>
+                <div *ngIf="patientVitals().length > 0" class="grid grid-cols-3 gap-2 text-center text-xs">
+                  <div class="p-2.5 border border-border rounded-lg bg-muted/30">
+                    <span class="text-[10px] text-muted-foreground font-semibold block uppercase">Blood Pressure</span>
+                    <span class="font-semibold font-mono text-foreground text-sm block mt-0.5">{{ patientVitals()[0]?.bloodPressure }}</span>
+                  </div>
+                  <div class="p-2.5 border border-border rounded-lg bg-muted/30">
+                    <span class="text-[10px] text-muted-foreground font-semibold block uppercase">Heart Rate</span>
+                    <span class="font-semibold font-mono text-foreground text-sm block mt-0.5">{{ patientVitals()[0]?.heartRate }} bpm</span>
+                  </div>
+                  <div class="p-2.5 border border-border rounded-lg bg-muted/30">
+                    <span class="text-[10px] text-muted-foreground font-semibold block uppercase">BMI</span>
+                    <span class="font-semibold font-mono text-foreground text-sm block mt-0.5">{{ patientVitals()[0]?.bmi || '23.5' }}</span>
+                  </div>
+                </div>
+                <div *ngIf="patientVitals().length === 0" class="p-3 rounded bg-muted/30 text-muted-foreground text-xs">No vital signs recorded yet.</div>
+              </div>
+
+              <div class="p-4 rounded-lg border border-border bg-card space-y-3">
+                <div class="flex justify-between items-center border-b border-border pb-2">
+                  <h3 class="text-xs font-semibold text-foreground uppercase tracking-wide">Recent Encounters</h3>
+                  <button *ngIf="authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE'])" hlmBtn variant="ghost" size="sm" class="h-6 text-[11px] px-2" (click)="showEncounterModal.set(true)">
+                    + Log Visit
+                  </button>
+                </div>
+                <div class="space-y-2">
+                  <div *ngFor="let enc of patientEncounters().slice(0, 2)" class="p-3 border border-border rounded-lg bg-muted/30 space-y-1 text-xs">
+                    <div class="flex justify-between items-center">
+                      <span class="font-semibold text-foreground">{{ enc.encounterType }} Visit</span>
+                      <span class="text-[11px] text-muted-foreground">{{ enc.encounterDate | date:'shortDate' }}</span>
+                    </div>
+                    <span class="text-muted-foreground block text-[11px]">{{ enc.chiefComplaint }}</span>
+                  </div>
+                  <div *ngIf="patientEncounters().length === 0" class="p-3 rounded bg-muted/30 text-muted-foreground text-xs">No visits recorded.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        @case ('encounters') {
+          <div class="space-y-4">
+            <div class="flex justify-between items-center">
+              <h3 class="text-sm font-semibold text-foreground">Encounter Timeline</h3>
+              <button *ngIf="authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE'])" hlmBtn variant="default" size="sm" (click)="showEncounterModal.set(true)">
+                + Log Visit
               </button>
-              <span hlmBadge variant="outline" class="text-[10px] bg-background">EHR Verified Profile</span>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-            <!-- Basic Habits & Food Allergies -->
-            <div class="p-3 border border-border rounded-lg bg-card space-y-2">
-              <span class="font-semibold text-foreground block text-[11px] uppercase text-muted-foreground">Patient Basic Habits & Food Allergies</span>
-              <div class="flex flex-wrap gap-1.5 items-center">
-                <span class="text-muted-foreground font-medium">Food Allergies:</span>
-                <span hlmBadge variant="destructive" class="text-[10px] font-semibold">
-                  {{ p.foodAllergies || 'No known food allergies' }}
-                </span>
-              </div>
-              <div class="grid grid-cols-2 gap-2 pt-1 text-[11px]">
-                <div><span class="text-muted-foreground">Dietary Habits:</span> <strong class="text-foreground font-semibold block">{{ p.dietaryHabits || 'Standard Diet' }}</strong></div>
-                <div><span class="text-muted-foreground">Smoking Status:</span> <strong class="text-foreground font-semibold block">{{ p.smokingStatus || 'Never' }}</strong></div>
-                <div><span class="text-muted-foreground">Alcohol:</span> <strong class="text-foreground font-semibold block">{{ p.alcoholConsumption || 'None/Occasional' }}</strong></div>
-                <div><span class="text-muted-foreground">Exercise:</span> <strong class="text-foreground font-semibold block">{{ p.exerciseRoutine || 'Moderate' }}</strong></div>
-              </div>
             </div>
 
-            <!-- Longitudinal Conditions & Surgeries -->
-            <div class="p-3 border border-border rounded-lg bg-card space-y-2">
-              <span class="font-semibold text-foreground block text-[11px] uppercase text-muted-foreground">Longitudinal Medical History</span>
-              <div class="space-y-1 text-[11px]">
-                <div>
-                  <span class="text-muted-foreground font-medium">Previous Illnesses & Diagnoses:</span>
-                  <p class="text-foreground font-semibold m-0 mt-0.5">{{ p.pastMedicalHistory || 'No documented previous major illnesses' }}</p>
-                </div>
-                <div>
-                  <span class="text-muted-foreground font-medium">Serious Conditions / Alerts:</span>
-                  <p class="text-destructive font-semibold m-0 mt-0.5">{{ p.seriousConditions || p.medicalAlerts || 'None documented' }}</p>
-                </div>
-                <div>
-                  <span class="text-muted-foreground font-medium">Past Surgeries & Procedures:</span>
-                  <p class="text-foreground font-semibold m-0 mt-0.5">{{ p.surgeriesAndProcedures || 'No prior surgeries' }}</p>
-                </div>
-              </div>
+            <div class="border border-border rounded-lg overflow-hidden">
+              <table hlmTable class="w-full text-xs">
+                <thead hlmTableHeader>
+                  <tr hlmTableRow class="bg-muted/40">
+                    <th hlmTableHead>Date</th>
+                    <th hlmTableHead>Type</th>
+                    <th hlmTableHead>Complaint</th>
+                    <th hlmTableHead>Clinical Notes</th>
+                  </tr>
+                </thead>
+                <tbody hlmTableBody>
+                  <tr hlmTableRow *ngFor="let enc of patientEncounters()">
+                    <td hlmTableCell class="font-mono text-muted-foreground">{{ enc.encounterDate | date:'short' }}</td>
+                    <td hlmTableCell>
+                      <span hlmBadge variant="outline" class="text-[10px]">{{ enc.encounterType }}</span>
+                    </td>
+                    <td hlmTableCell class="font-semibold text-foreground">{{ enc.chiefComplaint }}</td>
+                    <td hlmTableCell class="text-muted-foreground">
+                      <div>{{ enc.clinicalNotes }}</div>
+                      <div *ngIf="enc.dischargeSummary" class="mt-1 font-semibold text-foreground">DC Summary: {{ enc.dischargeSummary }}</div>
+                    </td>
+                  </tr>
+                  <tr hlmTableRow *ngIf="patientEncounters().length === 0">
+                    <td hlmTableCell colspan="4" class="text-center p-6 text-muted-foreground">No encounter records documented.</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
-        </div>
+        }
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="p-4 rounded-lg border border-border bg-card space-y-3">
-          <div class="flex justify-between items-center border-b border-border pb-2">
-            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wide">Active Problem List</h3>
-            <button *ngIf="authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_DOCTOR'])" hlmBtn variant="ghost" size="sm" class="h-6 text-[11px] px-2" (click)="showDiagnosisModal.set(true)">
-              + Add Problem
-            </button>
-          </div>
-          <div class="space-y-2">
-            <div *ngFor="let d of patientDiagnoses()" class="p-3 border border-border rounded-lg bg-muted/30 flex justify-between items-center text-xs">
-              <div>
-                <span class="font-semibold text-foreground block">{{ d.conditionName }}</span>
-                <span class="text-muted-foreground block text-[11px]">{{ d.notes }}</span>
-              </div>
-              <span hlmBadge variant="outline" class="font-mono text-[10px]">{{ d.icdCode }}</span>
+        @case ('allergies') {
+          <div class="space-y-4">
+            <div class="flex justify-between items-center">
+              <h3 class="text-sm font-semibold text-foreground">Coded Allergies</h3>
+              <button *ngIf="authService.hasAnyRole(['ROLE_DOCTOR', 'ROLE_NURSE'])" hlmBtn variant="destructive" size="sm" (click)="showAllergyModal.set(true)">
+                + Add Allergy
+              </button>
             </div>
-            <div *ngIf="patientDiagnoses().length === 0" class="p-3 rounded bg-muted/30 text-muted-foreground text-xs">No active diagnoses logged.</div>
-          </div>
-        </div>
 
-        <div class="p-4 rounded-lg border border-border bg-card space-y-3">
-          <div class="flex justify-between items-center border-b border-border pb-2">
-            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wide">Active eRx Prescriptions</h3>
-            <button *ngIf="authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_DOCTOR'])" hlmBtn variant="ghost" size="sm" class="h-6 text-[11px] px-2" (click)="showRxModal.set(true)">
-              + Order eRx
-            </button>
-          </div>
-          <div class="space-y-2">
-            <div *ngFor="let rx of patientRx()" class="p-3 border border-border rounded-lg bg-muted/30 flex justify-between items-center text-xs">
-              <div>
-                <span class="font-semibold text-foreground block">{{ rx.medicationName }}</span>
-                <span class="text-muted-foreground block text-[11px]">{{ rx.dosage }} • {{ rx.frequency }} ({{ rx.route }})</span>
-              </div>
-              <span hlmBadge variant="secondary" class="text-[10px]">{{ rx.status }}</span>
-            </div>
-            <div *ngIf="patientRx().length === 0" class="p-3 rounded bg-muted/30 text-muted-foreground text-xs">No active prescriptions.</div>
-          </div>
-        </div>
-
-        <div class="p-4 rounded-lg border border-border bg-card space-y-3">
-          <div class="flex justify-between items-center border-b border-border pb-2">
-            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wide">Bedside Vitals Summary</h3>
-            <button *ngIf="authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE'])" hlmBtn variant="ghost" size="sm" class="h-6 text-[11px] px-2" (click)="showVitalsModal.set(true)">
-              + Log Vitals
-            </button>
-          </div>
-          <div *ngIf="patientVitals().length > 0" class="grid grid-cols-3 gap-2 text-center text-xs">
-            <div class="p-2.5 border border-border rounded-lg bg-muted/30">
-              <span class="text-[10px] text-muted-foreground font-semibold block uppercase">Blood Pressure</span>
-              <span class="font-semibold font-mono text-foreground text-sm block mt-0.5">{{ patientVitals()[0].bloodPressure }}</span>
-            </div>
-            <div class="p-2.5 border border-border rounded-lg bg-muted/30">
-              <span class="text-[10px] text-muted-foreground font-semibold block uppercase">Heart Rate</span>
-              <span class="font-semibold font-mono text-foreground text-sm block mt-0.5">{{ patientVitals()[0].heartRate }} bpm</span>
-            </div>
-            <div class="p-2.5 border border-border rounded-lg bg-muted/30">
-              <span class="text-[10px] text-muted-foreground font-semibold block uppercase">BMI</span>
-              <span class="font-semibold font-mono text-foreground text-sm block mt-0.5">{{ patientVitals()[0].bmi || '23.5' }}</span>
+            <div class="border border-border rounded-lg overflow-hidden">
+              <table hlmTable class="w-full text-xs">
+                <thead hlmTableHeader>
+                  <tr hlmTableRow class="bg-muted/40">
+                    <th hlmTableHead>Allergen</th>
+                    <th hlmTableHead>Category</th>
+                    <th hlmTableHead>Severity</th>
+                    <th hlmTableHead>Reaction</th>
+                    <th hlmTableHead>Status</th>
+                  </tr>
+                </thead>
+                <tbody hlmTableBody>
+                  <tr hlmTableRow *ngFor="let a of patientAllergies()">
+                    <td hlmTableCell class="font-semibold text-foreground">{{ a.allergenName }}</td>
+                    <td hlmTableCell class="text-muted-foreground">{{ a.category }}</td>
+                    <td hlmTableCell>
+                      <span hlmBadge [variant]="a.severity === 'SEVERE' || a.severity === 'LIFE_THREATENING' ? 'destructive' : 'secondary'" class="text-[10px]">{{ a.severity }}</span>
+                    </td>
+                    <td hlmTableCell class="text-muted-foreground">{{ a.reactionDescription }}</td>
+                    <td hlmTableCell>
+                      <span hlmBadge variant="outline" class="text-[10px]">{{ a.status }}</span>
+                    </td>
+                  </tr>
+                  <tr hlmTableRow *ngIf="patientAllergies().length === 0">
+                    <td hlmTableCell colspan="5" class="text-center p-6 text-muted-foreground">No active allergies documented.</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
-          <div *ngIf="patientVitals().length === 0" class="p-3 rounded bg-muted/30 text-muted-foreground text-xs">No vital signs recorded yet.</div>
-        </div>
+        }
 
-        <div class="p-4 rounded-lg border border-border bg-card space-y-3">
-          <div class="flex justify-between items-center border-b border-border pb-2">
-            <h3 class="text-xs font-semibold text-foreground uppercase tracking-wide">Recent Encounters</h3>
-            <button *ngIf="authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE'])" hlmBtn variant="ghost" size="sm" class="h-6 text-[11px] px-2" (click)="showEncounterModal.set(true)">
-              + Log Visit
-            </button>
-          </div>
-          <div class="space-y-2">
-            <div *ngFor="let enc of patientEncounters().slice(0, 2)" class="p-3 border border-border rounded-lg bg-muted/30 space-y-1 text-xs">
-              <div class="flex justify-between items-center">
-                <span class="font-semibold text-foreground">{{ enc.encounterType }} Visit</span>
-                <span class="text-[11px] text-muted-foreground">{{ enc.encounterDate | date:'shortDate' }}</span>
-              </div>
-              <span class="text-muted-foreground block text-[11px]">{{ enc.chiefComplaint }}</span>
+        @case ('diagnoses') {
+          <div class="space-y-4">
+            <div class="flex justify-between items-center">
+              <h3 class="text-sm font-semibold text-foreground">Active Problem List</h3>
+              <button *ngIf="authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_DOCTOR'])" hlmBtn variant="default" size="sm" (click)="showDiagnosisModal.set(true)">
+                + Add Diagnosis
+              </button>
             </div>
-            <div *ngIf="patientEncounters().length === 0" class="p-3 rounded bg-muted/30 text-muted-foreground text-xs">No visits recorded.</div>
+
+            <div class="border border-border rounded-lg overflow-hidden">
+              <table hlmTable class="w-full text-xs">
+                <thead hlmTableHeader>
+                  <tr hlmTableRow class="bg-muted/40">
+                    <th hlmTableHead>Condition</th>
+                    <th hlmTableHead>ICD-10</th>
+                    <th hlmTableHead>Onset Date</th>
+                    <th hlmTableHead>Notes</th>
+                    <th hlmTableHead>Status</th>
+                  </tr>
+                </thead>
+                <tbody hlmTableBody>
+                  <tr hlmTableRow *ngFor="let d of patientDiagnoses()">
+                    <td hlmTableCell class="font-semibold text-foreground">{{ d.conditionName }}</td>
+                    <td hlmTableCell>
+                      <span hlmBadge variant="outline" class="font-mono text-[10px]">{{ d.icdCode }}</span>
+                    </td>
+                    <td hlmTableCell class="text-muted-foreground">{{ d.onsetDate | date:'mediumDate' }}</td>
+                    <td hlmTableCell class="text-muted-foreground">{{ d.notes }}</td>
+                    <td hlmTableCell>
+                      <span hlmBadge variant="secondary" class="text-[10px]">{{ d.status }}</span>
+                    </td>
+                  </tr>
+                  <tr hlmTableRow *ngIf="patientDiagnoses().length === 0">
+                    <td hlmTableCell colspan="5" class="text-center p-6 text-muted-foreground">No coded diagnoses recorded.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-      </div>
+        }
 
-      <!-- TAB 2: VISITS -->
-      <div *ngIf="chartTab() === 'encounters'" class="space-y-4">
-        <div class="flex justify-between items-center">
-          <h3 class="text-sm font-semibold text-foreground">Encounter Timeline</h3>
-          <button *ngIf="authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE'])" hlmBtn variant="default" size="sm" (click)="showEncounterModal.set(true)">
-            + Log Visit
-          </button>
-        </div>
+        @case ('rx') {
+          <div class="space-y-4">
+            <div class="flex justify-between items-center">
+              <h3 class="text-sm font-semibold text-foreground">Medication Orders</h3>
+              <button *ngIf="authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_DOCTOR'])" hlmBtn variant="default" size="sm" (click)="showRxModal.set(true)">
+                + Issue eRx
+              </button>
+            </div>
 
-        <div class="border border-border rounded-lg overflow-hidden">
-          <table hlmTable class="w-full text-xs">
-            <thead hlmTableHeader>
-              <tr hlmTableRow class="bg-muted/40">
-                <th hlmTableHead>Date</th>
-                <th hlmTableHead>Type</th>
-                <th hlmTableHead>Complaint</th>
-                <th hlmTableHead>Clinical Notes</th>
-              </tr>
-            </thead>
-            <tbody hlmTableBody>
-              <tr hlmTableRow *ngFor="let enc of patientEncounters()">
-                <td hlmTableCell class="font-mono text-muted-foreground">{{ enc.encounterDate | date:'short' }}</td>
-                <td hlmTableCell>
-                  <span hlmBadge variant="outline" class="text-[10px]">{{ enc.encounterType }}</span>
-                </td>
-                <td hlmTableCell class="font-semibold text-foreground">{{ enc.chiefComplaint }}</td>
-                <td hlmTableCell class="text-muted-foreground">
-                  <div>{{ enc.clinicalNotes }}</div>
-                  <div *ngIf="enc.dischargeSummary" class="mt-1 font-semibold text-foreground">DC Summary: {{ enc.dischargeSummary }}</div>
-                </td>
-              </tr>
-              <tr hlmTableRow *ngIf="patientEncounters().length === 0">
-                <td hlmTableCell colspan="4" class="text-center p-6 text-muted-foreground">No encounter records documented.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+            <div class="border border-border rounded-lg overflow-hidden">
+              <table hlmTable class="w-full text-xs">
+                <thead hlmTableHeader>
+                  <tr hlmTableRow class="bg-muted/40">
+                    <th hlmTableHead>Medication</th>
+                    <th hlmTableHead>Dosage / Route</th>
+                    <th hlmTableHead>Instructions</th>
+                    <th hlmTableHead>Duration / Refills</th>
+                    <th hlmTableHead>Status</th>
+                  </tr>
+                </thead>
+                <tbody hlmTableBody>
+                  <tr hlmTableRow *ngFor="let rx of patientRx()">
+                    <td hlmTableCell class="font-semibold text-foreground">{{ rx.medicationName }}</td>
+                    <td hlmTableCell class="text-muted-foreground">{{ rx.dosage }} ({{ rx.route }})</td>
+                    <td hlmTableCell class="text-muted-foreground">{{ rx.frequency }}</td>
+                    <td hlmTableCell class="text-muted-foreground">{{ rx.durationDays }} days / {{ rx.refills }} refills</td>
+                    <td hlmTableCell>
+                      <span hlmBadge variant="secondary" class="text-[10px]">{{ rx.status }}</span>
+                    </td>
+                  </tr>
+                  <tr hlmTableRow *ngIf="patientRx().length === 0">
+                    <td hlmTableCell colspan="5" class="text-center p-6 text-muted-foreground">No active medication orders.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
 
-      <!-- TAB 3: ALLERGIES -->
-      <div *ngIf="chartTab() === 'allergies'" class="space-y-4">
-        <div class="flex justify-between items-center">
-          <h3 class="text-sm font-semibold text-foreground">Coded Allergies</h3>
-          <button *ngIf="authService.hasAnyRole(['ROLE_DOCTOR', 'ROLE_NURSE'])" hlmBtn variant="destructive" size="sm" (click)="showAllergyModal.set(true)">
-            + Add Allergy
-          </button>
-        </div>
+        @case ('vitals') {
+          <div class="space-y-4">
+            <div class="flex justify-between items-center">
+              <h3 class="text-sm font-semibold text-foreground">Vitals & Observations</h3>
+              <button *ngIf="authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE'])" hlmBtn variant="default" size="sm" (click)="showVitalsModal.set(true)">
+                + Record Vitals
+              </button>
+            </div>
 
-        <div class="border border-border rounded-lg overflow-hidden">
-          <table hlmTable class="w-full text-xs">
-            <thead hlmTableHeader>
-              <tr hlmTableRow class="bg-muted/40">
-                <th hlmTableHead>Allergen</th>
-                <th hlmTableHead>Category</th>
-                <th hlmTableHead>Severity</th>
-                <th hlmTableHead>Reaction</th>
-                <th hlmTableHead>Status</th>
-              </tr>
-            </thead>
-            <tbody hlmTableBody>
-              <tr hlmTableRow *ngFor="let a of patientAllergies()">
-                <td hlmTableCell class="font-semibold text-foreground">{{ a.allergenName }}</td>
-                <td hlmTableCell class="text-muted-foreground">{{ a.category }}</td>
-                <td hlmTableCell>
-                  <span hlmBadge [variant]="a.severity === 'SEVERE' || a.severity === 'LIFE_THREATENING' ? 'destructive' : 'secondary'" class="text-[10px]">{{ a.severity }}</span>
-                </td>
-                <td hlmTableCell class="text-muted-foreground">{{ a.reactionDescription }}</td>
-                <td hlmTableCell>
-                  <span hlmBadge variant="outline" class="text-[10px]">{{ a.status }}</span>
-                </td>
-              </tr>
-              <tr hlmTableRow *ngIf="patientAllergies().length === 0">
-                <td hlmTableCell colspan="5" class="text-center p-6 text-muted-foreground">No active allergies documented.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- TAB 4: DIAGNOSES -->
-      <div *ngIf="chartTab() === 'diagnoses'" class="space-y-4">
-        <div class="flex justify-between items-center">
-          <h3 class="text-sm font-semibold text-foreground">Active Problem List</h3>
-          <button *ngIf="authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_DOCTOR'])" hlmBtn variant="default" size="sm" (click)="showDiagnosisModal.set(true)">
-            + Add Diagnosis
-          </button>
-        </div>
-
-        <div class="border border-border rounded-lg overflow-hidden">
-          <table hlmTable class="w-full text-xs">
-            <thead hlmTableHeader>
-              <tr hlmTableRow class="bg-muted/40">
-                <th hlmTableHead>Condition</th>
-                <th hlmTableHead>ICD-10</th>
-                <th hlmTableHead>Onset Date</th>
-                <th hlmTableHead>Notes</th>
-                <th hlmTableHead>Status</th>
-              </tr>
-            </thead>
-            <tbody hlmTableBody>
-              <tr hlmTableRow *ngFor="let d of patientDiagnoses()">
-                <td hlmTableCell class="font-semibold text-foreground">{{ d.conditionName }}</td>
-                <td hlmTableCell>
-                  <span hlmBadge variant="outline" class="font-mono text-[10px]">{{ d.icdCode }}</span>
-                </td>
-                <td hlmTableCell class="text-muted-foreground">{{ d.onsetDate | date:'mediumDate' }}</td>
-                <td hlmTableCell class="text-muted-foreground">{{ d.notes }}</td>
-                <td hlmTableCell>
-                  <span hlmBadge variant="secondary" class="text-[10px]">{{ d.status }}</span>
-                </td>
-              </tr>
-              <tr hlmTableRow *ngIf="patientDiagnoses().length === 0">
-                <td hlmTableCell colspan="5" class="text-center p-6 text-muted-foreground">No coded diagnoses recorded.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- TAB 5: RX -->
-      <div *ngIf="chartTab() === 'rx'" class="space-y-4">
-        <div class="flex justify-between items-center">
-          <h3 class="text-sm font-semibold text-foreground">Medication Orders</h3>
-          <button *ngIf="authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_DOCTOR'])" hlmBtn variant="default" size="sm" (click)="showRxModal.set(true)">
-            + Issue eRx
-          </button>
-        </div>
-
-        <div class="border border-border rounded-lg overflow-hidden">
-          <table hlmTable class="w-full text-xs">
-            <thead hlmTableHeader>
-              <tr hlmTableRow class="bg-muted/40">
-                <th hlmTableHead>Medication</th>
-                <th hlmTableHead>Dosage / Route</th>
-                <th hlmTableHead>Instructions</th>
-                <th hlmTableHead>Duration / Refills</th>
-                <th hlmTableHead>Status</th>
-              </tr>
-            </thead>
-            <tbody hlmTableBody>
-              <tr hlmTableRow *ngFor="let rx of patientRx()">
-                <td hlmTableCell class="font-semibold text-foreground">{{ rx.medicationName }}</td>
-                <td hlmTableCell class="text-muted-foreground">{{ rx.dosage }} ({{ rx.route }})</td>
-                <td hlmTableCell class="text-muted-foreground">{{ rx.frequency }}</td>
-                <td hlmTableCell class="text-muted-foreground">{{ rx.durationDays }} days / {{ rx.refills }} refills</td>
-                <td hlmTableCell>
-                  <span hlmBadge variant="secondary" class="text-[10px]">{{ rx.status }}</span>
-                </td>
-              </tr>
-              <tr hlmTableRow *ngIf="patientRx().length === 0">
-                <td hlmTableCell colspan="5" class="text-center p-6 text-muted-foreground">No active medication orders.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- TAB 6: VITALS -->
-      <div *ngIf="chartTab() === 'vitals'" class="space-y-4">
-        <div class="flex justify-between items-center">
-          <h3 class="text-sm font-semibold text-foreground">Vitals & Observations</h3>
-          <button *ngIf="authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE'])" hlmBtn variant="default" size="sm" (click)="showVitalsModal.set(true)">
-            + Record Vitals
-          </button>
-        </div>
-
-        <div class="border border-border rounded-lg overflow-hidden">
-          <table hlmTable class="w-full text-xs">
-            <thead hlmTableHeader>
-              <tr hlmTableRow class="bg-muted/40">
-                <th hlmTableHead>Date</th>
-                <th hlmTableHead>BP <span class="text-[10px] text-muted-foreground font-mono font-normal block">LOINC 85354-9</span></th>
-                <th hlmTableHead>HR <span class="text-[10px] text-muted-foreground font-mono font-normal block">LOINC 8867-4</span></th>
-                <th hlmTableHead>Temp <span class="text-[10px] text-muted-foreground font-mono font-normal block">LOINC 8310-5</span></th>
-                <th hlmTableHead>SpO2 <span class="text-[10px] text-muted-foreground font-mono font-normal block">LOINC 2708-6</span></th>
-                <th hlmTableHead>BMI <span class="text-[10px] text-muted-foreground font-mono font-normal block">LOINC 39156-5</span></th>
-              </tr>
-            </thead>
-            <tbody hlmTableBody>
-              <tr hlmTableRow *ngFor="let v of patientVitals()">
-                <td hlmTableCell class="font-mono text-muted-foreground">{{ v.recordedAt | date:'short' }}</td>
-                <td hlmTableCell class="font-semibold font-mono text-foreground">{{ v.bloodPressure }}</td>
-                <td hlmTableCell class="font-semibold font-mono text-foreground">{{ v.heartRate }} bpm</td>
-                <td hlmTableCell class="font-mono text-muted-foreground">{{ v.temperature }} °C</td>
-                <td hlmTableCell class="font-mono text-muted-foreground">{{ v.oxygenSaturation }} %</td>
-                <td hlmTableCell>
-                  <span hlmBadge variant="outline" class="font-mono text-[10px]">{{ v.bmi || '23.5' }}</span>
-                </td>
-              </tr>
-              <tr hlmTableRow *ngIf="patientVitals().length === 0">
-                <td hlmTableCell colspan="6" class="text-center p-6 text-muted-foreground">No vital signs recorded.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
+            <div class="border border-border rounded-lg overflow-hidden">
+              <table hlmTable class="w-full text-xs">
+                <thead hlmTableHeader>
+                  <tr hlmTableRow class="bg-muted/40">
+                    <th hlmTableHead>Date</th>
+                    <th hlmTableHead>BP <span class="text-[10px] text-muted-foreground font-mono font-normal block">LOINC 85354-9</span></th>
+                    <th hlmTableHead>HR <span class="text-[10px] text-muted-foreground font-mono font-normal block">LOINC 8867-4</span></th>
+                    <th hlmTableHead>Temp <span class="text-[10px] text-muted-foreground font-mono font-normal block">LOINC 8310-5</span></th>
+                    <th hlmTableHead>SpO2 <span class="text-[10px] text-muted-foreground font-mono font-normal block">LOINC 2708-6</span></th>
+                    <th hlmTableHead>BMI <span class="text-[10px] text-muted-foreground font-mono font-normal block">LOINC 39156-5</span></th>
+                  </tr>
+                </thead>
+                <tbody hlmTableBody>
+                  <tr hlmTableRow *ngFor="let v of patientVitals()">
+                    <td hlmTableCell class="font-mono text-muted-foreground">{{ v.recordedAt | date:'short' }}</td>
+                    <td hlmTableCell class="font-semibold font-mono text-foreground">{{ v.bloodPressure }}</td>
+                    <td hlmTableCell class="font-semibold font-mono text-foreground">{{ v.heartRate }} bpm</td>
+                    <td hlmTableCell class="font-mono text-muted-foreground">{{ v.temperature }} °C</td>
+                    <td hlmTableCell class="font-mono text-muted-foreground">{{ v.oxygenSaturation }} %</td>
+                    <td hlmTableCell>
+                      <span hlmBadge variant="outline" class="font-mono text-[10px]">{{ v.bmi || '23.5' }}</span>
+                    </td>
+                  </tr>
+                  <tr hlmTableRow *ngIf="patientVitals().length === 0">
+                    <td hlmTableCell colspan="6" class="text-center p-6 text-muted-foreground">No vital signs recorded.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+      }
     </div>
   </div>
 
